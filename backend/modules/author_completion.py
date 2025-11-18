@@ -14,6 +14,7 @@ from backend.models.author import Author
 from backend.models.missing_book import MissingBook
 from backend.models.download import Download
 from backend.integrations.google_books_client import GoogleBooksClient
+from backend.integrations.goodreads_client import GoodreadsClient, GoodreadsError
 from backend.integrations.qbittorrent_client import QBittorrentClient
 
 logger = logging.getLogger(__name__)
@@ -66,7 +67,8 @@ async def find_missing_author_books(
 
         logger.info(f"Found {len(author_data)} authors to check")
 
-        google_client = GoogleBooksClient()
+        goodreads_client = GoodreadsClient()
+        google_client = GoogleBooksClient()  # Fallback
         authors_checked = 0
         missing_books_found = 0
         authors_with_gaps = 0
@@ -86,72 +88,105 @@ async def find_missing_author_books(
                 existing_titles = {book.title.lower() for book in existing_books}
                 existing_isbns = {book.isbn for book in existing_books if book.isbn}
 
-                # Query Google Books for author's catalog
+                # Primary: Query Goodreads for author's catalog
+                results = []
+                discovery_source = "goodreads"
+
                 try:
-                    results = await google_client.search_books_by_author(
-                        author=author_name_row,
-                        max_results=40  # Get up to 40 books per author
+                    author_books = await goodreads_client.get_author_books(
+                        author_name=author_name_row,
+                        audiobooks_only=False  # Get all books
                     )
 
-                    if results:
-                        # Find missing books
-                        for book_data in results:
-                            book_title = book_data.get("title", "")
-                            book_isbn = book_data.get("isbn_13") or book_data.get("isbn_10")
+                    if author_books:
+                        # Convert Goodreads format to common format
+                        for book in author_books:
+                            results.append({
+                                "title": book.get("title", ""),
+                                "isbn_13": None,
+                                "isbn_10": None,
+                                "series": None
+                            })
+                        logger.info(f"Found {len(results)} books from Goodreads for {author_name_row}")
+                    else:
+                        raise GoodreadsError("No results from Goodreads")
 
-                            # Skip if already in library (by title or ISBN)
-                            if book_title.lower() in existing_titles:
-                                continue
-                            if book_isbn and book_isbn in existing_isbns:
-                                continue
+                except GoodreadsError as e:
+                    logger.warning(f"Goodreads failed for {author_name_row}: {e}, falling back to Google Books")
+                    discovery_source = "google_books"
 
-                            # This book is missing from library
-                            logger.info(f"Missing book identified: {book_title} by {author_name_row}")
+                    # Fallback: Query Google Books for author's catalog
+                    try:
+                        results = await google_client.search_books_by_author(
+                            author=author_name_row,
+                            max_results=40  # Get up to 40 books per author
+                        )
+                    except Exception as gb_error:
+                        logger.error(f"Google Books also failed for {author_name_row}: {gb_error}")
+                        errors.append(f"{author_name_row}: Goodreads: {e}, Google Books: {gb_error}")
+                        authors_checked += 1
+                        continue
 
-                            # Check if already tracked
-                            existing_missing = db_session.query(MissingBook) \
-                                .filter(MissingBook.title == book_title) \
-                                .filter(MissingBook.author == author_name_row) \
-                                .filter(MissingBook.status == "pending") \
-                                .first()
+                if results:
+                    author_missing_count = 0
+                    # Find missing books
+                    for book_data in results:
+                        book_title = book_data.get("title", "")
+                        book_isbn = book_data.get("isbn_13") or book_data.get("isbn_10")
 
-                            if not existing_missing:
-                                # Create MissingBook record
-                                missing_book = MissingBook(
-                                    title=book_title,
-                                    author=author_name_row,
-                                    series=book_data.get("series"),
-                                    series_number=None,
-                                    isbn=book_isbn,
-                                    reason="author_gap",
-                                    discovery_source="google_books",
-                                    status="pending",
-                                    priority_score=40,  # Slightly lower than series gaps
-                                    date_discovered=datetime.now()
-                                )
-                                db_session.add(missing_book)
+                        # Skip if already in library (by title or ISBN)
+                        if book_title.lower() in existing_titles:
+                            continue
+                        if book_isbn and book_isbn in existing_isbns:
+                            continue
 
-                                missing_books.append({
-                                    "title": book_title,
-                                    "author": author_name_row,
-                                    "series": book_data.get("series"),
-                                    "isbn": book_isbn
-                                })
+                        # This book is missing from library
+                        logger.info(f"Missing book identified: {book_title} by {author_name_row}")
 
-                                missing_books_found += 1
+                        # Check if already tracked
+                        existing_missing = db_session.query(MissingBook) \
+                            .filter(MissingBook.title == book_title) \
+                            .filter(MissingBook.author == author_name_row) \
+                            .filter(MissingBook.status == "pending") \
+                            .first()
 
-                        if missing_books_found > 0:
-                            authors_with_gaps += 1
+                        if not existing_missing:
+                            # Create MissingBook record
+                            missing_book = MissingBook(
+                                title=book_title,
+                                author=author_name_row,
+                                series=book_data.get("series"),
+                                series_number=None,
+                                isbn=book_isbn,
+                                reason="author_gap",
+                                discovery_source=discovery_source,
+                                status="pending",
+                                priority_score=40,  # Slightly lower than series gaps
+                                date_discovered=datetime.now()
+                            )
+                            db_session.add(missing_book)
 
-                except Exception as e:
-                    logger.error(f"Error querying Google Books for author {author_name_row}: {e}")
-                    errors.append(f"{author_name_row}: {str(e)}")
+                            missing_books.append({
+                                "title": book_title,
+                                "author": author_name_row,
+                                "series": book_data.get("series"),
+                                "isbn": book_isbn
+                            })
+
+                            missing_books_found += 1
+                            author_missing_count += 1
+
+                    if author_missing_count > 0:
+                        authors_with_gaps += 1
 
                 authors_checked += 1
 
             except Exception as e:
                 logger.error(f"Error processing author {author_name_row}: {e}")
                 errors.append(f"{author_name_row}: {str(e)}")
+
+        # Close Goodreads client
+        await goodreads_client.close()
 
         # Commit all MissingBook records
         db_session.commit()
