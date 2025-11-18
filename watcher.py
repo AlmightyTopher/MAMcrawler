@@ -12,12 +12,13 @@ from watchdog.events import FileSystemEventHandler
 
 import database
 from mamcrawler.rag import MarkdownChunker, EmbeddingService, FAISSIndexManager
+from mamcrawler.utils import safe_read_markdown
 
 
 class MarkdownHandler(FileSystemEventHandler):
     """Handles markdown file changes and updates the RAG index."""
 
-    def __init__(self, target_dir: str = 'guides_output'):
+    def __init__(self, target_dir: str = "guides_output"):
         """
         Initialize the handler.
 
@@ -33,21 +34,21 @@ class MarkdownHandler(FileSystemEventHandler):
 
     def on_created(self, event):
         """Handle new file creation."""
-        if event.is_directory or not event.src_path.endswith('.md'):
+        if event.is_directory or not event.src_path.endswith(".md"):
             return
         print(f"New file detected: {event.src_path}")
         self._process_file(event.src_path)
 
     def on_modified(self, event):
         """Handle file modification."""
-        if event.is_directory or not event.src_path.endswith('.md'):
+        if event.is_directory or not event.src_path.endswith(".md"):
             return
         print(f"Modified file detected: {event.src_path}")
         self._update_file(event.src_path)
 
     def on_deleted(self, event):
         """Handle file deletion."""
-        if event.is_directory or not event.src_path.endswith('.md'):
+        if event.is_directory or not event.src_path.endswith(".md"):
             return
         print(f"Deleted file detected: {event.src_path}")
         self._delete_file(event.src_path)
@@ -73,8 +74,7 @@ class MarkdownHandler(FileSystemEventHandler):
         file_id, old_hash = existing
 
         # Check if actually changed
-        with open(path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        content = safe_read_markdown(path)
         new_hash = hashlib.sha256(content.encode()).hexdigest()
 
         if new_hash == old_hash:
@@ -113,11 +113,12 @@ class MarkdownHandler(FileSystemEventHandler):
         Returns:
             Tuple of (chunks_to_embed, chunk_ids)
         """
-        with open(path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        content = safe_read_markdown(path)
 
         file_hash = hashlib.sha256(content.encode()).hexdigest()
-        file_id = database.insert_or_update_file(path, os.path.getmtime(path), file_hash)
+        file_id = database.insert_or_update_file(
+            path, os.path.getmtime(path), file_hash
+        )
 
         # Use unified chunker
         chunk_data = self.chunker.chunk(content)
@@ -137,7 +138,7 @@ def main():
     """Main entry point for file watcher."""
     database.create_tables()
 
-    target_dir = 'guides_output'
+    target_dir = "guides_output"
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
 

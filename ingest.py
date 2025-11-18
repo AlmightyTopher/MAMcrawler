@@ -11,6 +11,7 @@ import database
 # Import from new modular package
 from mamcrawler.rag import MarkdownChunker, EmbeddingService, FAISSIndexManager
 from mamcrawler.config import DEFAULT_RAG_CONFIG
+from mamcrawler.utils import safe_read_markdown
 
 
 def process_file(path: str, chunker: MarkdownChunker) -> tuple:
@@ -24,8 +25,7 @@ def process_file(path: str, chunker: MarkdownChunker) -> tuple:
     Returns:
         Tuple of (chunks_to_embed, chunk_ids)
     """
-    with open(path, 'r', encoding='utf-8') as f:
-        markdown_content = f.read()
+    markdown_content = safe_read_markdown(path)
 
     # Check if file is new or modified
     file_hash = hashlib.sha256(markdown_content.encode()).hexdigest()
@@ -51,7 +51,7 @@ def process_file(path: str, chunker: MarkdownChunker) -> tuple:
     return chunks_to_embed, chunk_ids
 
 
-def main(target_dir: str = 'guides_output'):
+def main(target_dir: str = "guides_output"):
     """
     Main ingestion function.
 
@@ -73,7 +73,7 @@ def main(target_dir: str = 'guides_output'):
 
     for root, dirs, files in os.walk(target_dir):
         for file in files:
-            if file.endswith('.md'):
+            if file.endswith(".md"):
                 path = os.path.join(root, file)
                 print(f"Processing {path}")
                 chunks, chunk_ids = process_file(path, chunker)
