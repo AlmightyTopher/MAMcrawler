@@ -39,6 +39,7 @@ from .google_books_client import (
     GoogleBooksRateLimitError,
 )
 from .goodreads_client import GoodreadsClient, GoodreadsError
+from .mam_client import MAMClient, MAMError, MAMAuthError, MAMRateLimitError
 
 __all__ = [
     # Audiobookshelf
@@ -58,6 +59,11 @@ __all__ = [
     # Goodreads
     "GoodreadsClient",
     "GoodreadsError",
+    # MAM
+    "MAMClient",
+    "MAMError",
+    "MAMAuthError",
+    "MAMRateLimitError",
 ]
 
 __version__ = "1.0.0"
