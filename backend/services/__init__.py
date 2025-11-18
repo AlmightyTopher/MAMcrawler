@@ -57,6 +57,7 @@ from backend.services.download_service import DownloadService
 from backend.services.metadata_service import MetadataService
 from backend.services.task_service import TaskService
 from backend.services.failed_attempt_service import FailedAttemptService
+from backend.services.genre_settings_service import GenreSettingsService
 
 __all__ = [
     "BookService",
@@ -66,4 +67,5 @@ __all__ = [
     "MetadataService",
     "TaskService",
     "FailedAttemptService",
+    "GenreSettingsService",
 ]
