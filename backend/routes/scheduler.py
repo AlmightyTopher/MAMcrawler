@@ -253,7 +253,7 @@ async def trigger_task(
     """
     try:
         # Valid task names
-        valid_tasks = ["MAM", "TOP10", "METADATA_FULL", "METADATA_NEW", "SERIES", "AUTHOR"]
+        valid_tasks = ["MAM", "TOP10", "METADATA_FULL", "METADATA_NEW", "SERIES", "AUTHOR", "GAPS"]
 
         if task_name.upper() not in valid_tasks:
             raise HTTPException(
@@ -634,14 +634,23 @@ async def get_configuration():
                 "METADATA_FULL": settings.TASK_METADATA_FULL_TIME,
                 "METADATA_NEW": settings.TASK_METADATA_NEW_TIME,
                 "SERIES": settings.TASK_SERIES_TIME,
-                "AUTHOR": settings.TASK_AUTHOR_TIME
+                "AUTHOR": settings.TASK_AUTHOR_TIME,
+                "GAPS": settings.TASK_GAPS_TIME
             },
             "enabled_features": {
                 "metadata_correction": settings.ENABLE_METADATA_CORRECTION,
                 "series_completion": settings.ENABLE_SERIES_COMPLETION,
                 "author_completion": settings.ENABLE_AUTHOR_COMPLETION,
                 "top10_discovery": settings.ENABLE_TOP10_DISCOVERY,
-                "mam_scraping": settings.ENABLE_MAM_SCRAPING
+                "mam_scraping": settings.ENABLE_MAM_SCRAPING,
+                "gap_analysis": settings.ENABLE_GAP_ANALYSIS
+            },
+            "gap_analysis_config": {
+                "max_downloads_per_run": settings.GAP_MAX_DOWNLOADS_PER_RUN,
+                "series_priority": settings.GAP_SERIES_PRIORITY,
+                "author_priority": settings.GAP_AUTHOR_PRIORITY,
+                "min_seeds": settings.MAM_MIN_SEEDS,
+                "title_match_threshold": settings.MAM_TITLE_MATCH_THRESHOLD
             }
         }
 

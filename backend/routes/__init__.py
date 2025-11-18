@@ -12,7 +12,8 @@ from backend.routes import (
     downloads,
     metadata,
     scheduler,
-    system
+    system,
+    gaps
 )
 
 # Import verify_api_key for authentication
@@ -93,6 +94,14 @@ def include_all_routes(app: FastAPI) -> None:
         # Note: /health endpoint is public, other endpoints require auth
     )
 
+    # Gap Analysis routes
+    app.include_router(
+        gaps.router,
+        prefix="/api/gaps",
+        tags=["Gap Analysis"],
+        dependencies=[Depends(verify_api_key)]
+    )
+
 
 __all__ = [
     "include_all_routes",
@@ -102,5 +111,6 @@ __all__ = [
     "downloads",
     "metadata",
     "scheduler",
-    "system"
+    "system",
+    "gaps"
 ]
