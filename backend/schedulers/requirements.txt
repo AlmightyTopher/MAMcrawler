@@ -1,0 +1,13 @@
+# APScheduler and dependencies for backend/schedulers/
+# Install with: pip install -r backend/schedulers/requirements.txt
+
+# APScheduler - Task scheduling library
+APScheduler==3.10.4
+
+# SQLAlchemy - Required for SQLAlchemy job store
+# (already included in main requirements, but listed for reference)
+# SQLAlchemy>=2.0.0
+
+# Database drivers
+# PostgreSQL driver (already in main requirements)
+# psycopg2-binary>=2.9.0

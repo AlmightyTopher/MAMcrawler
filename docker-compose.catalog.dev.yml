@@ -1,0 +1,70 @@
+version: '3.8'
+
+# DEVELOPMENT MODE - Live Code Editing
+# Changes on host automatically sync to container
+
+services:
+  audiobook-catalog-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.catalog
+    container_name: audiobook-catalog-dev
+
+    environment:
+      # UTF-8 encoding
+      - PYTHONIOENCODING=utf-8
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+
+      # Development mode
+      - DEV_MODE=true
+
+      # Optional: qBittorrent integration
+      - QB_HOST=${QB_HOST:-host.docker.internal}
+      - QB_PORT=${QB_PORT:-8080}
+      - QB_USERNAME=${QB_USERNAME:-admin}
+      - QB_PASSWORD=${QB_PASSWORD:-adminadmin}
+
+    volumes:
+      # LIVE CODE SYNC - Edit on host, runs in container
+      - ./audiobook_catalog_crawler.py:/app/audiobook_catalog_crawler.py:rw
+      - ./audiobook_catalog_test_runner.py:/app/audiobook_catalog_test_runner.py:rw
+      - ./audiobook_query.py:/app/audiobook_query.py:rw
+      - ./audiobook_catalog_config.json:/app/audiobook_catalog_config.json:rw
+
+      # Persistent output directories
+      - ./catalog_cache:/app/catalog_cache:rw
+      - ./catalog_test_results:/app/catalog_test_results:rw
+      - ./audiobook_catalog.log:/app/audiobook_catalog.log:rw
+      - ./audiobook_catalog_test.log:/app/audiobook_catalog_test.log:rw
+
+    networks:
+      - catalog-network
+
+    # Keep container running for interactive use
+    command: tail -f /dev/null
+
+    # Or run specific script
+    # command: python audiobook_catalog_test_runner.py
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Use tmpfs for Chromium cache
+    tmpfs:
+      - /tmp:size=512M
+
+networks:
+  catalog-network:
+    driver: bridge

@@ -1,0 +1,51 @@
+================================================================================
+AUDIOBOOK METADATA VERIFICATION SUMMARY
+================================================================================
+Generated: 2025-11-17 13:09:08
+
+STATISTICS
+--------------------------------------------------------------------------------
+Total books processed:        4
+Audio extracted:              4 (100%)
+Successfully transcribed:     4 (100%)
+Verified externally:          2 (50%)
+Auto-updated (conf >= 95%):   2 (50%)
+Need manual review:           2 (50%)
+Errors:                       0
+
+UPDATED BOOKS (Confidence >= 95%)
+--------------------------------------------------------------------------------
+
+Book ID: cd97fca8-a351-4e53-8098-7afda1a80a90
+  Original: Terminator Gene - Ian Irvine (MP3)
+  Updated:  Terminator Gene
+  Author:   Ian  Irvine
+  Series:   Human Rites #2
+  Confidence: 97.5%
+
+Book ID: 92945c16-c69c-475c-8808-14f6c5f4c0e4
+  Original: Craig Alanson - Freefall Expeditionary Force Mavericks, Book 2.MP3
+  Updated:  Freefall
+  Author:   Craig Alanson
+  Series:   Mavericks #2
+  Confidence: 95.0%
+
+
+BOOKS NEEDING MANUAL REVIEW
+--------------------------------------------------------------------------------
+
+Book ID: 9a71b4c0-eccf-4f0b-947e-138f65495409
+  Current: Neven Iliev - Everybody Loves Large Chests, Vol. 10 - Law mp3
+  Confidence: 0.0%
+  Reason: No external match found on Goodreads
+  Audio says: 'law everybody loves large chests' by Nathaniel Evans
+
+Book ID: 9a14f367-762e-4ed1-a3e5-3111b0fdb765
+  Current: Eric Ugland (2022) Wild Wild Quest - The Good Guys, Book 12
+  Confidence: 0.0%
+  Reason: No external match found on Goodreads
+  Audio says: 'Wild Wild West' by Eric ugland
+
+================================================================================
+END OF REPORT
+================================================================================

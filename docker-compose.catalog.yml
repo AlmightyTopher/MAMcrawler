@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  audiobook-catalog-crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile.catalog
+    container_name: audiobook-catalog-test
+    environment:
+      # UTF-8 encoding
+      - PYTHONIOENCODING=utf-8
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+
+      # Optional: qBittorrent integration
+      # Uncomment and configure if you want to test download functionality
+      # - QB_HOST=host.docker.internal
+      # - QB_PORT=8080
+      # - QB_USERNAME=admin
+      # - QB_PASSWORD=adminadmin
+
+    volumes:
+      # Mount output directories to persist results
+      - ./catalog_cache:/app/catalog_cache
+      - ./catalog_test_results:/app/catalog_test_results
+      - ./audiobook_catalog.log:/app/audiobook_catalog.log
+      - ./audiobook_catalog_test.log:/app/audiobook_catalog_test.log
+
+      # Mount config for easy updates without rebuild
+      - ./audiobook_catalog_config.json:/app/audiobook_catalog_config.json:ro
+
+    networks:
+      - catalog-network
+
+    restart: "no"
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Use tmpfs for Chromium cache (improves performance)
+    tmpfs:
+      - /tmp:size=512M
+
+networks:
+  catalog-network:
+    driver: bridge
+
+# Optional: If you want scheduled runs
+# You can use this with a cron container or host cron job
+# Example: docker-compose -f docker-compose.catalog.yml up

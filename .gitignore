@@ -1,0 +1,68 @@
+# ---------------------------------------------------------------------------
+# PYTHON JUNK
+# ---------------------------------------------------------------------------
+__pycache__/
+*.pyc
+
+# ---------------------------------------------------------------------------
+# RUNTIME / CACHE / ARTIFACT FILES
+# These should NEVER go into Git and are the source of 90% of your repo pain.
+# ---------------------------------------------------------------------------
+*.log
+*.sqlite
+*.db
+*.json
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.tmp
+
+# Directories created automatically at runtime
+logs/
+out/
+cache/
+metadata/
+catalog_cache/
+book_metadata_output/
+audiobookshelf_output/
+search_results/
+forum_qbittorrent_output/
+guides_output/
+missing_books/
+
+# FAISS index
+index.faiss
+
+# ---------------------------------------------------------------------------
+# DEVELOPMENT / EDITOR / AI TOOLS
+# ---------------------------------------------------------------------------
+.vscode/
+.claude/
+.continue/
+.codacy/
+.kilocode/
+.clinerules/
+.aider*
+.aider.tags.cache.v4/
+.aider.input.history
+.aider.chat.history.md
+
+# ---------------------------------------------------------------------------
+# ENVIRONMENT / LOCAL CONFIG
+# ---------------------------------------------------------------------------
+.env
+.env.*
+TopherTek-Python-Tunnel.conf
+WIREGUARD_FILES_CREATED.txt
+WIREGUARD_CHECKLIST.txt
+
+# Virtual environments
+venv/
+.venv/
+
+# ---------------------------------------------------------------------------
+# SYSTEM / ACCIDENTAL GARBAGE (prevents cursed $null/nul files)
+# ---------------------------------------------------------------------------
+nul
+$null

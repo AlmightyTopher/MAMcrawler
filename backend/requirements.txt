@@ -1,0 +1,181 @@
+# FastAPI Backend Requirements
+# Generated: 2025-11-16
+# Python 3.11+ required
+
+# ============================================================================
+# Core Web Framework
+# ============================================================================
+fastapi==0.104.1                    # Modern async web framework
+uvicorn[standard]==0.24.0           # ASGI server with websocket support
+python-multipart==0.0.6             # Form/file upload handling
+python-dotenv==1.0.0                # Environment variable loading
+
+# ============================================================================
+# Database & ORM
+# ============================================================================
+sqlalchemy==2.0.23                  # SQL toolkit and ORM
+psycopg2-binary==2.9.9              # PostgreSQL adapter
+alembic==1.12.1                     # Database migrations
+asyncpg==0.29.0                     # Async PostgreSQL driver
+
+# ============================================================================
+# Data Validation & Settings
+# ============================================================================
+pydantic==2.5.0                     # Data validation using Python type hints
+pydantic-settings==2.1.0            # Settings management from environment
+email-validator==2.1.0              # Email validation for Pydantic
+
+# ============================================================================
+# Task Scheduling & Background Jobs
+# ============================================================================
+apscheduler==3.10.4                 # Advanced Python Scheduler
+pytz==2023.3                        # Timezone definitions
+
+# ============================================================================
+# HTTP Clients (Async & Sync)
+# ============================================================================
+httpx==0.25.1                       # Modern async HTTP client
+aiohttp==3.9.0                      # Async HTTP client/server
+requests==2.31.0                    # Sync HTTP library (legacy compatibility)
+tenacity==8.2.3                     # Retry logic with exponential backoff
+
+# ============================================================================
+# HTML/XML Parsing & Web Scraping
+# ============================================================================
+beautifulsoup4==4.12.2              # HTML/XML parsing
+lxml==4.9.3                         # Fast XML/HTML processing
+html5lib==1.1                       # HTML5 parser
+
+# ============================================================================
+# MAM Crawler Dependencies
+# ============================================================================
+crawl4ai==0.4.0                     # Async web crawling framework
+playwright==1.40.0                  # Browser automation
+ratelimit==2.2.1                    # Rate limiting decorator
+markdown==3.5.1                     # Markdown processing
+
+# ============================================================================
+# RAG System Dependencies (Vector Search & Embeddings)
+# ============================================================================
+sentence-transformers==2.2.2        # Sentence embeddings (all-MiniLM-L6-v2)
+faiss-cpu==1.7.4                    # Facebook AI Similarity Search
+langchain-text-splitters==0.0.1     # Markdown header-aware chunking
+anthropic==0.7.7                    # Claude API client
+tiktoken==0.5.1                     # Token counting for LLMs
+
+# ============================================================================
+# File System Monitoring
+# ============================================================================
+watchdog==3.0.0                     # File system event monitoring
+
+# ============================================================================
+# Audio/Media Processing (for metadata extraction)
+# ============================================================================
+mutagen==1.47.0                     # Audio metadata reading/writing
+pillow==10.1.0                      # Image processing
+
+# ============================================================================
+# Utilities & Helpers
+# ============================================================================
+python-dateutil==2.8.2              # Date parsing and manipulation
+pytz==2023.3                        # Timezone support
+urllib3==2.1.0                      # HTTP library with connection pooling
+chardet==5.2.0                      # Character encoding detection
+jinja2==3.1.2                       # Template engine
+pyyaml==6.0.1                       # YAML parser
+
+# ============================================================================
+# Testing & Quality Assurance
+# ============================================================================
+pytest==7.4.3                       # Testing framework
+pytest-asyncio==0.21.1              # Async test support
+pytest-cov==4.1.0                   # Coverage reporting
+pytest-mock==3.12.0                 # Mock/stub support
+responses==0.24.1                   # HTTP mocking library
+faker==20.1.0                       # Fake data generation for tests
+
+# ============================================================================
+# Code Quality & Formatting
+# ============================================================================
+black==23.11.0                      # Code formatter
+flake8==6.1.0                       # Linting
+mypy==1.7.1                         # Static type checking
+isort==5.12.0                       # Import sorting
+pylint==3.0.2                       # Additional linting
+
+# ============================================================================
+# Development Tools
+# ============================================================================
+ipython==8.17.2                     # Enhanced Python shell
+ipdb==0.13.13                       # IPython debugger
+rich==13.7.0                        # Terminal formatting and progress bars
+
+# ============================================================================
+# Security & Authentication
+# ============================================================================
+passlib[bcrypt]==1.7.4              # Password hashing
+python-jose[cryptography]==3.3.0    # JWT tokens
+bcrypt==4.1.1                       # Password hashing algorithm
+
+# ============================================================================
+# Logging & Monitoring
+# ============================================================================
+structlog==23.2.0                   # Structured logging
+python-json-logger==2.0.7           # JSON log formatting
+
+# ============================================================================
+# API Documentation (Auto-generated by FastAPI)
+# ============================================================================
+# FastAPI automatically includes:
+# - swagger-ui (OpenAPI docs at /docs)
+# - redoc (Alternative docs at /redoc)
+# - OpenAPI schema generation
+
+# ============================================================================
+# Optional: Production Deployment
+# ============================================================================
+# gunicorn==21.2.0                  # Production WSGI server (use with uvicorn workers)
+# prometheus-client==0.19.0         # Metrics collection
+# sentry-sdk==1.38.0                # Error tracking
+
+# ============================================================================
+# Installation Notes
+# ============================================================================
+# 1. Create virtual environment:
+#    python -m venv venv
+#
+# 2. Activate virtual environment:
+#    Windows: venv\Scripts\activate
+#    Unix/Mac: source venv/bin/activate
+#
+# 3. Install requirements:
+#    pip install -r requirements.txt
+#
+# 4. For development with auto-reload:
+#    pip install watchfiles
+#
+# 5. For production deployment, uncomment production dependencies above
+#
+# ============================================================================
+# Platform-Specific Notes
+# ============================================================================
+# Windows: psycopg2-binary works out of the box
+# Linux: May need to install PostgreSQL dev headers:
+#        sudo apt-get install libpq-dev python3-dev
+# macOS: Install PostgreSQL via Homebrew:
+#        brew install postgresql
+#
+# ============================================================================
+# Known Compatibility
+# ============================================================================
+# Tested on:
+# - Python 3.11.6
+# - Windows 11
+# - Ubuntu 22.04 LTS
+# - macOS Sonoma 14.1
+#
+# Database Compatibility:
+# - PostgreSQL 14+
+# - PostgreSQL 15+ (recommended)
+#
+# ============================================================================

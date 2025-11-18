@@ -1,0 +1,125 @@
+================================================================================
+AUDIOBOOKSHELF SERIES POPULATION - STEP BY STEP INSTRUCTIONS
+================================================================================
+
+CURRENT STATUS:
+The Audiobookshelf database has a corrupted trigger that needs to be repaired.
+This MUST be done before we can populate series.
+
+================================================================================
+STEP 1: START AUDIOBOOKSHELF (to repair the database)
+================================================================================
+
+Open Command Prompt or PowerShell and run:
+
+    START "C:\Users\dogma\AppData\Local\Programs\Audiobookshelf\audiobookshelf.exe"
+
+Wait 45-60 seconds for it to fully start and repair the database.
+
+You should see it running in the background or in the system tray.
+
+
+================================================================================
+STEP 2: STOP AUDIOBOOKSHELF (to allow database access)
+================================================================================
+
+Run in Command Prompt or PowerShell:
+
+    taskkill /F /IM node.exe
+
+Wait 5 seconds for it to fully stop.
+
+Verify it's stopped by running:
+
+    tasklist | findstr node.exe
+
+You should see NO output (process is stopped).
+
+
+================================================================================
+STEP 3: RUN THE SERIES POPULATOR
+================================================================================
+
+Open Command Prompt or PowerShell, navigate to the project:
+
+    cd C:\Users\dogma\Projects\MAMcrawler
+
+Then run this command EXACTLY as shown:
+
+    python simple_series_populator.py
+
+This will:
+- Connect to the Audiobookshelf database
+- Extract series names from books
+- Create series entries
+- Link books to series
+- Show you a summary of what was done
+
+Wait for it to complete (should take 1-5 minutes).
+
+
+================================================================================
+STEP 4: START AUDIOBOOKSHELF AGAIN (to see the changes)
+================================================================================
+
+Run in Command Prompt or PowerShell:
+
+    START "C:\Users\dogma\AppData\Local\Programs\Audiobookshelf\audiobookshelf.exe"
+
+Wait 45-60 seconds for it to fully start.
+
+
+================================================================================
+STEP 5: VERIFY IN THE WEB INTERFACE
+================================================================================
+
+Open your browser to: http://localhost:13378
+
+Navigate to your Books section and check:
+- Do the books now show Series names?
+- Can you see series collections?
+- Are the sequence numbers (book 1, 2, 3, etc.) correct?
+
+
+================================================================================
+QUICK REFERENCE - COMMANDS TO COPY/PASTE
+================================================================================
+
+Start Audiobookshelf:
+    START "C:\Users\dogma\AppData\Local\Programs\Audiobookshelf\audiobookshelf.exe"
+
+Stop Audiobookshelf:
+    taskkill /F /IM node.exe
+
+Run Series Populator:
+    cd C:\Users\dogma\Projects\MAMcrawler && python simple_series_populator.py
+
+Check if it's running:
+    tasklist | findstr node.exe
+
+Open web interface:
+    start http://localhost:13378
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If the populator says "database is locked":
+- Audiobookshelf is still running
+- Run: taskkill /F /IM node.exe
+- Wait 10 seconds
+- Try the populator again
+
+If you see "Cannot connect to database: malformed database schema":
+- Audiobookshelf hasn't fully repaired the database yet
+- Make sure you waited 60 seconds after starting it
+- Try again
+
+If series don't appear in the web interface:
+- Stop and start Audiobookshelf again (full restart)
+- Refresh your browser (Ctrl+F5)
+- Check the Books section
+
+
+================================================================================

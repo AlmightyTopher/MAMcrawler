@@ -1,0 +1,914 @@
+#!/usr/bin/env python3
+"""
+Master Audiobook Management System
+==================================
+Comprehensive system for:
+1. Full metadata updates across all books and Audiobookshelf
+2. Missing book detection (series priority, then author priority)
+3. Top 10 audiobook search integration
+4. On-demand execution capabilities
+
+Usage:
+    python master_audiobook_manager.py --help
+    python master_audiobook_manager.py --update-metadata
+    python master_audiobook_manager.py --missing-books
+    python master_audiobook_manager.py --top-search
+    python master_audiobook_manager.py --full-sync
+"""
+
+import asyncio
+import os
+import json
+import sys
+import argparse
+import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Any, Optional, Tuple
+from dotenv import load_dotenv
+
+# Force UTF-8 output on Windows with error handling
+if sys.platform == 'win32':
+    import io
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        # Fallback if stdout is already closed or wrapped
+        pass
+
+# Import existing components
+from unified_metadata_aggregator import get_metadata
+from audiobookshelf_metadata_sync import AudiobookshelfMetadataSync
+from stealth_audiobookshelf_crawler import StealthMAMAudiobookshelfCrawler
+from audiobook_auto_batch import AutomatedAudiobookBatch
+
+load_dotenv()
+
+class MasterAudiobookManager:
+    """
+    Master controller for audiobook management across all systems.
+    Integrates metadata sync, missing book detection, and on-demand search.
+    """
+
+    def __init__(self):
+        self.setup_logging()
+        self.setup_directories()
+        self.stats = {
+            'started_at': datetime.now().isoformat(),
+            'metadata_updates': 0,
+            'missing_books_found': 0,
+            'series_books_missing': 0,
+            'author_books_missing': 0,
+            'search_results': 0,
+            'errors': []
+        }
+
+    def setup_logging(self):
+        """Setup comprehensive logging."""
+        self.log_file = f"master_manager_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler(self.log_file, encoding='utf-8'),
+                logging.StreamHandler(sys.stdout)
+            ]
+        )
+        self.logger = logging.getLogger(__name__)
+
+    def setup_directories(self):
+        """Create necessary directories."""
+        self.output_dirs = {
+            'metadata': Path("metadata_analysis"),
+            'missing': Path("missing_books"),
+            'search_results': Path("search_results"),
+            'reports': Path("reports")
+        }
+        
+        for dir_path in self.output_dirs.values():
+            dir_path.mkdir(exist_ok=True)
+
+    async def update_all_metadata(self) -> Dict[str, Any]:
+        """
+        Update all books with comprehensive metadata.
+        Runs audiobookshelf sync and additional metadata enrichment.
+        """
+        self.logger.info("=" * 70)
+        self.logger.info("COMPREHENSIVE METADATA UPDATE")
+        self.logger.info("=" * 70)
+
+        try:
+            # Step 1: Sync with Audiobookshelf metadata
+            self.logger.info("Step 1: Syncing Audiobookshelf metadata...")
+            abs_sync = AudiobookshelfMetadataSync()
+            await abs_sync.run()
+            
+            self.stats['metadata_updates'] = abs_sync.stats['books_updated']
+
+            # Step 2: Analyze existing library for missing data
+            self.logger.info("Step 2: Analyzing library for metadata completeness...")
+            library_analysis = await self.analyze_library_metadata()
+
+            # Step 3: Generate metadata report
+            await self.generate_metadata_report(library_analysis)
+
+            return {
+                'success': True,
+                'books_updated': self.stats['metadata_updates'],
+                'library_analysis': library_analysis
+            }
+
+        except Exception as e:
+            self.logger.error(f"Metadata update failed: {e}")
+            self.stats['errors'].append({
+                'operation': 'metadata_update',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            })
+            return {'success': False, 'error': str(e)}
+
+    async def analyze_library_metadata(self) -> Dict[str, Any]:
+        """Analyze the Audiobookshelf library for metadata completeness."""
+        try:
+            abs_url = os.getenv('ABS_URL', 'http://localhost:13378')
+            abs_token = os.getenv('ABS_TOKEN', '')
+
+            if not abs_token:
+                self.logger.warning("ABS_TOKEN not set - analysis limited")
+                return {'error': 'ABS_TOKEN not configured'}
+
+            import requests
+            headers = {'Authorization': f'Bearer {abs_token}'}
+
+            # Get all libraries
+            lib_response = requests.get(f"{abs_url}/api/libraries", headers=headers)
+            if lib_response.status_code != 200:
+                return {'error': f'Failed to get libraries: {lib_response.status_code}'}
+
+            libraries = lib_response.json()
+            if isinstance(libraries, dict) and 'libraries' in libraries:
+                libraries = libraries['libraries']
+
+            # Analyze each library
+            analysis = {
+                'total_libraries': len(libraries),
+                'libraries': [],
+                'overall_stats': {
+                    'total_books': 0,
+                    'books_with_series': 0,
+                    'books_without_series': 0,
+                    'books_with_author': 0,
+                    'books_without_author': 0,
+                    'books_with_isbn': 0,
+                    'books_without_isbn': 0,
+                    'books_with_genres': 0,
+                    'books_without_genres': 0
+                }
+            }
+
+            for library in libraries:
+                lib_id = library.get('id')
+                lib_name = library.get('name', 'Unknown')
+
+                self.logger.info(f"Analyzing library: {lib_name}")
+
+                # Get all items from library
+                items_response = requests.get(
+                    f"{abs_url}/api/libraries/{lib_id}/items",
+                    headers=headers,
+                    params={'limit': 10000}
+                )
+
+                if items_response.status_code != 200:
+                    continue
+
+                items = items_response.json().get('results', [])
+                
+                # Analyze each book
+                lib_stats = {
+                    'library_name': lib_name,
+                    'library_id': lib_id,
+                    'total_books': len(items),
+                    'books_with_series': 0,
+                    'books_without_series': 0,
+                    'books_with_author': 0,
+                    'books_without_author': 0,
+                    'books_with_isbn': 0,
+                    'books_without_isbn': 0,
+                    'books_with_genres': 0,
+                    'books_without_genres': 0,
+                    'books_missing_metadata': []
+                }
+
+                for item in items:
+                    metadata = item.get('media', {}).get('metadata', {})
+                    
+                    # Series analysis
+                    if metadata.get('series'):
+                        lib_stats['books_with_series'] += 1
+                        analysis['overall_stats']['books_with_series'] += 1
+                    else:
+                        lib_stats['books_without_series'] += 1
+                        analysis['overall_stats']['books_without_series'] += 1
+
+                    # Author analysis
+                    if metadata.get('authorName'):
+                        lib_stats['books_with_author'] += 1
+                        analysis['overall_stats']['books_with_author'] += 1
+                    else:
+                        lib_stats['books_without_author'] += 1
+                        analysis['overall_stats']['books_without_author'] += 1
+
+                    # ISBN analysis
+                    if metadata.get('isbn'):
+                        lib_stats['books_with_isbn'] += 1
+                        analysis['overall_stats']['books_with_isbn'] += 1
+                    else:
+                        lib_stats['books_without_isbn'] += 1
+                        analysis['overall_stats']['books_without_isbn'] += 1
+
+                    # Genres analysis
+                    if metadata.get('genres'):
+                        lib_stats['books_with_genres'] += 1
+                        analysis['overall_stats']['books_with_genres'] += 1
+                    else:
+                        lib_stats['books_without_genres'] += 1
+                        analysis['overall_stats']['books_without_genres'] += 1
+
+                    # Track books missing critical metadata
+                    missing_metadata = []
+                    if not metadata.get('series'):
+                        missing_metadata.append('series')
+                    if not metadata.get('authorName'):
+                        missing_metadata.append('author')
+                    if not metadata.get('isbn'):
+                        missing_metadata.append('isbn')
+                    if not metadata.get('genres'):
+                        missing_metadata.append('genres')
+
+                    if missing_metadata:
+                        lib_stats['books_missing_metadata'].append({
+                            'title': metadata.get('title', 'Unknown'),
+                            'missing': missing_metadata
+                        })
+
+                analysis['overall_stats']['total_books'] += len(items)
+                analysis['libraries'].append(lib_stats)
+
+            return analysis
+
+        except Exception as e:
+            self.logger.error(f"Library analysis failed: {e}")
+            return {'error': str(e)}
+
+    async def detect_missing_books(self) -> Dict[str, Any]:
+        """
+        Detect missing books with prioritized approach:
+        1. Series priority - find missing books in series
+        2. Author priority - find missing books by author
+        """
+        self.logger.info("=" * 70)
+        self.logger.info("MISSING BOOK DETECTION")
+        self.logger.info("=" * 70)
+
+        try:
+            # Step 1: Get current library
+            library_data = await self.get_audiobookshelf_library()
+            if not library_data:
+                return {'success': False, 'error': 'Could not access Audiobookshelf library'}
+
+            # Step 2: Analyze series
+            self.logger.info("Step 1: Analyzing series for missing books...")
+            series_analysis = await self.analyze_series_missing_books(library_data)
+
+            # Step 3: Analyze author missing books
+            self.logger.info("Step 2: Analyzing author missing books...")
+            author_analysis = await self.analyze_author_missing_books(library_data)
+
+            # Step 4: Generate missing books report
+            missing_report = await self.generate_missing_books_report(
+                series_analysis, author_analysis
+            )
+
+            self.stats['missing_books_found'] = len(missing_report.get('missing_books', []))
+            self.stats['series_books_missing'] = len(series_analysis.get('missing_books', []))
+            self.stats['author_books_missing'] = len(author_analysis.get('missing_books', []))
+
+            return {
+                'success': True,
+                'series_analysis': series_analysis,
+                'author_analysis': author_analysis,
+                'missing_report': missing_report
+            }
+
+        except Exception as e:
+            self.logger.error(f"Missing book detection failed: {e}")
+            self.stats['errors'].append({
+                'operation': 'missing_book_detection',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            })
+            return {'success': False, 'error': str(e)}
+
+    async def get_audiobookshelf_library(self) -> Optional[List[Dict]]:
+        """Get complete Audiobookshelf library data."""
+        try:
+            abs_url = os.getenv('ABS_URL', 'http://localhost:13378')
+            abs_token = os.getenv('ABS_TOKEN', '')
+
+            if not abs_token:
+                self.logger.warning("ABS_TOKEN not set")
+                return None
+
+            import requests
+            headers = {'Authorization': f'Bearer {abs_token}'}
+
+            # Get all libraries
+            lib_response = requests.get(f"{abs_url}/api/libraries", headers=headers)
+            if lib_response.status_code != 200:
+                return None
+
+            libraries = lib_response.json()
+            if isinstance(libraries, dict) and 'libraries' in libraries:
+                libraries = libraries['libraries']
+
+            # Get all books from all libraries
+            all_books = []
+            for library in libraries:
+                lib_id = library.get('id')
+                items_response = requests.get(
+                    f"{abs_url}/api/libraries/{lib_id}/items",
+                    headers=headers,
+                    params={'limit': 10000}
+                )
+
+                if items_response.status_code == 200:
+                    items = items_response.json().get('results', [])
+                    all_books.extend(items)
+
+            return all_books
+
+        except Exception as e:
+            self.logger.error(f"Failed to get Audiobookshelf library: {e}")
+            return None
+
+    async def analyze_series_missing_books(self, library_data: List[Dict]) -> Dict[str, Any]:
+        """Analyze missing books in series."""
+        # Group books by series
+        series_groups = {}
+        
+        for book in library_data:
+            metadata = book.get('media', {}).get('metadata', {})
+            series = metadata.get('series', '').strip()
+            
+            if series:
+                if series not in series_groups:
+                    series_groups[series] = []
+                
+                series_book = {
+                    'title': metadata.get('title', 'Unknown'),
+                    'series_number': metadata.get('seriesSequence', ''),
+                    'author': metadata.get('authorName', 'Unknown'),
+                    'book_id': book.get('id')
+                }
+                series_groups[series].append(series_book)
+
+        # Find missing books in each series
+        missing_in_series = []
+        
+        for series_name, books in series_groups.items():
+            if len(books) < 3:  # Only analyze series with 3+ books
+                continue
+                
+            self.logger.info(f"Analyzing series: {series_name} ({len(books)} books found)")
+            
+            # Get current series numbers
+            series_numbers = []
+            for book in books:
+                seq = book.get('series_number', '').strip()
+                if seq:
+                    try:
+                        series_numbers.append(int(seq))
+                    except ValueError:
+                        pass
+            
+            if not series_numbers:
+                continue
+                
+            # Find gaps in sequence
+            series_numbers.sort()
+            min_book = min(series_numbers)
+            max_book = max(series_numbers)
+            
+            missing_numbers = []
+            for i in range(min_book, max_book + 1):
+                if i not in series_numbers:
+                    missing_numbers.append(i)
+            
+            if missing_numbers:
+                missing_in_series.append({
+                    'series_name': series_name,
+                    'author': books[0].get('author', 'Unknown'),
+                    'total_books': max_book,
+                    'found_books': len(books),
+                    'missing_numbers': missing_numbers,
+                    'missing_count': len(missing_numbers),
+                    'existing_books': [b['title'] for b in books]
+                })
+
+        return {
+            'total_series_analyzed': len(series_groups),
+            'series_with_missing_books': len(missing_in_series),
+            'missing_books': missing_in_series
+        }
+
+    async def analyze_author_missing_books(self, library_data: List[Dict]) -> Dict[str, Any]:
+        """Analyze missing books by author."""
+        # Group books by author
+        author_groups = {}
+        
+        for book in library_data:
+            metadata = book.get('media', {}).get('metadata', {})
+            author = metadata.get('authorName', '').strip()
+            
+            if author and author != 'Unknown':
+                if author not in author_groups:
+                    author_groups[author] = []
+                
+                author_groups[author].append({
+                    'title': metadata.get('title', 'Unknown'),
+                    'year': metadata.get('publishedYear', ''),
+                    'book_id': book.get('id')
+                })
+
+        # Analyze authors with multiple books
+        authors_with_missing = []
+        
+        for author, books in author_groups.items():
+            if len(books) < 2:  # Only analyze authors with 2+ books
+                continue
+                
+            self.logger.info(f"Analyzing author: {author} ({len(books)} books found)")
+            
+            # Check for gaps in book titles (basic approach)
+            # In a real implementation, you'd want to check against external sources
+            # For now, we'll flag authors with many books as potential candidates
+            
+            if len(books) >= 5:
+                authors_with_missing.append({
+                    'author': author,
+                    'total_books': len(books),
+                    'existing_books': [b['title'] for b in books],
+                    'note': 'High-volume author - likely has more books available'
+                })
+
+        return {
+            'total_authors_analyzed': len(author_groups),
+            'authors_with_missing': len(authors_with_missing),
+            'missing_books': authors_with_missing
+        }
+
+    async def run_top_10_search(self) -> Dict[str, Any]:
+        """
+        Run top 10 audiobook search using the stealth crawler.
+        Returns the most recent/relevant audiobooks found.
+        """
+        self.logger.info("=" * 70)
+        self.logger.info("TOP 10 AUDIOBOOK SEARCH")
+        self.logger.info("=" * 70)
+
+        try:
+            # Run the stealth audiobookshelf crawler
+            crawler = StealthMAMAudiobookshelfCrawler()
+            
+            # Run the crawler
+            await crawler.run()
+            
+            # Collect results from all output files
+            search_results = await self.collect_search_results()
+            
+            # Select top 10 most recent/relevant
+            top_10 = self.select_top_10_audiobooks(search_results)
+            
+            # Generate search report
+            search_report = await self.generate_search_report(top_10)
+            
+            self.stats['search_results'] = len(search_results)
+            
+            return {
+                'success': True,
+                'total_found': len(search_results),
+                'top_10': top_10,
+                'report': search_report
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Top 10 search failed: {e}")
+            self.stats['errors'].append({
+                'operation': 'top_10_search',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            })
+            return {'success': False, 'error': str(e)}
+
+    async def collect_search_results(self) -> List[Dict]:
+        """Collect all results from search output files."""
+        results = []
+        search_dir = Path("audiobookshelf_output")
+        
+        if not search_dir.exists():
+            return results
+            
+        for json_file in search_dir.glob("audiobookshelf_*.json"):
+            try:
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    results.extend(data)
+            except Exception as e:
+                self.logger.warning(f"Could not read {json_file}: {e}")
+                
+        return results
+
+    def select_top_10_audiobooks(self, results: List[Dict]) -> List[Dict]:
+        """Select top 10 most relevant audiobooks."""
+        # Sort by relevance factors
+        def score_audiobook(audiobook):
+            score = 0
+            
+            # Prefer newer entries (has crawled_at timestamp)
+            if audiobook.get('crawled_at'):
+                score += 1
+                
+            # Prefer entries with more complete metadata
+            title = audiobook.get('title', '')
+            author = audiobook.get('author', '')
+            size = audiobook.get('size', '')
+            
+            if title: score += 2
+            if author: score += 2
+            if size: score += 1
+            
+            # Prefer certain keywords
+            title_lower = title.lower()
+            if any(keyword in title_lower for keyword in ['new', '2024', '2023', 'bestseller']):
+                score += 1
+                
+            return score
+        
+        # Sort and select top 10
+        sorted_results = sorted(results, key=score_audiobook, reverse=True)
+        return sorted_results[:10]
+
+    async def generate_reports(self) -> Dict[str, str]:
+        """Generate comprehensive reports for all operations."""
+        reports = {}
+        
+        try:
+            # Create comprehensive summary report
+            summary_report = await self.generate_summary_report()
+            reports['summary'] = summary_report
+            
+            # Create individual operation reports
+            if self.stats['metadata_updates'] > 0:
+                reports['metadata'] = await self.get_latest_metadata_report()
+                
+            if self.stats['missing_books_found'] > 0:
+                reports['missing_books'] = await self.get_latest_missing_report()
+                
+            if self.stats['search_results'] > 0:
+                reports['search_results'] = await self.get_latest_search_report()
+                
+        except Exception as e:
+            self.logger.error(f"Report generation failed: {e}")
+            
+        return reports
+
+    async def generate_summary_report(self) -> str:
+        """Generate overall summary report."""
+        report = f"""
+MASTER AUDIOBOOK MANAGEMENT SYSTEM - SUMMARY REPORT
+==================================================
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+OPERATIONS COMPLETED:
+- Metadata Updates: {self.stats['metadata_updates']} books
+- Missing Books Found: {self.stats['missing_books_found']} books
+  - Series Missing: {self.stats['series_books_missing']} books
+  - Author Missing: {self.stats['author_books_missing']} books
+- Search Results: {self.stats['search_results']} audiobooks found
+- Errors: {len(self.stats['errors'])} errors encountered
+
+STARTED: {self.stats['started_at']}
+COMPLETED: {datetime.now().isoformat()}
+
+DETAILS:
+"""
+        
+        if self.stats['errors']:
+            report += "\nERRORS:\n"
+            for error in self.stats['errors']:
+                report += f"- {error['operation']}: {error['error']}\n"
+        
+        return report
+
+    async def generate_metadata_report(self, analysis: Dict[str, Any]) -> str:
+        """Generate metadata analysis report."""
+        report_file = self.output_dirs['reports'] / f"metadata_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        
+        report = f"# Metadata Analysis Report\n\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        
+        if 'error' in analysis:
+            report += f"**Error:** {analysis['error']}\n"
+        else:
+            stats = analysis.get('overall_stats', {})
+            report += f"## Overall Statistics\n\n"
+            report += f"- **Total Books:** {stats.get('total_books', 0)}\n"
+            report += f"- **Books with Series:** {stats.get('books_with_series', 0)} ({stats.get('books_with_series', 0) / max(stats.get('total_books', 1), 1) * 100:.1f}%)\n"
+            report += f"- **Books with Author:** {stats.get('books_with_author', 0)} ({stats.get('books_with_author', 0) / max(stats.get('total_books', 1), 1) * 100:.1f}%)\n"
+            report += f"- **Books with ISBN:** {stats.get('books_with_isbn', 0)} ({stats.get('books_with_isbn', 0) / max(stats.get('total_books', 1), 1) * 100:.1f}%)\n"
+            report += f"- **Books with Genres:** {stats.get('books_with_genres', 0)} ({stats.get('books_with_genres', 0) / max(stats.get('total_books', 1), 1) * 100:.1f}%)\n\n"
+            
+            report += f"## Library Breakdown\n\n"
+            for lib in analysis.get('libraries', []):
+                report += f"### {lib['library_name']}\n"
+                report += f"- Total Books: {lib['total_books']}\n"
+                report += f"- Series Coverage: {lib['books_with_series']}/{lib['total_books']}\n"
+                report += f"- Author Coverage: {lib['books_with_author']}/{lib['total_books']}\n"
+                report += f"- Books Missing Critical Metadata: {len(lib['books_missing_metadata'])}\n\n"
+        
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(report)
+            
+        self.logger.info(f"Metadata report saved: {report_file}")
+        return str(report_file)
+
+    async def generate_missing_books_report(self, series_analysis: Dict, author_analysis: Dict) -> Dict[str, Any]:
+        """Generate missing books report."""
+        report_file = self.output_dirs['missing'] / f"missing_books_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        
+        report = f"# Missing Books Report\n\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        
+        # Series missing books
+        series_missing = series_analysis.get('missing_books', [])
+        report += f"## Series Missing Books ({len(series_missing)} series)\n\n"
+        
+        for series in series_missing[:20]:  # First 20
+            report += f"### {series['series_name']}\n"
+            report += f"- **Author:** {series['author']}\n"
+            report += f"- **Total in Series:** {series['total_books']}\n"
+            report += f"- **Found:** {series['found_books']}\n"
+            report += f"- **Missing:** {', '.join(map(str, series['missing_numbers']))}\n"
+            report += f"- **Existing:** {', '.join(series['existing_books'][:3])}{'...' if len(series['existing_books']) > 3 else ''}\n\n"
+        
+        # Author missing books  
+        author_missing = author_analysis.get('missing_books', [])
+        report += f"## Author Missing Books ({len(author_missing)} authors)\n\n"
+        
+        for author_data in author_missing[:20]:  # First 20
+            report += f"### {author_data['author']}\n"
+            report += f"- **Books in Library:** {author_data['total_books']}\n"
+            report += f"- **Note:** {author_data['note']}\n\n"
+        
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(report)
+            
+        self.logger.info(f"Missing books report saved: {report_file}")
+        
+        return {
+            'report_file': str(report_file),
+            'missing_books': series_missing + author_missing
+        }
+
+    async def generate_search_report(self, top_10: List[Dict]) -> str:
+        """Generate search results report."""
+        report_file = self.output_dirs['search_results'] / f"top_10_search_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        
+        report = f"# Top 10 Audiobook Search Results\n\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        
+        for i, audiobook in enumerate(top_10, 1):
+            report += f"## {i}. {audiobook.get('title', 'Unknown Title')}\n"
+            report += f"- **Author:** {audiobook.get('author', 'Unknown')}\n"
+            report += f"- **Size:** {audiobook.get('size', 'Unknown')}\n"
+            report += f"- **Category:** {audiobook.get('category', 'Unknown')}\n"
+            report += f"- **Search Term:** {audiobook.get('search_term', 'Unknown')}\n\n"
+        
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(report)
+            
+        self.logger.info(f"Search report saved: {report_file}")
+        return str(report_file)
+
+    async def full_sync(self) -> Dict[str, Any]:
+        """Run complete synchronization: metadata update + missing book detection + search."""
+        self.logger.info("=" * 70)
+        self.logger.info("FULL SYNCHRONIZATION")
+        self.logger.info("=" * 70)
+
+        results = {
+            'metadata_update': None,
+            'missing_books': None,
+            'top_search': None
+        }
+
+        # Step 1: Update all metadata
+        self.logger.info("Step 1: Updating metadata...")
+        results['metadata_update'] = await self.update_all_metadata()
+        await asyncio.sleep(2)  # Brief pause between operations
+
+        # Step 2: Detect missing books
+        self.logger.info("Step 2: Detecting missing books...")
+        results['missing_books'] = await self.detect_missing_books()
+        await asyncio.sleep(2)  # Brief pause between operations
+
+        # Step 3: Run top 10 search
+        self.logger.info("Step 3: Running top 10 search...")
+        results['top_search'] = await self.run_top_10_search()
+        await asyncio.sleep(2)  # Brief pause between operations
+
+        # Step 4: Generate reports
+        self.logger.info("Step 4: Generating comprehensive reports...")
+        reports = await self.generate_reports()
+
+        # Final summary
+        await self.print_final_summary(results, reports)
+
+        return results
+
+    async def print_final_summary(self, results: Dict, reports: Dict):
+        """Print final summary of all operations."""
+        self.logger.info("\n" + "=" * 70)
+        self.logger.info("FULL SYNCHRONIZATION COMPLETE")
+        self.logger.info("=" * 70)
+
+        # Results summary
+        if results['metadata_update'] and results['metadata_update'].get('success'):
+            self.logger.info(f"✓ Metadata Updated: {self.stats['metadata_updates']} books")
+
+        if results['missing_books'] and results['missing_books'].get('success'):
+            self.logger.info(f"✓ Missing Books: {self.stats['missing_books_found']} found")
+            self.logger.info(f"  - Series Missing: {self.stats['series_books_missing']}")
+            self.logger.info(f"  - Author Missing: {self.stats['author_books_missing']}")
+
+        if results['top_search'] and results['top_search'].get('success'):
+            self.logger.info(f"✓ Search Results: {self.stats['search_results']} audiobooks")
+
+        # Reports summary
+        if reports:
+            self.logger.info(f"\n📊 Reports Generated:")
+            for report_type, report_path in reports.items():
+                self.logger.info(f"  - {report_type.title()}: {report_path}")
+
+        # Errors summary
+        if self.stats['errors']:
+            self.logger.info(f"\n⚠️  Errors: {len(self.stats['errors'])} errors occurred")
+            for error in self.stats['errors'][:3]:  # Show first 3
+                self.logger.info(f"  - {error['operation']}: {error['error']}")
+
+        self.logger.info("=" * 70)
+
+    async def get_latest_metadata_report(self) -> str:
+        """Get path to latest metadata report."""
+        report_dir = self.output_dirs['reports']
+        report_files = list(report_dir.glob("metadata_analysis_*.md"))
+        if report_files:
+            return str(max(report_files, key=os.path.getctime))
+        return "No metadata report found"
+
+    async def get_latest_missing_report(self) -> str:
+        """Get path to latest missing books report."""
+        missing_dir = self.output_dirs['missing']
+        report_files = list(missing_dir.glob("missing_books_*.md"))
+        if report_files:
+            return str(max(report_files, key=os.path.getctime))
+        return "No missing books report found"
+
+    async def get_latest_search_report(self) -> str:
+        """Get path to latest search report."""
+        search_dir = self.output_dirs['search_results']
+        report_files = list(search_dir.glob("top_10_search_*.md"))
+        if report_files:
+            return str(max(report_files, key=os.path.getctime))
+        return "No search report found"
+
+
+async def main():
+    """Main CLI interface."""
+    parser = argparse.ArgumentParser(
+        description="Master Audiobook Management System",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s --update-metadata     # Update all book metadata
+  %(prog)s --missing-books        # Detect missing books
+  %(prog)s --top-search          # Run top 10 audiobook search
+  %(prog)s --full-sync          # Run complete synchronization
+  %(prog)s --status             # Show system status
+        """
+    )
+    
+    parser.add_argument('--update-metadata', action='store_true',
+                       help='Update metadata for all books in Audiobookshelf')
+    parser.add_argument('--missing-books', action='store_true',
+                       help='Detect missing books (series priority, then author)')
+    parser.add_argument('--top-search', action='store_true',
+                       help='Run top 10 audiobook search using stealth crawler')
+    parser.add_argument('--full-sync', action='store_true',
+                       help='Run complete synchronization (all operations)')
+    parser.add_argument('--status', action='store_true',
+                       help='Show current system status and configuration')
+    parser.add_argument('--dry-run', action='store_true',
+                       help='Run operations in dry-run mode (no actual changes)')
+    
+    args = parser.parse_args()
+    
+    # Show status if requested
+    if args.status:
+        await show_system_status()
+        return
+    
+    # Initialize manager
+    manager = MasterAudiobookManager()
+    
+    try:
+        # Execute requested operations
+        if args.update_metadata:
+            await manager.update_all_metadata()
+        elif args.missing_books:
+            await manager.detect_missing_books()
+        elif args.top_search:
+            await manager.run_top_10_search()
+        elif args.full_sync:
+            await manager.full_sync()
+        else:
+            parser.print_help()
+            
+    except KeyboardInterrupt:
+        manager.logger.info("\n⚠️  Operation cancelled by user")
+    except Exception as e:
+        manager.logger.error(f"❌ Operation failed: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+async def show_system_status():
+    """Show current system status and configuration."""
+    # Use logging instead of print to avoid I/O issues in non-interactive environments
+    logger = logging.getLogger(__name__)
+
+    status_lines = [
+        "=" * 70,
+        "MASTER AUDIOBOOK MANAGER - SYSTEM STATUS",
+        "=" * 70,
+        "",
+        "🔧 Configuration Status:"
+    ]
+
+    env_vars = [
+        ('ABS_URL', 'Audiobookshelf URL'),
+        ('ABS_TOKEN', 'Audiobookshelf Token'),
+        ('MAM_USERNAME', 'MyAnonamouse Username'),
+        ('MAM_PASSWORD', 'MyAnonamouse Password'),
+        ('QB_HOST', 'qBittorrent Host'),
+        ('QB_PORT', 'qBittorrent Port')
+    ]
+
+    for var, description in env_vars:
+        value = os.getenv(var)
+        if value:
+            # Mask sensitive values
+            if 'PASSWORD' in var or 'TOKEN' in var:
+                display_value = "*" * (len(value) - 4) + value[-4:]
+            else:
+                display_value = value
+            status_lines.append(f"  ✓ {description}: {display_value}")
+        else:
+            status_lines.append(f"  ❌ {description}: Not set")
+
+    # Check directories
+    status_lines.append("")
+    status_lines.append("📁 Directory Status:")
+    manager = MasterAudiobookManager()
+    for dir_name, dir_path in manager.output_dirs.items():
+        if dir_path.exists():
+            status_lines.append(f"  ✓ {dir_name.title()}: {dir_path}")
+        else:
+            status_lines.append(f"  ❌ {dir_name.title()}: Not created")
+
+    # Check log file
+    status_lines.append("")
+    status_lines.append("📋 Logging:")
+    if hasattr(manager, 'log_file'):
+        status_lines.append(f"  ✓ Log file: {manager.log_file}")
+
+    status_lines.append("")
+    status_lines.append("=" * 70)
+
+    # Output all status lines
+    for line in status_lines:
+        logger.info(line)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

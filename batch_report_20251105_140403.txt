@@ -1,0 +1,40 @@
+
+======================================================================
+BATCH DOWNLOAD SUMMARY
+======================================================================
+
+Started:  2025-11-05T14:03:12.138104
+Finished: 2025-11-05T14:04:03.900608
+
+Genres Processed:    2
+Audiobooks Found:    80
+Audiobooks Added:    20
+Duplicates Skipped:  0
+Other Skipped:       0
+Errors:              0
+
+----------------------------------------------------------------------
+DOWNLOADS:
+----------------------------------------------------------------------
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Science Fiction] week
+  - [Fantasy] week
+  - [Fantasy] week
+  - [Fantasy] week
+  - [Fantasy] week
+  - [Fantasy] week
+  - [Fantasy] week
+  - [Fantasy] week
+  - [Fantasy] week
+  - [Fantasy] week
+  - [Fantasy] week
+
+======================================================================

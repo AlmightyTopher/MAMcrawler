@@ -1,0 +1,224 @@
+2025-11-15 23:38:45,829 - INFO - ======================================================================
+2025-11-15 23:38:45,829 - INFO - GOODREADS AUDIOBOOK SCRAPER
+2025-11-15 23:38:45,829 - INFO - ======================================================================
+2025-11-15 23:38:45,829 - INFO - 
+2025-11-15 23:38:45,841 - INFO - Found 100 items in AudiobookShelf database
+2025-11-15 23:38:45,842 - INFO - Starting to scrape 100 books...
+2025-11-15 23:38:45,843 - INFO - 
+2025-11-15 23:38:45,843 - INFO - [1/100] Hogfather by Terry Pratchett
+2025-11-15 23:38:51,792 - INFO -   \u2713 Success
+2025-11-15 23:38:51,792 - INFO - [2/100] Master of Puppets (Unabridged) by Eric Ugland
+2025-11-15 23:38:54,106 - INFO -   \u2713 Success
+2025-11-15 23:38:54,106 - INFO - [3/100] At the Gates of Darkness (The Demonwar Saga #2) by Raymond E. Feist
+2025-11-15 23:38:56,842 - INFO -   \u2713 Success
+2025-11-15 23:38:56,843 - INFO - [4/100] Wrath of a Mad God (The Darkwar Saga #3) by Raymond E. Feist
+2025-11-15 23:38:59,233 - INFO -   \u2713 Success
+2025-11-15 23:38:59,234 - INFO - [5/100] Exile's Return (Conclave of Shadows #3) by Raymond E. Feist
+2025-11-15 23:39:01,811 - INFO -   \u2713 Success
+2025-11-15 23:39:01,811 - INFO - [6/100] King of Foxes (Conclave of Shadows #2) by Raymond E. Feist
+2025-11-15 23:39:04,194 - INFO -   \u2713 Success
+2025-11-15 23:39:04,195 - INFO - [7/100] Honored Enemy (Legends of the Riftwar #1) by William R. Forstchen, Raymond E. Feist
+2025-11-15 23:39:06,776 - INFO -   \u2713 Success
+2025-11-15 23:39:06,776 - INFO - [8/100] Into a Dark Realm (The Darkwar Saga #2) by Raymond E. Feist
+2025-11-15 23:39:09,232 - INFO -   \u2713 Success
+2025-11-15 23:39:09,232 - INFO - [9/100] Krondor: Tear of the Gods (The Riftwar Legacy #3) by Raymond E. Feist
+2025-11-15 23:39:11,678 - INFO -   \u2713 Success
+2025-11-15 23:39:11,678 - INFO - [10/100] Jimmy the Hand (Legends of the Riftwar #3) by Raymond E. Feist, Steve Stirling
+2025-11-15 23:39:14,117 - INFO -   \u2713 Success
+2025-11-15 23:39:14,117 - INFO - [11/100] Krondor: The Betrayal (The Riftwar Legacy #1) by Raymond E. Feist
+2025-11-15 23:39:16,590 - INFO -   \u2713 Success
+2025-11-15 23:39:16,590 - INFO - [12/100] Shadow of a Dark Queen (The Serpentwar Saga #1) by Raymond E. Feist
+2025-11-15 23:39:19,061 - INFO -   \u2713 Success
+2025-11-15 23:39:19,062 - INFO - [13/100] The King's Buccaneer (Krondor's Sons #2) by Raymond E. Feist
+2025-11-15 23:39:21,484 - INFO -   \u2713 Success
+2025-11-15 23:39:21,484 - INFO - [14/100] Jimmy and the Crawler (The Riftwar Legacy #4) by Raymond E. Feist
+2025-11-15 23:39:23,853 - INFO -   \u2713 Success
+2025-11-15 23:39:23,853 - INFO - [15/100] Rides a Dread Legion (The Demonwar Saga #1) by Raymond E. Feist
+2025-11-15 23:39:26,265 - INFO -   \u2713 Success
+2025-11-15 23:39:26,266 - INFO - [16/100] Servant of the Empire (The Empire Trilogy #2) by Raymond E. Feist, Janny Wurts
+2025-11-15 23:39:28,651 - INFO -   \u2713 Success
+2025-11-15 23:39:28,651 - INFO - [17/100] Daughter of the Empire (The Empire Trilogy #1) by Janny Wurts, Raymond E. Feist
+2025-11-15 23:39:31,057 - INFO -   \u2713 Success
+2025-11-15 23:39:31,057 - INFO - [18/100] Magician's End (The Chaoswar Saga #3) by Raymond E. Feist
+2025-11-15 23:39:33,560 - INFO -   \u2713 Success
+2025-11-15 23:39:33,560 - INFO - [19/100] A Kingdom Besieged (The Chaoswar Saga #1) by Raymond E. Feist
+2025-11-15 23:39:35,956 - INFO -   \u2713 Success
+2025-11-15 23:39:35,956 - INFO - [20/100] A Darkness At Sethanon (The Riftwar Saga #4) by Raymond E. Feist
+2025-11-15 23:39:38,350 - INFO -   \u2713 Success
+2025-11-15 23:39:38,350 - INFO -   Taking long pause (57s)...
+2025-11-15 23:40:35,682 - INFO - [21/100] Silverthorn (The Riftwar Saga #3) by Raymond E. Feist
+2025-11-15 23:40:39,223 - INFO -   \u2713 Success
+2025-11-15 23:40:39,223 - INFO - [22/100] Flight of the Nighthawks (The Darkwar Saga #1) by Raymond E. Feist
+2025-11-15 23:40:41,622 - INFO -   \u2713 Success
+2025-11-15 23:40:41,623 - INFO - [23/100] Rise of a Merchant Prince (The Serpentwar Saga #2) by Raymond E. Feist
+2025-11-15 23:40:44,166 - INFO -   \u2713 Success
+2025-11-15 23:40:44,166 - INFO - [24/100] Rage of a Demon King (The Serpentwar Saga #3) by Raymond E. Feist
+2025-11-15 23:40:46,570 - INFO -   \u2713 Success
+2025-11-15 23:40:46,570 - INFO - [25/100] Magician (The Riftwar Saga #1-2) by Raymond E. Feist
+2025-11-15 23:40:48,973 - INFO -   \u2713 Success
+2025-11-15 23:40:48,973 - INFO - [26/100] Prince of the Blood (Krondor's Sons #1) by Raymond E. Feist
+2025-11-15 23:40:51,384 - INFO -   \u2713 Success
+2025-11-15 23:40:51,384 - INFO - [27/100] Murder In LaMut (Legends of the Riftwar #2) by Joel Rosenberg, Raymond E. Feist
+2025-11-15 23:40:53,794 - INFO -   \u2713 Success
+2025-11-15 23:40:53,794 - INFO - [28/100] Shards of a Broken Crown (The Serpentwar Saga #4) by Raymond E. Feist
+2025-11-15 23:40:56,285 - INFO -   \u2713 Success
+2025-11-15 23:40:56,285 - INFO - [29/100] A Crown Imperiled (The Chaoswar Saga #2) by Raymond E. Feist
+2025-11-15 23:40:58,738 - INFO -   \u2713 Success
+2025-11-15 23:40:58,738 - INFO - [30/100] Krondor: The Assassins (The Riftwar Legacy #2) by Raymond E. Feist
+2025-11-15 23:41:01,174 - INFO -   \u2713 Success
+2025-11-15 23:41:01,175 - INFO - [31/100] The Eye of the Bedlam Bride: Dungeon Crawler Carl, Book 6 by Matt Dinniman
+2025-11-15 23:41:03,497 - INFO -   \u2713 Success
+2025-11-15 23:41:03,497 - INFO - [32/100] System Overclocked 2: System Overclocked, Book 2 by Randi Darren
+2025-11-15 23:41:06,617 - INFO -   \u2713 Success
+2025-11-15 23:41:06,617 - INFO - [33/100] Raising Steam (Unabridged) by Terry Pratchett
+2025-11-15 23:41:08,955 - INFO -   \u2713 Success
+2025-11-15 23:41:08,955 - INFO - [34/100] The Path of Daggers (The Wheel of Time #8) by Robert Jordan
+2025-11-15 23:41:11,424 - INFO -   \u2713 Success
+2025-11-15 23:41:11,424 - INFO - [35/100] The Dragon Reborn (The Wheel of Time #3) by Robert Jordan
+2025-11-15 23:41:13,969 - INFO -   \u2713 Success
+2025-11-15 23:41:13,969 - INFO - [36/100] The Great Hunt (The Wheel of Time #2) by Robert Jordan
+2025-11-15 23:41:16,476 - INFO -   \u2713 Success
+2025-11-15 23:41:16,477 - INFO - [37/100] The Gathering Storm (The Wheel of Time #12) by Robert Jordan, Brandon Sanderson
+2025-11-15 23:41:18,889 - INFO -   \u2713 Success
+2025-11-15 23:41:18,889 - INFO - [38/100] Lord of Chaos (The Wheel of Time #6) by Robert Jordan
+2025-11-15 23:41:21,364 - INFO -   \u2713 Success
+2025-11-15 23:41:21,365 - INFO - [39/100] Crossroads of Twilight (The Wheel of Time #10) by Robert Jordan
+2025-11-15 23:41:23,855 - INFO -   \u2713 Success
+2025-11-15 23:41:23,855 - INFO - [40/100] The Eye of the World (The Wheel of Time #1) by Robert Jordan
+2025-11-15 23:41:26,456 - INFO -   \u2713 Success
+2025-11-15 23:41:26,456 - INFO -   Taking long pause (49s)...
+2025-11-15 23:42:15,669 - INFO - [41/100] Knife of Dreams (The Wheel of Time #11) by Robert Jordan
+2025-11-15 23:42:20,659 - INFO -   \u2713 Success
+2025-11-15 23:42:20,659 - INFO - [42/100] New Spring (The Wheel of Time #0) by Robert Jordan
+2025-11-15 23:42:23,059 - INFO -   \u2713 Success
+2025-11-15 23:42:23,059 - INFO - [43/100] The Fires of Heaven (The Wheel of Time #5) by Robert Jordan
+2025-11-15 23:42:25,651 - INFO -   \u2713 Success
+2025-11-15 23:42:25,651 - INFO - [44/100] A Crown of Swords (The Wheel of Time #7) by Robert Jordan
+2025-11-15 23:42:28,094 - INFO -   \u2713 Success
+2025-11-15 23:42:28,094 - INFO - [45/100] A Memory of Light (The Wheel of Time #14) by Robert Jordan, Brandon Sanderson
+2025-11-15 23:42:30,511 - INFO -   \u2713 Success
+2025-11-15 23:42:30,511 - INFO - [46/100] Towers of Midnight (The Wheel of Time #13) by Robert Jordan, Brandon Sanderson
+2025-11-15 23:42:32,897 - INFO -   \u2713 Success
+2025-11-15 23:42:32,898 - INFO - [47/100] The Shadow Rising (The Wheel of Time #4) by Robert Jordan
+2025-11-15 23:42:35,410 - INFO -   \u2713 Success
+2025-11-15 23:42:35,410 - INFO - [48/100] Master Class 5 (Unabridged) by Virgil Knightley, Annabelle Hawthorne
+2025-11-15 23:42:37,726 - INFO -   \u2713 Success
+2025-11-15 23:42:37,726 - INFO - [49/100] Master Class 4 by Virgil Knightley/Annabelle Hawthorne
+2025-11-15 23:42:40,101 - INFO -   \u2713 Success
+2025-11-15 23:42:40,102 - INFO - [50/100] The Science Of Discworld by Discworld
+2025-11-15 23:42:42,679 - INFO -   \u2713 Success
+2025-11-15 23:42:42,679 - INFO - [51/100] The Science Of Discworld 2 - The Globe by Discworld
+2025-11-15 23:42:45,091 - INFO -   \u2713 Success
+2025-11-15 23:42:45,091 - INFO - [52/100] (3) Mistress of the Empire (Unabridged) by Raymond E. Feist - Riftwar Cycle Series
+2025-11-15 23:42:47,422 - INFO -   \u2713 Success
+2025-11-15 23:42:47,422 - INFO - [53/100] (1) Talon of the Silver Hawk (Unabridged) by Raymond E. Feist - Riftwar Cycle Series
+2025-11-15 23:42:49,743 - INFO -   \u2713 Success
+2025-11-15 23:42:49,743 - INFO - [54/100] 01 - The Colour Of Magic by Discworld
+2025-11-15 23:42:52,120 - INFO -   \u2713 Success
+2025-11-15 23:42:52,120 - INFO - [55/100] 02 - The Light Fantastic by Discworld
+2025-11-15 23:42:54,413 - INFO -   \u2713 Success
+2025-11-15 23:42:54,413 - INFO - [56/100] 16 - Soul Music by Discworld
+2025-11-15 23:42:56,817 - INFO -   \u2713 Success
+2025-11-15 23:42:56,817 - INFO - [57/100] 23 - Carpe Jugulum by Discworld
+2025-11-15 23:42:59,191 - INFO -   \u2713 Success
+2025-11-15 23:42:59,191 - INFO - [58/100] 25 - The Truth by Discworld
+2025-11-15 23:43:01,610 - INFO -   \u2713 Success
+2025-11-15 23:43:01,610 - INFO - [59/100] 26 - Thief Of Time by Discworld
+2025-11-15 23:43:04,005 - INFO -   \u2713 Success
+2025-11-15 23:43:04,005 - INFO - [60/100] 29 - Night Watch by Discworld
+2025-11-15 23:43:06,387 - INFO -   \u2713 Success
+2025-11-15 23:43:06,387 - INFO -   Taking long pause (39s)...
+2025-11-15 23:43:45,282 - INFO - [61/100] 30 - The Wee Free Men by Discworld
+2025-11-15 23:43:50,268 - INFO -   \u2713 Success
+2025-11-15 23:43:50,269 - INFO - [62/100] 32 - A Hat Full Of Sky by Discworld
+2025-11-15 23:43:52,631 - INFO -   \u2713 Success
+2025-11-15 23:43:52,631 - INFO - [63/100] 33 - Going Postal by Discworld
+2025-11-15 23:43:55,104 - INFO -   \u2713 Success
+2025-11-15 23:43:55,104 - INFO - [64/100] 35 - Wintersmith by Discworld
+2025-11-15 23:43:57,592 - INFO -   \u2713 Success
+2025-11-15 23:43:57,592 - INFO - [65/100] 36 - Making Money by Discworld
+2025-11-15 23:44:00,086 - INFO -   \u2713 Success
+2025-11-15 23:44:00,086 - INFO - [66/100] 38 - I Shall Wear Midnight by Discworld
+2025-11-15 23:44:02,487 - INFO -   \u2713 Success
+2025-11-15 23:44:02,487 - INFO - [67/100] 39 - Snuff by Discworld
+2025-11-15 23:44:04,887 - INFO -   \u2713 Success
+2025-11-15 23:44:04,888 - INFO - [68/100] (9) Winter's Heart (Unabridged) by Robert Jordan - The Wheel of Time Series
+2025-11-15 23:44:07,313 - INFO -   \u2713 Success
+2025-11-15 23:44:07,313 - INFO - [69/100] 03 Darksong Rising by L.E. Modesitt Jr.
+2025-11-15 23:44:09,658 - INFO -   \u2713 Success
+2025-11-15 23:44:09,658 - INFO - [70/100] 20 Jimmy the Hand by Raymond E. Feist, Steve Stirling
+2025-11-15 23:44:11,984 - INFO -   \u2713 Success
+2025-11-15 23:44:11,984 - INFO - [71/100] Ready Player One (Sandvold) 64k 16.45.54 by Ernest Cline
+2025-11-15 23:44:14,288 - INFO -   \u2713 Success
+2025-11-15 23:44:14,288 - INFO - [72/100] Series: Magitech Legacy, Book 1 by By: Chris Fox
+2025-11-15 23:44:16,597 - INFO -   \u2713 Success
+2025-11-15 23:44:16,597 - INFO - [73/100] Be a People Person by John C. Maxwell
+2025-11-15 23:44:19,161 - INFO -   \u2713 Success
+2025-11-15 23:44:19,161 - INFO - [74/100] Beware of Chicken 3: A Xianxia Cultivation Novel by Casualfarmer
+2025-11-15 23:44:21,520 - INFO -   \u2713 Success
+2025-11-15 23:44:21,520 - INFO - [75/100] Chris Fox - Deathless 05 - The Ark War by Chris Fox
+2025-11-15 23:44:23,816 - INFO -   \u2713 Success
+2025-11-15 23:44:23,816 - INFO - [76/100] Clifford D. Simak - The Big Front Yard And Other Stories by 
+2025-11-15 23:44:26,213 - INFO -   \u2713 Success
+2025-11-15 23:44:26,213 - INFO - [77/100] Clifford D. Simak_ I Am Crying All Inside And Other Stories by 
+2025-11-15 23:44:28,593 - INFO -   \u2713 Success
+2025-11-15 23:44:28,593 - INFO - [78/100] Craig Alanson - Deathtrap, Expeditionary Force Mavericks, Book 1 by Craig Alanson
+2025-11-15 23:44:30,905 - INFO -   \u2713 Success
+2025-11-15 23:44:30,905 - INFO - [79/100] Craig Alanson - Freefall Expeditionary Force Mavericks, Book 2.MP3 by Craig Alanson
+2025-11-15 23:44:33,223 - INFO -   \u2713 Success
+2025-11-15 23:44:33,223 - INFO - [80/100] Empress Crowned in Red - 2 by 
+2025-11-15 23:44:35,581 - INFO -   \u2713 Success
+2025-11-15 23:44:35,581 - INFO -   Taking long pause (43s)...
+2025-11-15 23:45:18,942 - INFO - [81/100] Eric Ugland (2022) Wild Wild Quest - The Good Guys, Book 12 by Eric Ugland
+2025-11-15 23:45:23,790 - INFO -   \u2713 Success
+2025-11-15 23:45:23,790 - INFO - [82/100] John Flanagan - Brotherband Chronicles 09 - The Stern Chase by John Flanagan
+2025-11-15 23:45:26,133 - INFO -   \u2713 Success
+2025-11-15 23:45:26,133 - INFO - [83/100] Laddertop 2: The Laddertop Series, Book 2 by Orson Scott Card
+2025-11-15 23:45:28,472 - INFO -   \u2713 Success
+2025-11-15 23:45:28,472 - INFO - [84/100] Last Albatross - Ian Irvine by Ian Irvine
+2025-11-15 23:45:30,791 - INFO -   \u2713 Success
+2025-11-15 23:45:30,791 - INFO - [85/100] Lifelong Writing Habit - Chris Fox (MP3) by Chris Fox
+2025-11-15 23:45:33,095 - INFO -   \u2713 Success
+2025-11-15 23:45:33,095 - INFO - [86/100] Neven Iliev - Everybody Loves Large Chests, Vol. 10 - Law mp3 by Neven Iliev
+2025-11-15 23:45:35,404 - INFO -   \u2713 Success
+2025-11-15 23:45:35,404 - INFO - [87/100] Outlandish Companion Volume 2 by Diana Gabaldon
+2025-11-15 23:45:37,744 - INFO -   \u2713 Success
+2025-11-15 23:45:37,744 - INFO - [88/100] Revelle by 
+2025-11-15 23:45:40,214 - INFO -   \u2713 Success
+2025-11-15 23:45:40,214 - INFO - [89/100] Terminator Gene - Ian Irvine (MP3) by Ian Irvine
+2025-11-15 23:45:42,529 - INFO -   \u2713 Success
+2025-11-15 23:45:42,529 - INFO - [90/100] Witches Abroad: Discworld, Book 12 by Terry Pratchett
+2025-11-15 23:45:44,956 - INFO -   \u2713 Success
+2025-11-15 23:45:44,956 - INFO - [91/100] The Original by Brandon Sanderson, Mary Robinette Kowal by Brandon Sanderson, Mary Robinette Kowal
+2025-11-15 23:45:47,318 - INFO -   \u2713 Success
+2025-11-15 23:45:47,319 - INFO - [92/100] TheFirstDefier, JF Brink - Defiance of the Fall 6 mp3 by JF Brink TheFirstDefier
+2025-11-15 23:45:49,651 - INFO -   \u2713 Success
+2025-11-15 23:45:49,652 - INFO - [93/100] Point of Origin - Rebecca Yarros by Rebecca Yarros
+2025-11-15 23:45:52,007 - INFO -   \u2713 Success
+2025-11-15 23:45:52,007 - INFO - [94/100] Orson Scott Card - Lost and Found by Orson Scott Card
+2025-11-15 23:45:54,355 - INFO -   \u2713 Success
+2025-11-15 23:45:54,355 - INFO - [95/100] Old Man's War Book 3 - The Last Colony by John Scalzi
+2025-11-15 23:45:56,736 - INFO -   \u2713 Success
+2025-11-15 23:45:56,736 - INFO - [96/100] Master Class - Book 2 - Master Class 2 by Annabelle Hawthorne, Virgil Knightley
+2025-11-15 23:45:59,038 - INFO -   \u2713 Success
+2025-11-15 23:45:59,038 - INFO - [97/100] Legendary Rule, Book 2 by Bruce Sentar
+2025-11-15 23:46:01,393 - INFO -   \u2713 Success
+2025-11-15 23:46:01,393 - INFO - [98/100] Fallout by Craig Alanson
+2025-11-15 23:46:03,771 - INFO -   \u2713 Success
+2025-11-15 23:46:03,771 - INFO - [99/100] Dissonance by Nicoli Gonnella
+2025-11-15 23:46:06,112 - INFO -   \u2713 Success
+2025-11-15 23:46:06,112 - INFO - [100/100] Cultivating Chaos by William D. Arand
+2025-11-15 23:46:08,593 - INFO -   \u2713 Success
+2025-11-15 23:46:08,593 - INFO -   Taking long pause (31s)...
+2025-11-15 23:46:40,041 - INFO - 
+\U0001f4be Results saved to: goodreads_audiobooks_20251115_234640.json
+2025-11-15 23:46:40,041 - INFO - 
+======================================================================
+2025-11-15 23:46:40,041 - INFO - SUMMARY
+2025-11-15 23:46:40,041 - INFO - ======================================================================
+2025-11-15 23:46:40,042 - INFO - Total books: 100
+2025-11-15 23:46:40,042 - INFO - Successfully scraped: 100
+2025-11-15 23:46:40,042 - INFO - Failed: 0
+2025-11-15 23:46:40,042 - INFO - Success rate: 100.0%
+2025-11-15 23:46:40,042 - INFO - Total requests: 100
+2025-11-15 23:46:40,042 - INFO - ======================================================================

@@ -1,0 +1,199 @@
+================================================================================
+AUDIOBOOKSHELF SERIES POPULATION - MANUAL SETUP GUIDE
+================================================================================
+
+This guide walks you through manually preparing and populating series data
+in Audiobookshelf. Follow these steps IN ORDER.
+
+================================================================================
+STEP 1: STOP AUDIOBOOKSHELF
+================================================================================
+
+Open a PowerShell window and run:
+
+    Stop-Service -Name "audiobookshelf"
+
+Expected result: Service stops (may take 10-15 seconds)
+
+Verify it's stopped:
+
+    Get-Service -Name "audiobookshelf"
+
+Status should show "Stopped"
+
+WAIT: 10 seconds after stopping before proceeding
+
+
+================================================================================
+STEP 2: START AUDIOBOOKSHELF (Database Repair)
+================================================================================
+
+Start the service to let it repair/initialize the database:
+
+    Start-Service -Name "audiobookshelf"
+
+Expected result: Service starts and performs database initialization
+
+WAIT: 60-90 seconds for full initialization
+        - Database will be repaired/optimized
+        - Indexes will be rebuilt
+        - Service will become ready
+
+Verify it's running:
+
+    Get-Service -Name "audiobookshelf"
+
+Status should show "Running"
+
+Optional: Check the logs to confirm initialization is complete:
+    - Logs are typically in: C:\Users\<your-user>\AppData\Local\audiobookshelf\logs
+    - Look for messages about database initialization completing
+
+
+================================================================================
+STEP 3: STOP AUDIOBOOKSHELF AGAIN
+================================================================================
+
+Now stop the service before running the populator:
+
+    Stop-Service -Name "audiobookshelf"
+
+Expected result: Service stops cleanly (may take 10-15 seconds)
+
+Verify it's stopped:
+
+    Get-Service -Name "audiobookshelf"
+
+Status should show "Stopped"
+
+WAIT: 10 seconds after stopping before proceeding
+
+
+================================================================================
+STEP 4: RUN THE SERIES POPULATOR
+================================================================================
+
+Navigate to the project directory:
+
+    cd C:\Users\dogma\Projects\MAMcrawler
+
+Activate the virtual environment (if you have one):
+
+    venv\Scripts\activate
+
+Run the series populator script:
+
+    python just_populate.py
+
+Expected result:
+    - Script connects to Audiobookshelf database
+    - Scans for series in Google Sheets
+    - Populates series_id and sequence fields
+    - Shows progress for each book updated
+    - Reports total books updated at the end
+
+WAIT: Let the script complete (typically 2-5 minutes depending on library size)
+
+The script will show:
+    - "Processing series: <series_name>"
+    - "✓ Updated: <book_title> (sequence X)"
+    - "Series population complete! Updated X books"
+
+
+================================================================================
+STEP 5: RESTART AUDIOBOOKSHELF
+================================================================================
+
+Start the service to use the newly populated data:
+
+    Start-Service -Name "audiobookshelf"
+
+Expected result: Service starts with all series data populated
+
+WAIT: 30-60 seconds for full startup
+
+Verify it's running:
+
+    Get-Service -Name "audiobookshelf"
+
+Status should show "Running"
+
+
+================================================================================
+VERIFICATION
+================================================================================
+
+1. Open Audiobookshelf web interface (typically http://localhost:13378)
+
+2. Check a few books that should be in series:
+   - Open book details
+   - Verify "Series" field is populated
+   - Verify "Sequence" number is correct
+
+3. Check series collections:
+   - Navigate to Series view
+   - Verify series are showing up
+   - Verify books are in correct order
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If the populator script fails:
+
+1. Check you stopped Audiobookshelf completely (Step 3)
+   - Database must not be locked by the service
+
+2. Check database location:
+   - Default: C:\Users\dogma\.audiobookshelf\config\absdatabase.sqlite
+   - Script will tell you what path it's using
+
+3. Check Google Sheets data:
+   - Verify GOOGLE_SHEETS_URL is set in .env file
+   - Verify sheet has columns: Title, Series Name, Series Sequence
+   - Verify at least some books match between Sheets and Audiobookshelf
+
+4. Check for error messages:
+   - Script will show detailed errors if something fails
+   - Common issues: database locked, missing columns, network errors
+
+
+If Audiobookshelf won't start:
+
+1. Check Windows Event Viewer for service errors
+2. Check Audiobookshelf logs folder
+3. Try restarting Windows if service is stuck
+
+
+If series data doesn't appear after populating:
+
+1. Stop and start Audiobookshelf again (give it time to load)
+2. Try "Scan Library" from Audiobookshelf settings
+3. Check if series data is actually in database:
+   - Use a SQLite browser tool to inspect absdatabase.sqlite
+   - Look for series_id and sequence values in libraryItems table
+
+
+================================================================================
+ALTERNATIVE: ONE-LINE QUICK RUN (After initial setup)
+================================================================================
+
+If you've already done Steps 1-3 once and just want to re-run the populator:
+
+Stop service → Run populator → Start service:
+
+    Stop-Service -Name "audiobookshelf"; Start-Sleep -Seconds 10; cd C:\Users\dogma\Projects\MAMcrawler; python just_populate.py; Start-Sleep -Seconds 5; Start-Service -Name "audiobookshelf"
+
+
+================================================================================
+NOTES
+================================================================================
+
+- You only need to do the full repair cycle (Steps 1-2) once initially
+- After that, you can just stop → populate → start
+- The populator is read-only on Audiobookshelf (only writes series data)
+- Safe to re-run multiple times (will update existing series data)
+- No data loss risk (only adds series metadata, doesn't delete anything)
+
+================================================================================

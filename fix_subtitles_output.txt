@@ -1,0 +1,133 @@
+2025-11-17 09:05:03,435 | INFO     | ================================================================================
+2025-11-17 09:05:03,435 | INFO     | EXTRACT SERIES FROM SUBTITLES AND UPDATE BOOKS
+2025-11-17 09:05:03,435 | INFO     | ================================================================================
+2025-11-17 09:05:03,435 | INFO     | 
+2025-11-17 09:05:03,435 | INFO     | Step 1: Testing API connection...
+2025-11-17 09:05:03,450 | INFO     | [OK] API connection successful
+2025-11-17 09:05:03,450 | INFO     | 
+2025-11-17 09:05:03,450 | INFO     | Step 2: Getting libraries...
+2025-11-17 09:05:03,453 | INFO     | [OK] Found 1 libraries
+2025-11-17 09:05:03,453 | INFO     | 
+2025-11-17 09:05:03,453 | INFO     | Processing library: Library
+2025-11-17 09:05:03,453 | INFO     | --------------------------------------------------------------------------------
+2025-11-17 09:05:04,606 | INFO     | Processing 1700 books...
+2025-11-17 09:05:04,607 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,607 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,607 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,628 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,628 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,628 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,649 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,649 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,649 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,667 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,668 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,668 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,683 | INFO     |   Progress: 200/1700
+2025-11-17 09:05:04,683 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,683 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,683 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,701 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,701 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,701 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,715 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,716 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,716 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,734 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,734 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,734 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,751 | INFO     |   Progress: 400/1700
+2025-11-17 09:05:04,751 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,751 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,751 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,765 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,765 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,765 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,779 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,779 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,779 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,801 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,801 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,801 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,819 | INFO     |   Progress: 600/1700
+2025-11-17 09:05:04,819 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,819 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,819 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,835 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,835 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,835 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,851 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,851 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,851 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,868 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,868 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,868 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,884 | INFO     |   Progress: 800/1700
+2025-11-17 09:05:04,885 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,885 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,885 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,899 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,899 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,900 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,915 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,915 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,915 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,931 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,931 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,931 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,945 | INFO     |   Progress: 1000/1700
+2025-11-17 09:05:04,945 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,945 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,945 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,963 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,963 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,963 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:04,980 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:04,980 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:04,980 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:04,996 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:04,996 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:04,997 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:05,011 | INFO     |   Progress: 1200/1700
+2025-11-17 09:05:05,012 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:05,012 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:05,012 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:05,032 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:05,032 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:05,032 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:05,051 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:05,051 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:05,051 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:05,068 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:05,068 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:05,068 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:05,090 | INFO     |   Progress: 1400/1700
+2025-11-17 09:05:05,091 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:05,091 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:05,091 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:05,109 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:05,109 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:05,109 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:05,132 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:05,132 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:05,132 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:05,158 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:05,158 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:05,158 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:05,178 | INFO     |   Progress: 1600/1700
+2025-11-17 09:05:05,180 | INFO     | Found in subtitle: Clifford D. Simak_ I Am Crying All Inside And Other Stories
+2025-11-17 09:05:05,180 | INFO     |   Subtitle: And Other Stories (The Complete Short Fiction of Clifford D. Simak, Book 1)
+2025-11-17 09:05:05,180 | INFO     |   -> Series: And Other Stories (The Complete Short Fiction of Clifford D. Simak #1
+2025-11-17 09:05:05,195 | INFO     | Found in subtitle: Krondor: Tear of the Gods (The Riftwar Legacy #3)
+2025-11-17 09:05:05,195 | INFO     |   Subtitle: Book Three of the Riftwar Legacy (Riftwar Legacy, Book 3)
+2025-11-17 09:05:05,195 | INFO     |   -> Series: Book Three of the Riftwar Legacy (Riftwar Legacy #3
+2025-11-17 09:05:05,211 | INFO     | 
+2025-11-17 09:05:05,211 | INFO     | ================================================================================
+2025-11-17 09:05:05,211 | INFO     | COMPLETE
+2025-11-17 09:05:05,211 | INFO     | ================================================================================
+2025-11-17 09:05:05,211 | INFO     | Books scanned:                 1700
+2025-11-17 09:05:05,211 | INFO     | Books with series in subtitle: 34
+2025-11-17 09:05:05,211 | INFO     | Books updated:                 34
+2025-11-17 09:05:05,211 | INFO     | 
+2025-11-17 09:05:05,212 | INFO     | Done! Series info extracted and updated.
+2025-11-17 09:05:05,212 | INFO     | 
