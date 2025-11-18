@@ -38,6 +38,7 @@ from .google_books_client import (
     GoogleBooksError,
     GoogleBooksRateLimitError,
 )
+from .goodreads_client import GoodreadsClient, GoodreadsError
 
 __all__ = [
     # Audiobookshelf
@@ -54,6 +55,9 @@ __all__ = [
     "GoogleBooksClient",
     "GoogleBooksError",
     "GoogleBooksRateLimitError",
+    # Goodreads
+    "GoodreadsClient",
+    "GoodreadsError",
 ]
 
 __version__ = "1.0.0"

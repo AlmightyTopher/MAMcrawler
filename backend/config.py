@@ -79,6 +79,13 @@ class Settings(BaseSettings):
     GOOGLE_BOOKS_RATE_LIMIT: int = 100  # Requests per day
 
     # ============================================================================
+    # Goodreads Scraper Configuration
+    # ============================================================================
+    GOODREADS_RATE_LIMIT_SECONDS: float = 3.0
+    GOODREADS_TIMEOUT: int = 30
+    GOODREADS_MAX_RETRIES: int = 3
+
+    # ============================================================================
     # MAM Crawler Integration
     # ============================================================================
     MAM_USERNAME: str = ""
