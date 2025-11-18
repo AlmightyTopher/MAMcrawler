@@ -7,9 +7,12 @@ import asyncio
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query, status, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, status, BackgroundTasks, Depends
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 import logging
+
+from backend.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -434,4 +437,123 @@ async def reset_gap_state():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to reset state: {str(e)}"
+        )
+
+
+# ============================================================================
+# Top-10 Discovery Endpoints
+# ============================================================================
+
+class Top10Request(BaseModel):
+    """Schema for top-10 discovery request"""
+    genres: Optional[list] = Field(None, description="List of genres to scrape (uses database if not provided)")
+    skip_existing: bool = Field(True, description="Skip books already in library")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "genres": ["Science Fiction", "Fantasy", "Mystery"],
+                "skip_existing": True
+            }
+        }
+
+
+@router.post(
+    "/top10/weekly",
+    response_model=StandardResponse,
+    summary="Run weekly top-10 discovery",
+    description="Scrape MAM top-10 lists by genre and queue downloads"
+)
+async def run_top10_weekly(
+    request: Top10Request = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Run top-10 discovery across enabled genres.
+
+    Scrapes MAM's visual top-10 lists for each genre and queues
+    new audiobooks for download.
+
+    Args:
+        request: Optional configuration (genres, skip_existing)
+        db: Database session
+
+    Returns:
+        Standard response with discovery results
+    """
+    try:
+        from backend.modules.top10_discovery import queue_top10_downloads
+
+        logger.info("Starting top-10 weekly discovery")
+
+        # Get parameters from request or use defaults
+        genres_list = request.genres if request and request.genres else None
+        skip_existing = request.skip_existing if request else True
+
+        result = await queue_top10_downloads(
+            db_session=db,
+            genres_list=genres_list,
+            skip_existing=skip_existing
+        )
+
+        return {
+            "success": True,
+            "data": {
+                "genres_processed": result.get("genres_processed", 0),
+                "total_books_found": result.get("total_books_found", 0),
+                "queued_count": result.get("queued_count", 0),
+                "duplicates_skipped": result.get("duplicates_skipped", 0),
+                "errors": result.get("errors", [])
+            },
+            "error": None,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Error during top-10 discovery: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Top-10 discovery failed: {str(e)}"
+        )
+
+
+@router.get(
+    "/top10/genres",
+    response_model=StandardResponse,
+    summary="Get available genres for top-10",
+    description="List available genres for top-10 discovery"
+)
+async def get_top10_genres(
+    db: Session = Depends(get_db)
+):
+    """
+    Get list of available genres for top-10 discovery.
+
+    Returns genres from database (if configured) or defaults.
+
+    Returns:
+        Standard response with genre list
+    """
+    try:
+        from backend.modules.top10_discovery import get_available_genres
+
+        result = await get_available_genres(db_session=db)
+
+        return {
+            "success": True,
+            "data": {
+                "genres": result.get("genres", []),
+                "enabled_genres": result.get("enabled_genres", []),
+                "disabled_genres": result.get("disabled_genres", []),
+                "source": result.get("source", "unknown")
+            },
+            "error": None,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting genres: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get genres: {str(e)}"
         )
