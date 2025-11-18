@@ -12,6 +12,7 @@ from backend.models.task import Task
 from backend.models.failed_attempt import FailedAttempt
 from backend.models.metadata_correction import MetadataCorrection
 from backend.models.genre_setting import GenreSetting
+from backend.models.api_log import ApiLog
 
 __all__ = [
     "Book",
@@ -23,4 +24,5 @@ __all__ = [
     "FailedAttempt",
     "MetadataCorrection",
     "GenreSetting",
+    "ApiLog",
 ]
