@@ -30,6 +30,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from backend.config import get_settings
 from backend.database import init_db, close_db
 from backend.middleware import RequestLoggingMiddleware
+from backend.tasks import register_download_retry_task
 
 # Configure logging first
 logging.basicConfig(
@@ -113,6 +114,10 @@ async def lifespan(app: FastAPI):
             logger.info("Starting APScheduler...")
             scheduler = create_scheduler()
             scheduler.start()
+
+            # Register scheduled tasks
+            register_download_retry_task(scheduler)
+
             logger.info(f"APScheduler started with {len(scheduler.get_jobs())} jobs")
         else:
             logger.info("APScheduler disabled in configuration")
