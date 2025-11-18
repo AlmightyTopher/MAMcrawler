@@ -1,0 +1,31 @@
+You are reviewing the MAMcrawler repo. Your task is to fix one specific bug:
+
+❗ Problem:
+The ingest.py and watcher.py pipelines crash with:
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff
+
+This happens because files inside guides_output may be saved in UTF-16 or contain a Byte Order Mark (BOM), usually 0xFF 0xFE. The pipeline assumes UTF-8, so decoding fails.
+
+🎯 Goal:
+Modify the project so that ingest.py and watcher.py can safely read any Markdown file regardless of encoding. If a file is UTF-16, UTF-16LE, UTF-16BE, UTF-8-BOM, or contains a stray BOM, the system should still read the text correctly.
+
+📌 Requirements:
+1. Add a unified file-reading helper in mamcrawler/utils, for example:
+   - safe_read_markdown(path: str) -> str
+2. The helper must automatically:
+   - Detect encoding
+   - Remove BOM if present
+   - Fallback gracefully on decode errors
+3. Update ingest.py and watcher.py to use safe_read_markdown instead of direct open(..., "r") calls.
+4. Do NOT modify anything else unrelated to this bug.
+5. Produce clean, minimal diffs that do not alter logic outside file-reading.
+6. Ensure the fix works on Windows, macOS, and Linux.
+
+🧪 Acceptance:
+Running:
+    python ingest.py
+must not error on files containing bytes:
+    FF FE, FE FF, EF BB BF
+and must process guides_output/* normally.
+
+Now generate the full patch: file additions, file edits, and updated imports.

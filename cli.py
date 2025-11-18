@@ -1,100 +1,121 @@
 """
 CLI query interface for RAG system.
 Uses modular components from mamcrawler package.
+Supports three modes for remote API:
+- "off": never call Anthropic
+- "ask": ask before each call
+- "on": call automatically
 """
 
 import sys
 import os
+import json
 import anthropic
 
 import database
 from mamcrawler.rag import EmbeddingService, FAISSIndexManager
-from mamcrawler.config import DEFAULT_RAG_CONFIG
+from mamcrawler.config import DEFAULT_RAG_CONFIG, REMOTE_MODE
+
+
+def ask_permission():
+    """Ask user for permission to make remote API call."""
+    while True:
+        choice = (
+            input("This will call the Anthropic API. Continue? (y/n): ").strip().lower()
+        )
+        if choice in ["y", "yes"]:
+            return True
+        if choice in ["n", "no"]:
+            return False
+        print("Please enter y or n.")
 
 
 def main():
-    """Main CLI entry point."""
+    if len(sys.argv) < 2:
+        print("Usage: python cli.py <query>")
+        return
+
+    query = sys.argv[1]
     config = DEFAULT_RAG_CONFIG
 
-    # Check for required files
     if not os.path.exists(config.index_path) or not os.path.exists(config.db_path):
-        print(f"Error: {config.index_path} or {config.db_path} not found.")
-        print("Please run 'python ingest.py' first.")
-        sys.exit(1)
+        print("ERROR: index.faiss or database missing. Run: python ingest.py")
+        return
 
-    # Initialize modular components
+    print("Loading embedding model:", config.model_name)
+    embeddings = EmbeddingService(config)
+    index_mgr = FAISSIndexManager(config)
+
+    print("Embedding query…")
+    qvec = embeddings.encode_query(query)
+
+    print("Searching index…")
+    distances, ids = index_mgr.search(qvec, config.top_k)
+    top_ids = ids[0]  # Get first row
+    top_scores = distances[0]  # Get first row
+
+    print("Retrieving chunks…")
+    # Filter out invalid IDs (0 or negative)
+    valid_ids = [int(id) for id in top_ids if id > 0]
+    chunks = database.get_chunks_by_ids(valid_ids)
+
+    # Always display local RAG results
+    rag_json = {
+        "query": query,
+        "results": [
+            {
+                "chunk_id": chunk_id,
+                "file": chunk_data[1],  # path
+                "content": chunk_data[0],  # text
+                "score": float(score),
+            }
+            for chunk_id, chunk_data, score in zip(
+                valid_ids, chunks, top_scores[: len(valid_ids)]
+            )
+        ],
+    }
+
+    print("\nLocal RAG results:")
+    print(json.dumps(rag_json, indent=2))
+
+    # Now check API mode
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+
+    if REMOTE_MODE == "off":
+        print("\nREMOTE_MODE is off. Skipping Anthropic API completely.")
+        return
+
+    if not api_key:
+        print("\nNo Anthropic API key found. Running in local-only mode.")
+        return
+
+    if REMOTE_MODE == "ask":
+        print("\nREMOTE_MODE is set to ask.")
+        if not ask_permission():
+            print("Skipping cloud API.")
+            return
+
+    # If REMOTE_MODE == "on", no prompt
+    print("\nCalling Anthropic API…")
+
+    client = anthropic.Anthropic(api_key=api_key)
+
     try:
-        embedding_service = EmbeddingService()
-        index_manager = FAISSIndexManager()
-        client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
-    except Exception as e:
-        print(f"Error initializing components: {e}")
-        sys.exit(1)
-
-    # Get query from CLI arguments
-    if len(sys.argv) < 2:
-        print("Usage: python cli.py <your query> [--context-only]")
-        sys.exit(1)
-
-    # Check for --context-only flag
-    context_only = "--context-only" in sys.argv
-    args = [arg for arg in sys.argv[1:] if arg != "--context-only"]
-    user_query = " ".join(args)
-
-    if not user_query:
-        print("Usage: python cli.py <your query> [--context-only]")
-        sys.exit(1)
-
-    # Embed query using embedding service
-    query_vector = embedding_service.encode_query(user_query)
-
-    # Search FAISS using index manager
-    D, I = index_manager.search(query_vector, k=config.top_k)
-    chunk_ids = tuple(I[0])  # I is 2D array, take first row
-
-    if not any(cid > 0 for cid in chunk_ids):
-        print("Could not find any relevant context.")
-        sys.exit(0)
-
-    # Get text and metadata from SQLite
-    results = database.get_chunks_by_ids(chunk_ids)
-
-    # Build context string
-    context_str = ""
-    for row in results:
-        text, path, headers = row
-        context_str += f"--- CONTEXT (Source: {path}, Section: {headers}) ---\n{text}\n\n"
-
-    if context_only:
-        print(context_str)
-        sys.exit(0)
-
-    # Build prompt for Claude
-    system_prompt = (
-        "You are an expert developer assistant. Answer the user's question based *only* "
-        "on the provided context. If the answer is not in the context, state that "
-        "you cannot answer based on the provided information. Cite the source file "
-        "and section when possible."
-    )
-
-    final_prompt = f"{context_str}User Question: {user_query}"
-
-    # Call Claude API
-    try:
-        message = client.messages.create(
-            model=config.llm_model,
-            system=system_prompt,
-            messages=[{"role": "user", "content": final_prompt}],
-            max_tokens=config.max_tokens,
-            temperature=0.0  # Deterministic
+        response = client.messages.create(
+            model="claude-3-5-sonnet-latest",
+            max_tokens=400,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Use the following chunks as context to answer the query.\nQuery: {query}\n\nChunks:\n{json.dumps(rag_json, indent=2)}",
+                }
+            ],
         )
-        print(message.content[0].text)
-    except anthropic.APIError as e:
-        print(f"Error calling Claude API: {e}")
-        sys.exit(1)
+        print("\nAnthropic Response:\n")
+        print(response.content[0].text)
     except Exception as e:
-        print(f"Unexpected error: {e}")
-        sys.exit(1)
+        print(f"\nError calling Anthropic API: {e}")
+        print("Falling back to local-only mode.")
 
 
 if __name__ == "__main__":

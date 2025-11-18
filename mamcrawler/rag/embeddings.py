@@ -10,6 +10,7 @@ import faiss
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from mamcrawler.config import RAGConfig, DEFAULT_RAG_CONFIG
 
@@ -84,6 +85,12 @@ class EmbeddingService:
     def dimension(self) -> int:
         """Get the embedding dimension."""
         return self.config.dimension
+
+    @classmethod
+    def _reset_singleton(cls):
+        """Reset the singleton for testing purposes."""
+        cls._instance = None
+        cls._initialized = False
 
 
 # Module-level function for convenience

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAMcrawler Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="dashboard-title">MAMcrawler</h1>
+                <span class="dashboard-subtitle">Audiobook Management System</span>
+            </div>
+            <div class="header-actions">
+                <button id="theme-toggle" class="btn-secondary" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button id="refresh-btn" class="btn-secondary" aria-label="Refresh data">
+                    <span class="refresh-icon">🔄</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="library">
+                <span class="tab-icon">📚</span>
+                <span class="tab-text">Library</span>
+            </button>
+            <button class="nav-tab" data-tab="downloads">
+                <span class="tab-icon">⬇️</span>
+                <span class="tab-text">Downloads</span>
+            </button>
+            <button class="nav-tab" data-tab="stats">
+                <span class="tab-icon">📊</span>
+                <span class="tab-text">Statistics</span>
+            </button>
+            <button class="nav-tab" data-tab="system">
+                <span class="tab-icon">⚙️</span>
+                <span class="tab-text">System</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p>Loading dashboard...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message hidden">
+            <div class="error-content">
+                <span class="error-icon">⚠️</span>
+                <div class="error-text">
+                    <h3>Connection Error</h3>
+                    <p>Unable to connect to the MAMcrawler backend. Please check your configuration.</p>
+                </div>
+                <button id="retry-connection" class="btn-primary">Retry</button>
+            </div>
+        </div>
+
+        <!-- Library Tab -->
+        <section id="library-tab" class="tab-content active">
+            <div class="tab-header">
+                <h2>Audiobook Library</h2>
+                <div class="tab-actions">
+                    <div class="search-container">
+                        <input type="text" id="library-search" placeholder="Search books..." class="search-input">
+                        <button class="search-btn">🔍</button>
+                    </div>
+                    <select id="library-sort" class="sort-select">
+                        <option value="title">Title</option>
+                        <option value="author">Author</option>
+                        <option value="date_added">Date Added</option>
+                        <option value="metadata_completeness_percent">Metadata Quality</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select id="status-filter">
+                        <option value="">All</option>
+                        <option value="active">Active</option>
+                        <option value="duplicate">Duplicate</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Genre:</label>
+                    <select id="genre-filter">
+                        <option value="">All Genres</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <button id="clear-filters" class="btn-secondary">Clear Filters</button>
+            </div>
+
+            <div id="library-content" class="library-content">
+                <!-- Library view will be rendered here -->
+            </div>
+
+            <div class="pagination-controls">
+                <button id="prev-page" class="btn-secondary" disabled>Previous</button>
+                <span id="page-info">Page 1 of 1</span>
+                <button id="next-page" class="btn-secondary" disabled>Next</button>
+            </div>
+        </section>
+
+        <!-- Downloads Tab -->
+        <section id="downloads-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>Download Management</h2>
+                <div class="tab-actions">
+                    <button id="refresh-downloads" class="btn-secondary">Refresh</button>
+                </div>
+            </div>
+
+            <div class="downloads-overview">
+                <div class="stat-card">
+                    <h3>Active Downloads</h3>
+                    <span id="active-downloads-count" class="stat-number">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Queued</h3>
+                    <span id="queued-downloads-count" class="stat-number">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Completed Today</h3>
+                    <span id="completed-today-count" class="stat-number">0</span>
+                </div>
+                <div class="stat-card">
+                    <h3>Failed</h3>
+                    <span id="failed-downloads-count" class="stat-number">0</span>
+                </div>
+            </div>
+
+            <div id="downloads-content" class="downloads-content">
+                <!-- Downloads table will be rendered here -->
+            </div>
+        </section>
+
+        <!-- Statistics Tab -->
+        <section id="stats-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>Library Statistics</h2>
+                <div class="tab-actions">
+                    <button id="refresh-stats" class="btn-secondary">Refresh</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card large">
+                    <h3>Library Overview</h3>
+                    <div class="stat-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Total Books</span>
+                            <span id="total-books" class="metric-value">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Active Books</span>
+                            <span id="active-books" class="metric-value">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Series</span>
+                            <span id="total-series" class="metric-value">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Authors</span>
+                            <span id="total-authors" class="metric-value">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Download Activity</h3>
+                    <div class="stat-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Total Downloads</span>
+                            <span id="total-downloads" class="metric-value">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Completed</span>
+                            <span id="completed-downloads" class="metric-value">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Success Rate</span>
+                            <span id="success-rate" class="metric-value">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Metadata Quality</h3>
+                    <div class="stat-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Avg Completeness</span>
+                            <span id="avg-completeness" class="metric-value">0%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">100% Complete</span>
+                            <span id="complete-books" class="metric-value">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Needs Work</span>
+                            <span id="incomplete-books" class="metric-value">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Storage Usage</h3>
+                    <div class="stat-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Estimated Size</span>
+                            <span id="estimated-storage" class="metric-value">0 GB</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Database Size</span>
+                            <span id="db-size" class="metric-value">0 MB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3>Genre Distribution</h3>
+                    <canvas id="genre-chart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Download Activity (Last 30 Days)</h3>
+                    <canvas id="activity-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Tab -->
+        <section id="system-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>System Status</h2>
+                <div class="tab-actions">
+                    <button id="refresh-system" class="btn-secondary">Refresh</button>
+                </div>
+            </div>
+
+            <div class="system-status-grid">
+                <div class="status-card">
+                    <h3>Crawler Status</h3>
+                    <div class="status-indicator">
+                        <span id="crawler-status" class="status-dot unknown"></span>
+                        <span id="crawler-status-text">Unknown</span>
+                    </div>
+                    <div class="status-details">
+                        <p id="crawler-last-run">Last run: Never</p>
+                        <p id="crawler-next-run">Next run: Scheduled</p>
+                    </div>
+                </div>
+
+                <div class="status-card">
+                    <h3>qBittorrent</h3>
+                    <div class="status-indicator">
+                        <span id="qbittorrent-status" class="status-dot unknown"></span>
+                        <span id="qbittorrent-status-text">Unknown</span>
+                    </div>
+                    <div class="status-details">
+                        <p id="qbittorrent-version">Version: Unknown</p>
+                        <p id="qbittorrent-downloads">Active downloads: 0</p>
+                    </div>
+                </div>
+
+                <div class="status-card">
+                    <h3>Audiobookshelf</h3>
+                    <div class="status-indicator">
+                        <span id="abs-status" class="status-dot unknown"></span>
+                        <span id="abs-status-text">Unknown</span>
+                    </div>
+                    <div class="status-details">
+                        <p id="abs-version">Version: Unknown</p>
+                        <p id="abs-libraries">Libraries: 0</p>
+                    </div>
+                </div>
+
+                <div class="status-card">
+                    <h3>Database</h3>
+                    <div class="status-indicator">
+                        <span id="db-status" class="status-dot unknown"></span>
+                        <span id="db-status-text">Unknown</span>
+                    </div>
+                    <div class="status-details">
+                        <p id="db-connections">Active connections: 0</p>
+                        <p id="db-size-system">Size: 0 MB</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="system-actions">
+                <h3>Quick Actions</h3>
+                <div class="action-buttons">
+                    <button id="start-crawler" class="btn-primary">Start Crawler</button>
+                    <button id="stop-crawler" class="btn-secondary">Stop Crawler</button>
+                    <button id="full-scan" class="btn-warning">Full System Scan</button>
+                    <button id="export-logs" class="btn-secondary">Export Logs</button>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3>Recent Activity</h3>
+                <div id="activity-log" class="activity-log">
+                    <!-- Activity log entries will be rendered here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <div class="footer-content">
+            <p>&copy; 2024 MAMcrawler Audiobook Management System</p>
+            <div class="footer-links">
+                <a href="#" id="api-docs-link">API Docs</a>
+                <a href="#" id="help-link">Help</a>
+                <a href="#" id="settings-link">Settings</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api/audiobooks.js"></script>
+    <script src="js/api/downloads.js"></script>
+    <script src="js/api/system.js"></script>
+    <script src="js/components/library-view.js"></script>
+    <script src="js/components/download-manager.js"></script>
+    <script src="js/components/stats-panel.js"></script>
+    <script src="js/components/status-monitor.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -16,24 +16,32 @@ USER_AGENTS = [
 
 # Allowed paths (single source of truth)
 ALLOWED_PATHS = [
-    "/",              # homepage
-    "/t/",            # torrent pages (public)
+    "/",  # homepage
+    "/t/",  # torrent pages (public)
     "/tor/browse.php",  # browse page
     "/tor/search.php",  # search results
-    "/guides/",       # guides section
-    "/f/",            # forum sections (public)
+    "/guides/",  # guides section
+    "/f/",  # forum sections (public)
 ]
 
 # Forbidden patterns
 FORBIDDEN_PATTERNS = [
-    "/user/", "/account/", "/admin/", "/mod/",
-    "/login", "/register", "/upload", "/download", "/api/"
+    "/user/",
+    "/account/",
+    "/admin/",
+    "/mod/",
+    "/login",
+    "/register",
+    "/upload",
+    "/download",
+    "/api/",
 ]
 
 
 @dataclass
 class CrawlerConfig:
     """Configuration for basic crawler."""
+
     base_url: str = "https://www.myanonamouse.net"
     min_delay: int = 3
     max_delay: int = 10
@@ -45,22 +53,26 @@ class CrawlerConfig:
 @dataclass
 class StealthConfig(CrawlerConfig):
     """Configuration for stealth crawler with human-like behavior."""
+
     min_delay: int = 10
     max_delay: int = 30
     scroll_delay: int = 2
     read_delay: int = 5
-    viewports: List[Tuple[int, int]] = field(default_factory=lambda: [
-        (1920, 1080),
-        (1366, 768),
-        (1536, 864),
-        (1440, 900),
-        (1600, 900)
-    ])
+    viewports: List[Tuple[int, int]] = field(
+        default_factory=lambda: [
+            (1920, 1080),
+            (1366, 768),
+            (1536, 864),
+            (1440, 900),
+            (1600, 900),
+        ]
+    )
 
 
 @dataclass
 class RAGConfig:
     """Configuration for RAG system."""
+
     model_name: str = "all-MiniLM-L6-v2"
     dimension: int = 384
     index_path: str = "index.faiss"
@@ -68,16 +80,15 @@ class RAGConfig:
     top_k: int = 5
     llm_model: str = "claude-haiku-4-5"
     max_tokens: int = 1500
-    headers_to_split: List[Tuple[str, str]] = field(default_factory=lambda: [
-        ("#", "H1"),
-        ("##", "H2"),
-        ("###", "H3")
-    ])
+    headers_to_split: List[Tuple[str, str]] = field(
+        default_factory=lambda: [("#", "H1"), ("##", "H2"), ("###", "H3")]
+    )
 
 
 @dataclass
 class OutputConfig:
     """Configuration for output directories and files."""
+
     guides_dir: str = "guides_output"
     forum_dir: str = "forum_qbittorrent_output"
     state_file: str = "crawler_state.json"
@@ -89,3 +100,9 @@ DEFAULT_CRAWLER_CONFIG = CrawlerConfig()
 DEFAULT_STEALTH_CONFIG = StealthConfig()
 DEFAULT_RAG_CONFIG = RAGConfig()
 DEFAULT_OUTPUT_CONFIG = OutputConfig()
+
+# Remote API usage mode:
+# "ask"  = ask user each time before calling Anthropic
+# "off"  = never call Anthropic API
+# "on"   = always use Anthropic automatically (only if API key exists)
+REMOTE_MODE = "ask"
