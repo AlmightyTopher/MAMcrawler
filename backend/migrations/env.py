@@ -22,6 +22,7 @@ from backend.database import Base
 
 # Import all models to ensure they are registered with Base.metadata
 from backend.models import (
+    ApiLog,
     Author,
     Book,
     Series,
@@ -29,7 +30,6 @@ from backend.models import (
     FailedAttempt,
     MissingBook,
     MetadataCorrection,
-    ApiLog,
     GenreSetting,
     Task,
 )
