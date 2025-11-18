@@ -17,6 +17,7 @@ sys.path.insert(0, str(project_root))
 from backend.models.download import Download
 from backend.models.book import Book
 from backend.integrations.qbittorrent_client import QBittorrentClient
+from backend.services.genre_settings_service import GenreSettingsService
 
 logger = logging.getLogger(__name__)
 
@@ -87,25 +88,28 @@ async def scrape_mam_top10(
 
 
 async def queue_top10_downloads(
-    genres_list: List[str],
     db_session: Session,
-    skip_existing: bool = True
+    genres_list: Optional[List[str]] = None,
+    skip_existing: bool = True,
+    use_database_genres: bool = True
 ) -> Dict[str, Any]:
     """
     Queue downloads for top-10 books across multiple genres
 
     Strategy:
-        1. For each genre in enabled_genres:
+        1. Get genres from database (if use_database_genres) or use provided list
+        2. For each genre in enabled_genres:
             - Call scrape_mam_top10 to get top-10 list
             - Filter out books already in library (by title/author)
             - Send magnet links to qBittorrent
             - Create Download records
-        2. Return summary stats
+        3. Return summary stats
 
     Args:
-        genres_list: List of genre names to scrape
         db_session: SQLAlchemy database session
+        genres_list: List of genre names to scrape (optional, uses database if None)
         skip_existing: Skip books already in library (default: True)
+        use_database_genres: Use genres from genre_settings table (default: True)
 
     Returns:
         Dict with keys:
@@ -115,6 +119,24 @@ async def queue_top10_downloads(
             - duplicates_skipped: Number of books skipped (already in library)
             - errors: List of error messages
     """
+    # Get genres from database or use provided list
+    if genres_list is None and use_database_genres:
+        result = GenreSettingsService.get_enabled_genres(db_session)
+        if result["success"] and result["data"]:
+            genres_list = [g.genre_name for g in result["data"]]
+            logger.info(f"Loaded {len(genres_list)} enabled genres from database")
+        else:
+            # Fall back to config if no database genres
+            from backend.config import get_settings
+            settings = get_settings()
+            genres_list = settings.ENABLED_GENRES
+            logger.warning("No genres in database, falling back to config")
+    elif genres_list is None:
+        # Use config genres if not using database
+        from backend.config import get_settings
+        settings = get_settings()
+        genres_list = settings.ENABLED_GENRES
+
     logger.info(f"Queueing top-10 downloads for {len(genres_list)} genres")
 
     try:
@@ -255,56 +277,66 @@ async def queue_top10_downloads(
         }
 
 
-async def get_available_genres() -> Dict[str, Any]:
+async def get_available_genres(db_session: Optional[Session] = None) -> Dict[str, Any]:
     """
-    Get list of available genres from MAM
+    Get list of available genres from database or defaults
+
+    Args:
+        db_session: SQLAlchemy database session (optional)
 
     Returns:
         Dict with keys:
             - genres: List of available genre names
+            - enabled_genres: List of enabled genre names
+            - disabled_genres: List of disabled genre names
             - genre_ids: Dict mapping genre names to MAM category IDs
             - timestamp: Query timestamp
+            - source: Where genres came from ("database" or "defaults")
 
     Note:
-        This is a placeholder. Full implementation requires MAM scraping.
+        Returns genres from database if available, otherwise returns defaults.
     """
-    logger.info("Getting available MAM genres")
+    logger.info("Getting available genres")
 
     try:
-        # TODO: Scrape MAM for available categories
-        # For now, return common audiobook genres
+        # Try to get from database first
+        if db_session:
+            result = GenreSettingsService.get_all_genres(db_session)
+            if result["success"] and result["data"]:
+                all_genres = result["data"]
+                enabled = [g.genre_name for g in all_genres if g.is_enabled]
+                disabled = [g.genre_name for g in all_genres if not g.is_enabled]
 
-        common_genres = [
-            "Fiction",
-            "Science Fiction",
-            "Fantasy",
-            "Mystery",
-            "Thriller",
-            "Romance",
-            "Historical Fiction",
-            "Literary Fiction",
-            "Horror",
-            "Non-Fiction",
-            "Biography",
-            "History",
-            "Self-Help",
-            "Business",
-            "Science",
-            "Philosophy",
-            "True Crime"
-        ]
+                return {
+                    "genres": [g.genre_name for g in all_genres],
+                    "enabled_genres": enabled,
+                    "disabled_genres": disabled,
+                    "genre_ids": {},  # Mapping not available without MAM scraping
+                    "timestamp": datetime.now().isoformat(),
+                    "source": "database"
+                }
+
+        # Fall back to config defaults
+        from backend.config import get_settings
+        settings = get_settings()
 
         return {
-            "genres": common_genres,
+            "genres": settings.ENABLED_GENRES + settings.DISABLED_GENRES,
+            "enabled_genres": settings.ENABLED_GENRES,
+            "disabled_genres": settings.DISABLED_GENRES,
             "genre_ids": {},  # Mapping not available without MAM scraping
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "source": "defaults"
         }
 
     except Exception as e:
         logger.exception(f"Error getting available genres: {e}")
         return {
             "genres": [],
+            "enabled_genres": [],
+            "disabled_genres": [],
             "genre_ids": {},
             "timestamp": datetime.now().isoformat(),
+            "source": "error",
             "errors": [str(e)]
         }
