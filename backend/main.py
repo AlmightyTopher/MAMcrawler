@@ -28,9 +28,11 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
 
 from backend.config import get_settings
-from backend.database import init_db, close_db
+from backend.database import init_db, close_db, SessionLocal
 from backend.middleware import RequestLoggingMiddleware
 from backend.tasks import register_download_retry_task
+from backend.models.genre_setting import GenreSetting
+from backend.services.genre_settings_service import GenreSettingsService
 
 # Configure logging first
 logging.basicConfig(
@@ -107,6 +109,23 @@ async def lifespan(app: FastAPI):
         logger.info("Initializing database...")
         init_db()
         logger.info("Database initialized successfully")
+
+        # Initialize default genre settings if table is empty
+        try:
+            with SessionLocal() as db:
+                if db.query(GenreSetting).count() == 0:
+                    logger.info("Initializing default genre settings...")
+                    result = GenreSettingsService.initialize_default_genres(db)
+                    if result["success"]:
+                        logger.info(
+                            f"Genre settings initialized: {result['created_count']} created"
+                        )
+                    else:
+                        logger.warning(f"Genre initialization failed: {result.get('error')}")
+                else:
+                    logger.info("Genre settings already initialized")
+        except Exception as e:
+            logger.warning(f"Could not initialize genre settings: {e}")
 
         # Start scheduler if enabled
         if settings.SCHEDULER_ENABLED:

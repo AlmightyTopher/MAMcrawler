@@ -22,10 +22,12 @@ from backend.database import Base
 
 # Import all models to ensure they are registered with Base.metadata
 from backend.models import (
+    ApiLog,
     Author,
     Book,
     Download,
     FailedAttempt,
+    GenreSetting,
     MetadataCorrection,
     MissingBook,
     Series,
