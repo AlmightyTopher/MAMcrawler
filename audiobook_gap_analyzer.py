@@ -496,6 +496,10 @@ class AudiobookGapAnalyzer:
         for book in owned_books:
             owned_title = book.get('title', '').lower().strip()
 
+            # Skip empty titles
+            if not owned_title:
+                continue
+
             # Exact match
             if title_lower == owned_title:
                 return True
