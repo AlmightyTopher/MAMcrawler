@@ -29,6 +29,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 
 from backend.config import get_settings
 from backend.database import init_db, close_db
+from backend.middleware import RequestLoggingMiddleware
 
 # Configure logging first
 logging.basicConfig(
@@ -174,6 +175,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Request Logging Middleware (logs to database)
+if settings.ENABLE_API_LOGGING:
+    app.add_middleware(RequestLoggingMiddleware)
 
 
 @app.middleware("http")
