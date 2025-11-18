@@ -93,6 +93,7 @@ def get_chunks_by_ids(chunk_ids, db_path='metadata.sqlite'):
     JOIN files f ON c.file_id = f.file_id
     WHERE c.chunk_id IN ({placeholders})
     """
+    cursor.execute(query, chunk_ids)
     results = cursor.fetchall()
     conn.close()
     return results
