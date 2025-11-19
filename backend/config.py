@@ -98,6 +98,17 @@ class Settings(BaseSettings):
     TASK_METADATA_NEW_TIME: str = "30 4 * * 6"  # Sunday 4:30 AM
     TASK_SERIES_TIME: str = "0 3 2 * *"  # 2nd of month 3:00 AM
     TASK_AUTHOR_TIME: str = "0 3 3 * *"  # 3rd of month 3:00 AM
+    TASK_GAPS_TIME: str = "0 1 * * *"  # Daily 1:00 AM
+
+    # ============================================================================
+    # Gap Analysis Configuration
+    # ============================================================================
+    GAP_ANALYSIS_ENABLED: bool = True
+    GAP_MAX_DOWNLOADS_PER_RUN: int = 10
+    GAP_SERIES_PRIORITY: bool = True
+    GAP_AUTHOR_PRIORITY: bool = True
+    MAM_MIN_SEEDS: int = 1
+    MAM_TITLE_MATCH_THRESHOLD: float = 0.7
 
     # ============================================================================
     # Data Retention Policy
@@ -121,6 +132,7 @@ class Settings(BaseSettings):
     ENABLE_AUTHOR_COMPLETION: bool = True
     ENABLE_TOP10_DISCOVERY: bool = True
     ENABLE_MAM_SCRAPING: bool = True
+    ENABLE_GAP_ANALYSIS: bool = True
 
     # ============================================================================
     # Genres for Top-10 Feature
