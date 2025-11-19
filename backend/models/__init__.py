@@ -11,6 +11,7 @@ from backend.models.download import Download
 from backend.models.task import Task
 from backend.models.failed_attempt import FailedAttempt
 from backend.models.metadata_correction import MetadataCorrection
+from backend.models.user import User, AuditLog
 
 __all__ = [
     "Book",
@@ -21,4 +22,6 @@ __all__ = [
     "Task",
     "FailedAttempt",
     "MetadataCorrection",
+    "User",
+    "AuditLog",
 ]

@@ -419,5 +419,61 @@ SET enabled = EXCLUDED.enabled, include_in_top10 = EXCLUDED.include_in_top10;
 --   DELETE FROM api_logs WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '30 days';
 
 -- ============================================================================
+-- TABLE: users
+-- Purpose: Admin panel user accounts for authentication and authorization
+-- ============================================================================
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'viewer',        -- admin, moderator, viewer
+    is_active BOOLEAN DEFAULT TRUE,
+    last_login TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    login_attempts INT DEFAULT 0,
+    locked_until TIMESTAMP,
+
+    INDEX idx_username (username),
+    INDEX idx_email (email),
+    INDEX idx_role (role),
+    INDEX idx_is_active (is_active)
+);
+
+-- ============================================================================
+-- TABLE: audit_logs
+-- Purpose: Audit trail for all admin actions (1-month retention)
+-- ============================================================================
+CREATE TABLE audit_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action VARCHAR(50) NOT NULL,                      -- login, logout, create, update, delete, etc.
+    resource VARCHAR(50) NOT NULL,                    -- user, config, system, etc.
+    resource_id VARCHAR(50),                          -- ID of affected resource
+    details TEXT,                                     -- JSON details of the action
+    ip_address VARCHAR(45),                           -- IPv6 compatible
+    user_agent TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_user_id (user_id),
+    INDEX idx_action (action),
+    INDEX idx_resource (resource),
+    INDEX idx_timestamp (timestamp)
+);
+
+-- ============================================================================
+-- INITIAL ADMIN USER
+-- ============================================================================
+-- Create default admin user (password: admin123 - CHANGE THIS IMMEDIATELY!)
+INSERT INTO users (username, email, password_hash, role)
+VALUES (
+    'admin',
+    'admin@mamcrawler.local',
+    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPjYLC7TkWKq',  -- bcrypt hash of 'admin123'
+    'admin'
+);
+
+-- ============================================================================
 -- END OF SCHEMA
 -- ============================================================================

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAMcrawler Status Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/status.css">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="dashboard-title">MAMcrawler</h1>
+                <span class="dashboard-subtitle">Real-time Status Dashboard</span>
+            </div>
+            <div class="header-actions">
+                <div class="connection-status">
+                    <span id="connection-indicator" class="connection-dot disconnected"></span>
+                    <span id="connection-text">Disconnected</span>
+                </div>
+                <button id="theme-toggle" class="btn-secondary" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button id="refresh-btn" class="btn-secondary" aria-label="Refresh data">
+                    <span class="refresh-icon">🔄</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-tabs">
+            <button class="nav-tab" onclick="window.location.href='index.html'">
+                <span class="tab-icon">📚</span>
+                <span class="tab-text">Library</span>
+            </button>
+            <button class="nav-tab" onclick="window.location.href='search.html'">
+                <span class="tab-icon">🔍</span>
+                <span class="tab-text">Search</span>
+            </button>
+            <button class="nav-tab active">
+                <span class="tab-icon">📊</span>
+                <span class="tab-text">Status</span>
+            </button>
+            <button class="nav-tab" onclick="window.location.href='admin.html'">
+                <span class="tab-icon">⚙️</span>
+                <span class="tab-text">Admin</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <p>Loading status dashboard...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message hidden">
+            <div class="error-content">
+                <span class="error-icon">⚠️</span>
+                <div class="error-text">
+                    <h3>Connection Error</h3>
+                    <p>Unable to connect to the MAMcrawler backend. Please check your configuration.</p>
+                </div>
+                <button id="retry-connection" class="btn-primary">Retry</button>
+            </div>
+        </div>
+
+        <!-- Status Dashboard Grid -->
+        <div class="status-dashboard">
+            <!-- System Overview -->
+            <section class="status-section system-overview">
+                <div class="section-header">
+                    <h2>System Overview</h2>
+                    <div class="section-controls">
+                        <span id="last-updated" class="last-updated">Updated: --</span>
+                        <button id="refresh-overview" class="btn-icon" title="Refresh">
+                            <span class="refresh-icon">🔄</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="system-overview-content" class="section-content">
+                    <!-- System overview will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Crawler Status -->
+            <section class="status-section crawler-status">
+                <div class="section-header">
+                    <h2>Crawler Status</h2>
+                    <div class="section-controls">
+                        <button id="start-crawler" class="btn-primary btn-small">Start</button>
+                        <button id="stop-crawler" class="btn-secondary btn-small">Stop</button>
+                    </div>
+                </div>
+                <div id="crawler-status-content" class="section-content">
+                    <!-- Crawler status will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Download Monitoring -->
+            <section class="status-section download-monitoring">
+                <div class="section-header">
+                    <h2>Download Monitoring</h2>
+                    <div class="section-controls">
+                        <button id="refresh-downloads" class="btn-icon" title="Refresh">
+                            <span class="refresh-icon">🔄</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="download-monitoring-content" class="section-content">
+                    <!-- Download monitoring will be rendered here -->
+                </div>
+            </section>
+
+            <!-- System Resources -->
+            <section class="status-section system-resources">
+                <div class="section-header">
+                    <h2>System Resources</h2>
+                    <div class="section-controls">
+                        <button id="refresh-resources" class="btn-icon" title="Refresh">
+                            <span class="refresh-icon">🔄</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="system-resources-content" class="section-content">
+                    <!-- System resources will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Activity Feed -->
+            <section class="status-section activity-feed">
+                <div class="section-header">
+                    <h2>Activity Feed</h2>
+                    <div class="section-controls">
+                        <select id="log-level-filter" class="filter-select" aria-label="Filter log levels">
+                            <option value="all">All Levels</option>
+                            <option value="error">Errors</option>
+                            <option value="warning">Warnings</option>
+                            <option value="info">Info</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                        <button id="clear-logs" class="btn-secondary btn-small">Clear</button>
+                    </div>
+                </div>
+                <div id="activity-feed-content" class="section-content activity-feed-content">
+                    <!-- Activity feed will be rendered here -->
+                </div>
+            </section>
+
+            <!-- Performance Charts -->
+            <section class="status-section performance-charts">
+                <div class="section-header">
+                    <h2>Performance Charts</h2>
+                    <div class="section-controls">
+                        <select id="chart-timeframe" class="filter-select" aria-label="Select chart timeframe">
+                            <option value="1h">Last Hour</option>
+                            <option value="6h">Last 6 Hours</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                        </select>
+                        <button id="refresh-charts" class="btn-icon" title="Refresh">
+                            <span class="refresh-icon">🔄</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="performance-charts-content" class="section-content">
+                    <!-- Performance charts will be rendered here -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+        <div class="footer-content">
+            <p>&copy; 2024 MAMcrawler Real-time Status Dashboard</p>
+            <div class="footer-links">
+                <a href="index.html">Library</a>
+                <a href="search.html">Search</a>
+                <a href="admin.html">Admin</a>
+                <a href="#" id="export-status-link">Export Status</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/utils/time-utils.js"></script>
+    <script src="js/utils/status-utils.js"></script>
+    <script src="js/utils/chart-utils.js"></script>
+
+    <script src="js/services/realtime-service.js"></script>
+    <script src="js/services/metrics-service.js"></script>
+    <script src="js/services/logs-service.js"></script>
+
+    <script src="js/components/status/system-overview.js"></script>
+    <script src="js/components/status/crawler-monitor.js"></script>
+    <script src="js/components/status/download-tracker.js"></script>
+    <script src="js/components/status/resource-monitor.js"></script>
+    <script src="js/components/status/activity-feed.js"></script>
+    <script src="js/components/status/performance-charts.js"></script>
+
+    <script src="js/status.js"></script>
+</body>
+</html>

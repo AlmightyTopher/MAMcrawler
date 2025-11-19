@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MAMcrawler Admin Panel - System Administration Interface">
+    <meta name="theme-color" content="#1a365d">
+    <title>MAMcrawler Admin Panel</title>
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="css/admin.css" as="style">
+    <link rel="preload" href="js/admin.js" as="script">
+    <link rel="preload" href="js/services/auth-service.js" as="script">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/admin.css">
+
+    <!-- Security headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>MAMcrawler Admin</h1>
+                <p>System Administration Panel</p>
+            </div>
+
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+            </form>
+
+            <div id="login-error" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Admin Interface -->
+    <div id="admin-interface" class="admin-interface" style="display: none;">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-left">
+                <h1>MAMcrawler Admin Panel</h1>
+            </div>
+            <div class="header-right">
+                <span id="current-user" class="current-user"></span>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <!-- Navigation -->
+            <nav class="admin-nav">
+                <ul class="nav-list">
+                    <li><a href="#" class="nav-tab active" data-tab="dashboard">Dashboard</a></li>
+                    <li><a href="#" class="nav-tab" data-tab="config">System Config</a></li>
+                    <li><a href="#" class="nav-tab" data-tab="integrations">Integrations</a></li>
+                    <li><a href="#" class="nav-tab" data-tab="user-management">Users</a></li>
+                    <li><a href="#" class="nav-tab" data-tab="monitoring">Monitoring</a></li>
+                    <li><a href="#" class="nav-tab" data-tab="maintenance">Maintenance</a></li>
+                    <li><a href="#" class="nav-tab" data-tab="security">Security</a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard-tab" class="tab-content active">
+                    <div class="dashboard-grid">
+                        <!-- System Status -->
+                        <div class="dashboard-card">
+                            <h3>System Status</h3>
+                            <div class="status-grid">
+                                <div class="status-item">
+                                    <span class="status-label">Database:</span>
+                                    <span id="db-status" class="status-value status-healthy">Healthy</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Scheduler:</span>
+                                    <span id="scheduler-status" class="status-value status-healthy">Healthy</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">API:</span>
+                                    <span id="api-status" class="status-value status-healthy">Healthy</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="dashboard-card">
+                            <h3>Quick Stats</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="total-books">0</span>
+                                    <span class="stat-label">Total Books</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="active-downloads">0</span>
+                                    <span class="stat-label">Active Downloads</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="pending-tasks">0</span>
+                                    <span class="stat-label">Pending Tasks</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="dashboard-card">
+                            <h3>Recent Activity</h3>
+                            <div id="recent-activity" class="activity-list">
+                                <div class="activity-item">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Configuration Tab -->
+                <div id="config-tab" class="tab-content">
+                    <div class="config-sections">
+                        <!-- Crawler Configuration -->
+                        <div class="config-section">
+                            <h3>Crawler Settings</h3>
+                            <form id="crawler-config-form" class="config-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="crawler-interval">Crawler Interval (minutes)</label>
+                                        <input type="number" id="crawler-interval" name="crawler_interval" min="5" max="1440" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="max-pages">Max Pages per Session</label>
+                                        <input type="number" id="max-pages" name="max_pages" min="1" max="1000" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="rate-limit-min">Rate Limit Min (seconds)</label>
+                                        <input type="number" id="rate-limit-min" name="rate_limit_min" min="1" max="60" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="rate-limit-max">Rate Limit Max (seconds)</label>
+                                        <input type="number" id="rate-limit-max" name="rate_limit_max" min="1" max="300" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Crawler Settings</button>
+                            </form>
+                        </div>
+
+                        <!-- Database Configuration -->
+                        <div class="config-section">
+                            <h3>Database Settings</h3>
+                            <form id="database-config-form" class="config-form">
+                                <div class="form-group">
+                                    <label for="retention-days">History Retention (days)</label>
+                                    <input type="number" id="retention-days" name="retention_days" min="1" max="365" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Database Settings</button>
+                            </form>
+                        </div>
+
+                        <!-- Feature Flags -->
+                        <div class="config-section">
+                            <h3>Feature Flags</h3>
+                            <form id="features-config-form" class="config-form">
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="metadata-correction" name="metadata_correction">
+                                        <span class="checkmark"></span>
+                                        Metadata Correction
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="series-completion" name="series_completion">
+                                        <span class="checkmark"></span>
+                                        Series Completion
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="author-completion" name="author_completion">
+                                        <span class="checkmark"></span>
+                                        Author Completion
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="mam-scraping" name="mam_scraping">
+                                        <span class="checkmark"></span>
+                                        MAM Scraping
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Feature Settings</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integrations Tab -->
+                <div id="integrations-tab" class="tab-content">
+                    <div class="integrations-grid">
+                        <!-- qBittorrent -->
+                        <div class="integration-card">
+                            <h3>qBittorrent</h3>
+                            <form id="qbittorrent-form" class="integration-form">
+                                <div class="form-group">
+                                    <label for="qb-host">Host</label>
+                                    <input type="text" id="qb-host" name="host" placeholder="localhost">
+                                </div>
+                                <div class="form-group">
+                                    <label for="qb-port">Port</label>
+                                    <input type="number" id="qb-port" name="port" placeholder="52095">
+                                </div>
+                                <div class="form-group">
+                                    <label for="qb-username">Username</label>
+                                    <input type="text" id="qb-username" name="username">
+                                </div>
+                                <div class="form-group">
+                                    <label for="qb-password">Password</label>
+                                    <input type="password" id="qb-password" name="password">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                    <button type="button" class="btn btn-secondary" onclick="window.integrationPanel.testConnection('qbittorrent')">Test</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Audiobookshelf -->
+                        <div class="integration-card">
+                            <h3>Audiobookshelf</h3>
+                            <form id="audiobookshelf-form" class="integration-form">
+                                <div class="form-group">
+                                    <label for="abs-url">Server URL</label>
+                                    <input type="url" id="abs-url" name="url" placeholder="http://localhost:13378">
+                                </div>
+                                <div class="form-group">
+                                    <label for="abs-token">API Token</label>
+                                    <input type="password" id="abs-token" name="token">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                    <button type="button" class="btn btn-secondary" onclick="window.integrationPanel.testConnection('audiobookshelf')">Test</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Google Books -->
+                        <div class="integration-card">
+                            <h3>Google Books API</h3>
+                            <form id="google-books-form" class="integration-form">
+                                <div class="form-group">
+                                    <label for="google-api-key">API Key</label>
+                                    <input type="password" id="google-api-key" name="api_key">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                    <button type="button" class="btn btn-secondary" onclick="window.integrationPanel.testConnection('google-books')">Test</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Management Tab -->
+                <div id="user-management-tab" class="tab-content">
+                    <div class="user-management-header">
+                        <button id="add-user-btn" class="btn btn-primary">Add New User</button>
+                        <button class="btn btn-secondary" onclick="window.userManagement.exportUsers()">Export Users</button>
+                    </div>
+
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Last Login</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <tr>
+                                    <td colspan="6" class="loading">Loading users...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Monitoring Tab -->
+                <div id="monitoring-tab" class="tab-content">
+                    <div class="monitoring-grid">
+                        <!-- System Metrics -->
+                        <div class="monitoring-card">
+                            <h3>System Metrics</h3>
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <span class="metric-label">CPU Usage:</span>
+                                    <span id="cpu-usage" class="metric-value">0%</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Memory Usage:</span>
+                                    <span id="memory-usage" class="metric-value">0 MB</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Disk Usage:</span>
+                                    <span id="disk-usage" class="metric-value">0 GB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Download Stats -->
+                        <div class="monitoring-card">
+                            <h3>Download Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-value" id="queued-downloads">0</span>
+                                    <span class="stat-label">Queued</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="downloading-count">0</span>
+                                    <span class="stat-label">Downloading</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="completed-downloads">0</span>
+                                    <span class="stat-label">Completed</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" id="failed-downloads">0</span>
+                                    <span class="stat-label">Failed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Error Logs -->
+                        <div class="monitoring-card full-width">
+                            <div class="card-header">
+                                <h3>Error Logs</h3>
+                                <button id="refresh-logs-btn" class="btn btn-secondary btn-sm">Refresh Logs</button>
+                            </div>
+                            <pre id="error-logs-content" class="logs-content">Loading logs...</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maintenance Tab -->
+                <div id="maintenance-tab" class="tab-content">
+                    <div class="maintenance-grid">
+                        <!-- Database Maintenance -->
+                        <div class="maintenance-card">
+                            <h3>Database Maintenance</h3>
+                            <div class="maintenance-actions">
+                                <button id="optimize-db-btn" class="btn btn-primary">Optimize Database</button>
+                                <button id="cleanup-old-data-btn" class="btn btn-warning">Clean Old Data</button>
+                            </div>
+                        </div>
+
+                        <!-- Cache Management -->
+                        <div class="maintenance-card">
+                            <h3>Cache Management</h3>
+                            <div class="maintenance-actions">
+                                <button id="clear-cache-btn" class="btn btn-warning">Clear System Cache</button>
+                            </div>
+                        </div>
+
+                        <!-- Scheduler Control -->
+                        <div class="maintenance-card">
+                            <h3>Scheduler Control</h3>
+                            <div class="maintenance-actions">
+                                <button id="restart-scheduler-btn" class="btn btn-warning">Restart Scheduler</button>
+                            </div>
+                        </div>
+
+                        <!-- Backup Management -->
+                        <div class="maintenance-card">
+                            <h3>Backup Management</h3>
+                            <div class="maintenance-actions">
+                                <button id="create-backup-btn" class="btn btn-primary">Create Backup</button>
+                                <button id="download-backup-btn" class="btn btn-secondary">Download Backup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div id="security-tab" class="tab-content">
+                    <div class="security-sections">
+                        <!-- Security Settings -->
+                        <div class="security-section">
+                            <h3>Security Settings</h3>
+                            <form id="security-settings-form" class="config-form">
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="enable-audit-logging" name="enable-audit-logging">
+                                        <span class="checkmark"></span>
+                                        Enable Audit Logging
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="enable-session-timeout" name="enable-session-timeout">
+                                        <span class="checkmark"></span>
+                                        Enable Session Timeout
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="enable-ip-whitelist" name="enable-ip-whitelist">
+                                        <span class="checkmark"></span>
+                                        Enable IP Whitelist
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="enable-two-factor" name="enable-two-factor">
+                                        <span class="checkmark"></span>
+                                        Enable Two-Factor Auth
+                                    </label>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="session-timeout-minutes">Session Timeout (minutes)</label>
+                                        <input type="number" id="session-timeout-minutes" name="session-timeout-minutes" min="5" max="480">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="max-login-attempts">Max Login Attempts</label>
+                                        <input type="number" id="max-login-attempts" name="max-login-attempts" min="3" max="10">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Security Settings</button>
+                            </form>
+                        </div>
+
+                        <!-- Password Policy -->
+                        <div class="security-section">
+                            <h3>Password Policy</h3>
+                            <form id="password-policy-form" class="config-form">
+                                <div class="form-group">
+                                    <label for="min-password-length">Minimum Password Length</label>
+                                    <input type="number" id="min-password-length" name="min-password-length" min="8" max="128" required>
+                                </div>
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="require-uppercase" name="require-uppercase">
+                                        <span class="checkmark"></span>
+                                        Require Uppercase
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="require-lowercase" name="require-lowercase">
+                                        <span class="checkmark"></span>
+                                        Require Lowercase
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="require-numbers" name="require-numbers">
+                                        <span class="checkmark"></span>
+                                        Require Numbers
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="require-special-chars" name="require-special-chars">
+                                        <span class="checkmark"></span>
+                                        Require Special Characters
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password-expiry-days">Password Expiry (days)</label>
+                                    <input type="number" id="password-expiry-days" name="password-expiry-days" min="30" max="365" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Password Policy</button>
+                            </form>
+                        </div>
+
+                        <!-- Audit Logs -->
+                        <div class="security-section full-width">
+                            <div class="card-header">
+                                <h3>Audit Logs</h3>
+                                <div class="card-actions">
+                                    <button class="btn btn-secondary btn-sm" onclick="window.securitySettings.exportAuditLogs()">Export Logs</button>
+                                    <button class="btn btn-warning btn-sm" onclick="window.securitySettings.clearOldAuditLogs()">Clear Old Logs</button>
+                                </div>
+                            </div>
+                            <div class="data-table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>User</th>
+                                            <th>Action</th>
+                                            <th>Message</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="audit-table-body">
+                                        <tr>
+                                            <td colspan="5" class="loading">Loading audit logs...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- User Modal -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="user-modal-title">Add New User</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <form id="user-form" class="modal-form">
+                <input type="hidden" id="user-id" name="id">
+                <div class="form-group">
+                    <label for="user-username">Username</label>
+                    <input type="text" id="user-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-email">Email</label>
+                    <input type="email" id="user-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-password">Password</label>
+                    <input type="password" id="user-password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-role">Role</label>
+                    <select id="user-role" name="role" required>
+                        <option value="viewer">Viewer</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="checkbox-item">
+                    <label>
+                        <input type="checkbox" id="user-active" name="is_active" checked>
+                        <span class="checkmark"></span>
+                        Active
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/utils/validation.js"></script>
+    <script src="js/utils/security.js"></script>
+    <script src="js/services/auth-service.js"></script>
+    <script src="js/services/config-service.js"></script>
+    <script src="js/services/monitoring-service.js"></script>
+    <script src="js/services/maintenance-service.js"></script>
+    <script src="js/components/admin/config-panel.js"></script>
+    <script src="js/components/admin/integration-panel.js"></script>
+    <script src="js/components/admin/user-management.js"></script>
+    <script src="js/components/admin/monitoring-dashboard.js"></script>
+    <script src="js/components/admin/maintenance-tools.js"></script>
+    <script src="js/components/admin/security-settings.js"></script>
+    <script src="js/admin.js"></script>
+
+    <!-- Service Worker for PWA features -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+    </script>
+</body>
+</html>

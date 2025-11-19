@@ -12,7 +12,8 @@ from backend.routes import (
     downloads,
     metadata,
     scheduler,
-    system
+    system,
+    admin
 )
 
 # Import verify_api_key for authentication
@@ -93,6 +94,13 @@ def include_all_routes(app: FastAPI) -> None:
         # Note: /health endpoint is public, other endpoints require auth
     )
 
+    # Admin routes (uses JWT authentication, not API key)
+    app.include_router(
+        admin.router,
+        prefix="/api/admin",
+        tags=["Admin"]
+    )
+
 
 __all__ = [
     "include_all_routes",
@@ -102,5 +110,6 @@ __all__ = [
     "downloads",
     "metadata",
     "scheduler",
-    "system"
+    "system",
+    "admin"
 ]

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAMcrawler - Audiobook Search</title>
+    <meta name="description" content="Powerful search interface for MAMcrawler audiobook catalog">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/search.css">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button id="back-to-dashboard" class="btn-secondary" aria-label="Back to Dashboard">
+                    ← Dashboard
+                </button>
+                <h1 class="header-title">Audiobook Search</h1>
+            </div>
+            <div class="header-right">
+                <button id="theme-toggle" class="btn-secondary" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button id="saved-searches" class="btn-secondary" aria-label="Saved searches">
+                    📚 Saved Searches
+                </button>
+                <button id="export-results" class="btn-primary" disabled aria-label="Export results">
+                    📤 Export
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="search-main">
+        <!-- Search Header -->
+        <section class="search-header">
+            <div class="search-input-section">
+                <div class="main-search-container">
+                    <input
+                        type="text"
+                        id="main-search-input"
+                        placeholder="Search audiobooks by title, author, series, or description..."
+                        autocomplete="off"
+                        aria-label="Search audiobooks"
+                        aria-describedby="search-help"
+                    >
+                    <button id="search-button" class="search-button" aria-label="Perform search">
+                        <span class="search-icon">🔍</span>
+                        Search
+                    </button>
+                    <button id="voice-search" class="voice-search-btn" aria-label="Voice search">
+                        🎤
+                    </button>
+                </div>
+                <div id="search-help" class="search-help">
+                    <small>Use quotes for exact phrases, AND/OR/NOT for advanced queries</small>
+                </div>
+                <div id="search-suggestions" class="search-suggestions hidden" role="listbox" aria-label="Search suggestions"></div>
+            </div>
+
+            <div class="search-actions">
+                <button id="advanced-toggle" class="btn-secondary" aria-expanded="false" aria-controls="advanced-filters">
+                    Advanced Filters
+                </button>
+                <button id="save-search" class="btn-secondary" aria-label="Save current search">
+                    💾 Save Search
+                </button>
+            </div>
+        </section>
+
+        <!-- Advanced Filters -->
+        <section id="advanced-filters" class="advanced-filters hidden" aria-labelledby="advanced-toggle">
+            <div class="filters-grid">
+                <!-- Text Filters -->
+                <div class="filter-group">
+                    <label for="author-filter">Author</label>
+                    <input
+                        type="text"
+                        id="author-filter"
+                        placeholder="Filter by author name"
+                        aria-label="Filter by author"
+                    >
+                </div>
+
+                <div class="filter-group">
+                    <label for="narrator-filter">Narrator</label>
+                    <input
+                        type="text"
+                        id="narrator-filter"
+                        placeholder="Filter by narrator"
+                        aria-label="Filter by narrator"
+                    >
+                </div>
+
+                <div class="filter-group">
+                    <label for="series-filter">Series</label>
+                    <input
+                        type="text"
+                        id="series-filter"
+                        placeholder="Filter by series name"
+                        aria-label="Filter by series"
+                    >
+                </div>
+
+                <!-- Select Filters -->
+                <div class="filter-group">
+                    <label for="language-filter">Language</label>
+                    <select id="language-filter" aria-label="Filter by language">
+                        <option value="">All Languages</option>
+                        <option value="english">English</option>
+                        <option value="spanish">Spanish</option>
+                        <option value="french">French</option>
+                        <option value="german">German</option>
+                        <option value="italian">Italian</option>
+                        <option value="portuguese">Portuguese</option>
+                        <option value="chinese">Chinese</option>
+                        <option value="japanese">Japanese</option>
+                        <option value="korean">Korean</option>
+                        <option value="russian">Russian</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="format-filter">File Format</label>
+                    <select id="format-filter" aria-label="Filter by file format">
+                        <option value="">All Formats</option>
+                        <option value="mp3">MP3</option>
+                        <option value="m4b">M4B</option>
+                        <option value="aac">AAC</option>
+                        <option value="flac">FLAC</option>
+                        <option value="ogg">OGG</option>
+                        <option value="wma">WMA</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="status-filter">Status</label>
+                    <select id="status-filter" aria-label="Filter by status">
+                        <option value="active">Active</option>
+                        <option value="duplicate">Duplicate</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                </div>
+
+                <!-- Range Filters -->
+                <div class="filter-group">
+                    <label>Publication Year</label>
+                    <div class="range-inputs">
+                        <input
+                            type="number"
+                            id="pub-year-from"
+                            placeholder="From"
+                            min="1900"
+                            max="2030"
+                            aria-label="Publication year from"
+                        >
+                        <span>to</span>
+                        <input
+                            type="number"
+                            id="pub-year-to"
+                            placeholder="To"
+                            min="1900"
+                            max="2030"
+                            aria-label="Publication year to"
+                        >
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>Duration (hours)</label>
+                    <div class="range-inputs">
+                        <input
+                            type="number"
+                            id="duration-from"
+                            placeholder="Min"
+                            min="0"
+                            step="0.5"
+                            aria-label="Minimum duration in hours"
+                        >
+                        <span>to</span>
+                        <input
+                            type="number"
+                            id="duration-to"
+                            placeholder="Max"
+                            min="0"
+                            step="0.5"
+                            aria-label="Maximum duration in hours"
+                        >
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="completeness-filter">Min Quality (%)</label>
+                    <select id="completeness-filter" aria-label="Minimum metadata completeness">
+                        <option value="0">Any Quality</option>
+                        <option value="25">25% or better</option>
+                        <option value="50">50% or better</option>
+                        <option value="75">75% or better</option>
+                        <option value="90">90% or better</option>
+                        <option value="100">Complete only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button id="apply-filters" class="btn-primary">Apply Filters</button>
+                <button id="clear-filters" class="btn-secondary">Clear All</button>
+            </div>
+
+            <div class="filter-summary" style="display: none;"></div>
+        </section>
+
+        <!-- Results Header -->
+        <section class="results-header">
+            <div class="results-info">
+                <h2 id="results-title">Search Results</h2>
+                <span id="results-count" class="results-count"></span>
+            </div>
+
+            <div class="results-controls">
+                <!-- View Toggle -->
+                <div class="view-toggle" role="group" aria-label="View options">
+                    <button id="grid-view" class="view-btn active" aria-pressed="true">
+                        ⊞ Grid
+                    </button>
+                    <button id="list-view" class="view-btn" aria-pressed="false">
+                        ☰ List
+                    </button>
+                </div>
+
+                <!-- Sort Controls -->
+                <div class="sort-controls">
+                    <select id="sort-select" aria-label="Sort by">
+                        <option value="relevance">Relevance</option>
+                        <option value="title">Title</option>
+                        <option value="author">Author</option>
+                        <option value="series">Series</option>
+                        <option value="published_year">Publication Year</option>
+                        <option value="duration_minutes">Duration</option>
+                        <option value="date_added">Date Added</option>
+                        <option value="metadata_completeness_percent">Quality</option>
+                    </select>
+                    <button id="sort-direction" class="sort-direction-btn" data-direction="desc" aria-label="Toggle sort direction">
+                        ↓
+                    </button>
+                </div>
+
+                <!-- Page Size -->
+                <div class="page-size-control">
+                    <label for="page-size" class="sr-only">Results per page</label>
+                    <select id="page-size" aria-label="Results per page">
+                        <option value="12">12 per page</option>
+                        <option value="24" selected>24 per page</option>
+                        <option value="48">48 per page</option>
+                        <option value="96">96 per page</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Results -->
+        <section id="search-results" class="search-results" aria-live="polite" aria-atomic="false">
+            <!-- Results will be dynamically inserted here -->
+        </section>
+
+        <!-- Pagination -->
+        <section class="pagination-section">
+            <div class="pagination-controls">
+                <button id="first-page" class="page-btn" disabled aria-label="First page">
+                    ⇤ First
+                </button>
+                <button id="prev-page" class="page-btn" disabled aria-label="Previous page">
+                    ← Previous
+                </button>
+
+                <div id="page-numbers" class="page-numbers">
+                    <!-- Page numbers will be dynamically inserted here -->
+                </div>
+
+                <button id="next-page" class="page-btn" disabled aria-label="Next page">
+                    Next →
+                </button>
+                <button id="last-page" class="page-btn" disabled aria-label="Last page">
+                    Last ⇥
+                </button>
+            </div>
+
+            <div id="pagination-info" class="pagination-info">
+                <!-- Pagination info will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <!-- No Results -->
+        <section id="no-results" class="no-results hidden">
+            <div class="no-results-content">
+                <div class="no-results-icon">🔍</div>
+                <h3>No results found</h3>
+                <p id="no-results-message">Try adjusting your search terms or filters</p>
+                <div class="no-results-suggestions">
+                    <h4>Suggestions:</h4>
+                    <ul>
+                        <li>Check your spelling</li>
+                        <li>Use fewer keywords</li>
+                        <li>Try different search terms</li>
+                        <li>Remove some filters</li>
+                        <li>Search for author or series instead</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <!-- Book Detail Modal -->
+    <div id="book-detail-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div id="modal-backdrop" class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Book Details</h2>
+                <button id="close-modal" class="close-btn" aria-label="Close modal">×</button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <!-- Book details will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Saved Searches Modal -->
+    <div id="saved-searches-modal" class="modal saved-searches-modal hidden" role="dialog" aria-modal="true" aria-labelledby="saved-searches-title">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="saved-searches-title">Saved Searches</h2>
+                <button class="close-btn" onclick="this.closest('.modal').classList.add('hidden')" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Saved searches will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Searching audiobooks...</p>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="error-message hidden" role="alert">
+        <div class="error-content">
+            <div class="error-icon">⚠️</div>
+            <div class="error-text">
+                <h3>Search Error</h3>
+                <p id="error-text">An error occurred while searching</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/search.js"></script>
+
+    <!-- Fallback for browsers without module support -->
+    <script nomodule>
+        console.error('This application requires a modern browser with ES6 module support');
+        document.body.innerHTML = '<div style="text-align: center; padding: 50px;"><h1>Browser Not Supported</h1><p>This application requires a modern browser with ES6 module support.</p></div>';
+    </script>
+</body>
+</html>

@@ -37,6 +37,14 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
+    # Admin Panel JWT Authentication
+    JWT_SECRET_KEY: Optional[str] = None  # Will be auto-generated if not set
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    # Password Security
+    PASSWORD_SALT: str = "mamcrawler_salt_change_in_production"
+
     # ============================================================================
     # Audiobookshelf Integration
     # ============================================================================
