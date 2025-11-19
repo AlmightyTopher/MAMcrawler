@@ -30,6 +30,7 @@ search_results/
 forum_qbittorrent_output/
 guides_output/
 missing_books/
+qBittorrent/
 
 # FAISS index
 index.faiss
