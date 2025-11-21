@@ -1283,4 +1283,481 @@ For API support and questions:
 
 ---
 
+---
+
+## Audiobookshelf Integration API
+
+### RSS Feed Management
+
+#### Endpoints Overview
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/audiobookshelf/rss/add-feed` | Add RSS feed |
+| `GET` | `/audiobookshelf/rss/items` | Get RSS items |
+| `DELETE` | `/audiobookshelf/rss/remove-item` | Remove RSS item |
+| `PUT` | `/audiobookshelf/rss/move-item` | Move RSS item |
+| `POST` | `/audiobookshelf/rss/refresh-item` | Refresh RSS feed |
+| `POST` | `/audiobookshelf/rss/set-rule` | Set RSS download rule |
+| `GET` | `/audiobookshelf/rss/rules` | Get RSS rules |
+| `GET` | `/audiobookshelf/rss/matching-articles` | Get matching articles |
+| `POST` | `/audiobookshelf/rss/mark-read` | Mark article as read |
+
+#### POST /audiobookshelf/rss/add-feed
+
+**Description:** Add RSS feed to Audiobookshelf
+
+**Request Body:**
+```json
+{
+  "url": "https://example.com/rss.xml",
+  "path": "audiobooks"
+}
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "RSS feed added successfully"
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+#### GET /audiobookshelf/rss/items
+
+**Description:** Get RSS items and folders
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `with_data` | boolean | No | Include feed data (default: false) |
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "audiobooks": {
+      "feed1": {
+        "title": "Audiobooks RSS",
+        "url": "https://example.com/rss.xml",
+        "lastBuildDate": "2023-12-01T00:00:00.000Z"
+      }
+    }
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+### Bandwidth Management
+
+#### Endpoints Overview
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/audiobookshelf/bandwidth/set-global-download` | Set global download limit |
+| `POST` | `/audiobookshelf/bandwidth/set-global-upload` | Set global upload limit |
+| `GET` | `/audiobookshelf/bandwidth/global-limits` | Get global bandwidth limits |
+| `POST` | `/audiobookshelf/bandwidth/set-torrent-download` | Set torrent download limit |
+| `POST` | `/audiobookshelf/bandwidth/set-torrent-upload` | Set torrent upload limit |
+| `GET` | `/audiobookshelf/bandwidth/torrent-limits` | Get torrent bandwidth limits |
+| `POST` | `/audiobookshelf/bandwidth/toggle-alternative` | Toggle alternative speed limits |
+| `GET` | `/audiobookshelf/bandwidth/alternative-limits` | Get alternative speed limits |
+| `GET` | `/audiobookshelf/bandwidth/usage-stats` | Get bandwidth usage statistics |
+
+#### POST /audiobookshelf/bandwidth/set-global-download
+
+**Description:** Set global download speed limit
+
+**Request Body:**
+```json
+{
+  "limit": 1024000
+}
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Global download limit set to 1024000 bytes/s"
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+#### GET /audiobookshelf/bandwidth/usage-stats
+
+**Description:** Get comprehensive bandwidth usage statistics
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "server_dl_speed": 2048576,
+    "server_ul_speed": 512000,
+    "total_torrent_dl_speed": 1024000,
+    "total_torrent_ul_speed": 256000,
+    "total_downloaded": 1073741824,
+    "total_uploaded": 536870912,
+    "active_torrents": 3,
+    "total_torrents": 15
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+---
+
+## qBittorrent Integration API
+
+### RSS Feed Management
+
+#### Endpoints Overview
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/qbittorrent/rss/add-feed` | Add RSS feed |
+| `GET` | `/qbittorrent/rss/items` | Get RSS items |
+| `DELETE` | `/qbittorrent/rss/remove-item` | Remove RSS item |
+| `PUT` | `/qbittorrent/rss/move-item` | Move RSS item |
+| `POST` | `/qbittorrent/rss/refresh-item` | Refresh RSS feed |
+| `POST` | `/qbittorrent/rss/set-rule` | Set RSS download rule |
+| `GET` | `/qbittorrent/rss/rules` | Get RSS rules |
+| `GET` | `/qbittorrent/rss/matching-articles` | Get matching articles |
+| `POST` | `/qbittorrent/rss/mark-read` | Mark article as read |
+| `POST` | `/qbittorrent/rss/create-folder` | Create RSS folder |
+| `GET` | `/qbittorrent/rss/feeds-status` | Get RSS feeds status |
+
+#### POST /qbittorrent/rss/add-feed
+
+**Description:** Add RSS feed to qBittorrent
+
+**Request Body:**
+```json
+{
+  "url": "https://example.com/rss.xml",
+  "path": "audiobooks"
+}
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "RSS feed added successfully"
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+#### GET /qbittorrent/rss/feeds-status
+
+**Description:** Get RSS feeds status and last update times
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "total_feeds": 3,
+    "total_folders": 2,
+    "feeds_by_status": {
+      "audiobooks/feed1": {
+        "last_update": "2023-12-01T00:00:00.000Z",
+        "has_error": false
+      }
+    }
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+### Bandwidth Management
+
+#### Endpoints Overview
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/qbittorrent/bandwidth/set-global-download` | Set global download limit |
+| `POST` | `/qbittorrent/bandwidth/set-global-upload` | Set global upload limit |
+| `GET` | `/qbittorrent/bandwidth/global-limits` | Get global bandwidth limits |
+| `POST` | `/qbittorrent/bandwidth/set-torrent-download` | Set torrent download limit |
+| `POST` | `/qbittorrent/bandwidth/set-torrent-upload` | Set torrent upload limit |
+| `GET` | `/qbittorrent/bandwidth/torrent-limits` | Get torrent bandwidth limits |
+| `POST` | `/qbittorrent/bandwidth/toggle-alternative` | Toggle alternative speed limits |
+| `GET` | `/qbittorrent/bandwidth/alternative-limits` | Get alternative speed limits |
+| `POST` | `/qbittorrent/bandwidth/set-alternative-limits` | Set alternative speed limits |
+| `GET` | `/qbittorrent/bandwidth/usage-stats` | Get bandwidth usage statistics |
+
+#### POST /qbittorrent/bandwidth/set-global-download
+
+**Description:** Set global download speed limit
+
+**Request Body:**
+```json
+{
+  "limit": 1024000
+}
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Global download limit set to 1024000 bytes/s"
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+#### GET /qbittorrent/bandwidth/usage-stats
+
+**Description:** Get comprehensive bandwidth usage statistics
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "server_dl_speed": 2048576,
+    "server_ul_speed": 512000,
+    "total_torrent_dl_speed": 1024000,
+    "total_torrent_ul_speed": 256000,
+    "total_downloaded": 1073741824,
+    "total_uploaded": 536870912,
+    "active_torrents": 3,
+    "total_torrents": 15
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+---
+
+## Integration Status
+
+### Health Checks
+
+#### GET /integrations/health
+
+**Description:** Get health status of all integrations
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "audiobookshelf": {
+      "status": "healthy",
+      "version": "2.8.1",
+      "libraries": 1,
+      "total_books": 1247
+    },
+    "qbittorrent": {
+      "status": "healthy",
+      "version": "4.6.5",
+      "active_downloads": 2,
+      "total_downloads": 156
+    },
+    "google_books": {
+      "status": "healthy",
+      "last_request": "2025-11-21T00:22:05.778Z"
+    },
+    "prowlarr": {
+      "status": "healthy",
+      "indexers": 12
+    }
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+### Configuration
+
+#### GET /integrations/config
+
+**Description:** Get current integration configurations
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "audiobookshelf": {
+      "url": "http://localhost:13378",
+      "rss_enabled": true,
+      "bandwidth_management": true
+    },
+    "qbittorrent": {
+      "host": "192.168.0.48",
+      "port": 52095,
+      "rss_enabled": true,
+      "bandwidth_management": true
+    }
+  },
+  "timestamp": "2025-11-21T00:22:05.778Z"
+}
+```
+
+---
+
+## Code Examples - New Integrations
+
+### Python - Audiobookshelf RSS Management
+
+```python
+import requests
+
+class AudiobookshelfRSSAPI:
+    def __init__(self, base_url: str, api_key: str):
+        self.base_url = base_url
+        self.headers = {
+            'X-API-Key': api_key,
+            'Content-Type': 'application/json'
+        }
+
+    def add_rss_feed(self, url: str, path: str = "") -> dict:
+        """Add RSS feed to Audiobookshelf"""
+        response = requests.post(
+            f"{self.base_url}/audiobookshelf/rss/add-feed",
+            headers=self.headers,
+            json={"url": url, "path": path}
+        )
+        return response.json()
+
+    def get_rss_items(self, with_data: bool = False) -> dict:
+        """Get RSS items and folders"""
+        params = {"with_data": with_data}
+        response = requests.get(
+            f"{self.base_url}/audiobookshelf/rss/items",
+            headers=self.headers,
+            params=params
+        )
+        return response.json()
+
+    def set_bandwidth_limit(self, limit_type: str, limit: int) -> dict:
+        """Set bandwidth limits"""
+        endpoint_map = {
+            "global_download": "/audiobookshelf/bandwidth/set-global-download",
+            "global_upload": "/audiobookshelf/bandwidth/set-global-upload"
+        }
+
+        response = requests.post(
+            f"{self.base_url}{endpoint_map[limit_type]}",
+            headers=self.headers,
+            json={"limit": limit}
+        )
+        return response.json()
+
+# Usage
+api = AudiobookshelfRSSAPI('http://localhost:8000/api', 'your-api-key')
+
+# Add RSS feed
+result = api.add_rss_feed("https://example.com/audiobooks.xml", "audiobooks")
+print(f"Added feed: {result['success']}")
+
+# Get RSS items
+items = api.get_rss_items(with_data=True)
+print(f"RSS items: {items['data']}")
+
+# Set bandwidth limit (1 MB/s download)
+result = api.set_bandwidth_limit("global_download", 1024000)
+print(f"Bandwidth limit set: {result['success']}")
+```
+
+### Python - qBittorrent RSS Management
+
+```python
+import requests
+
+class QBittorrentRSSAPI:
+    def __init__(self, base_url: str, api_key: str):
+        self.base_url = base_url
+        self.headers = {
+            'X-API-Key': api_key,
+            'Content-Type': 'application/json'
+        }
+
+    def add_rss_feed(self, url: str, path: str = "") -> dict:
+        """Add RSS feed to qBittorrent"""
+        response = requests.post(
+            f"{self.base_url}/qbittorrent/rss/add-feed",
+            headers=self.headers,
+            json={"url": url, "path": path}
+        )
+        return response.json()
+
+    def set_rss_rule(self, rule_name: str, rule_def: dict) -> dict:
+        """Set RSS download rule"""
+        response = requests.post(
+            f"{self.base_url}/qbittorrent/rss/set-rule",
+            headers=self.headers,
+            json={"rule_name": rule_name, "rule_def": rule_def}
+        )
+        return response.json()
+
+    def get_bandwidth_usage(self) -> dict:
+        """Get bandwidth usage statistics"""
+        response = requests.get(
+            f"{self.base_url}/qbittorrent/bandwidth/usage-stats",
+            headers=self.headers
+        )
+        return response.json()
+
+# Usage
+api = QBittorrentRSSAPI('http://localhost:8000/api', 'your-api-key')
+
+# Add RSS feed
+result = api.add_rss_feed("https://example.com/torrents.xml", "audiobooks")
+print(f"Added feed: {result['success']}")
+
+# Set RSS rule for automatic downloads
+rule = {
+    "enabled": True,
+    "mustContain": "audiobook",
+    "assignedCategory": "audiobooks",
+    "addPaused": False
+}
+result = api.set_rss_rule("audiobook_downloads", rule)
+print(f"Rule set: {result['success']}")
+
+# Get bandwidth stats
+stats = api.get_bandwidth_usage()
+print(f"Current download speed: {stats['data']['server_dl_speed']} bytes/s")
+```
+
+---
+
+## Changelog - Integration Enhancements
+
+### Version 1.1.0 (2025-11-21)
+- **Audiobookshelf Integration Enhancements:**
+  - Added RSS feed management (add, remove, refresh, organize)
+  - Added RSS download rules and automation
+  - Added comprehensive bandwidth management
+  - Added collection and playlist management
+  - Added progress tracking and bookmarks
+  - Added user management and notifications
+  - Added backup and email functionality
+
+- **qBittorrent Integration Enhancements:**
+  - Added RSS feed management and organization
+  - Added RSS download rules and automation
+  - Added comprehensive bandwidth controls
+  - Added alternative speed limit management
+  - Added bandwidth usage statistics and monitoring
+
+- **API Documentation Updates:**
+  - Added complete Audiobookshelf integration endpoints
+  - Added complete qBittorrent integration endpoints
+  - Added code examples for new features
+  - Added integration health checks and configuration
+
+---
+
+*Last updated: 2025-11-21T00:22:05.778Z*
 *Last updated: 2025-11-18T14:25:52.863Z*

@@ -31,12 +31,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class MAMPassiveCrawler:
+# Import Shared Stealth Library
+from mamcrawler.stealth import StealthCrawler
+
+class MAMPassiveCrawler(StealthCrawler):
     """
     Passive crawler for MyAnonamouse.net that respects site terms and mimics normal user behavior.
     """
 
     def __init__(self, username: Optional[str] = None, password: Optional[str] = None):
+        # Initialize StealthCrawler with specific state file
+        super().__init__(state_file="mam_crawler_state.json")
+
         # Use environment variables for credentials
         self.username = username or os.getenv('MAM_USERNAME')
         self.password = password or os.getenv('MAM_PASSWORD')
@@ -52,16 +58,11 @@ class MAMPassiveCrawler:
         self.login_expiry = timedelta(hours=2)  # MAM sessions typically last 2 hours
 
         # Rate limiting to mimic human behavior
-        self.min_delay = 3  # seconds
-        self.max_delay = 10  # seconds
+        # (Inherited from StealthCrawler: self.min_delay, self.max_delay)
         self.last_request = datetime.now()
 
         # User agent rotation
-        self.user_agents = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        ]
+        # (Inherited from StealthCrawler: self.user_agents)
 
         # Crawling restrictions - only publicly viewable content
         self.allowed_paths = [
@@ -73,23 +74,27 @@ class MAMPassiveCrawler:
             "/f/",  # forum sections (public)
         ]
 
-    @sleep_and_retry
-    @limits(calls=1, period=3)  # 1 request per 3 seconds
     async def _rate_limit(self):
         """Implement rate limiting to avoid detection."""
-        now = datetime.now()
-        elapsed = (now - self.last_request).total_seconds()
-
-        if elapsed < self.min_delay:
-            delay = random.uniform(self.min_delay, self.max_delay)
-            logger.info(f"Rate limiting: sleeping for {delay:.2f} seconds")
-            await asyncio.sleep(delay)
-
+        # Use shared human_delay
+        await self.human_delay(self.min_delay, self.max_delay)
         self.last_request = datetime.now()
 
     async def _ensure_authenticated(self) -> bool:
         """Ensure we have a valid authenticated session."""
         now = datetime.now()
+
+        # First, try to use cookies from environment if available
+        env_uid = os.getenv('uid')
+        env_mam_id = os.getenv('mam_id')
+        if env_uid and env_mam_id and not self.session_cookies:
+            logger.info("Using session cookies from environment")
+            self.session_cookies = {
+                'uid': env_uid,
+                'mam_id': env_mam_id
+            }
+            self.last_login = now
+            return True
 
         # Check if we need to login
         if (self.last_login is None or
@@ -124,7 +129,7 @@ class MAMPassiveCrawler:
             }
 
             # Use aiohttp for proper POST authentication
-            user_agent = random.choice(self.user_agents)
+            user_agent = self.get_user_agent()
             headers = {
                 'User-Agent': user_agent,
                 'Referer': f"{self.base_url}/login.php",
@@ -141,16 +146,22 @@ class MAMPassiveCrawler:
                     response_text = await resp.text()
                     response_status = resp.status
 
-                    # Save response for debugging
-                    with open('mam_login_response.html', 'w', encoding='utf-8') as f:
-                        f.write(response_text)
+                    # Save response for debugging (only in debug mode to avoid exposing session tokens)
+                    debug_mode = os.getenv('DEBUG', 'false').lower() == 'true'
+                    if debug_mode:
+                        with open('mam_login_response.html', 'w', encoding='utf-8') as f:
+                            f.write(response_text)
+                        logger.debug("Login response saved to mam_login_response.html for debugging")
 
                     logger.info(f"Login response status: {response_status}")
                     logger.info(f"Response length: {len(response_text)} bytes")
 
                     # Check if login was successful
-                    if "logout" in response_text.lower() or "my account" in response_text.lower():
-                        logger.info("Login successful - found logout/my account link")
+                    # Login successful if: status is 200-299 AND response doesn't contain "login failed" error
+                    is_success = (200 <= response_status < 300) and "login failed" not in response_text.lower()
+
+                    if is_success:
+                        logger.info("Login successful - received 2xx response without login failed error")
                         self.last_login = datetime.now()
 
                         # Store session cookies
@@ -168,7 +179,8 @@ class MAMPassiveCrawler:
                         else:
                             logger.error("Login failed - credentials may be invalid or site structure changed")
 
-                        logger.info("Response saved to mam_login_response.html for debugging")
+                        if debug_mode:
+                            logger.info("Response saved to mam_login_response.html for debugging")
                         return False
 
         except Exception as e:
@@ -227,13 +239,15 @@ class MAMPassiveCrawler:
             }
 
         try:
-            # Rotate user agent for each request
-            user_agent = random.choice(self.user_agents)
-
-            # Build CrawlerRunConfig
+            # Build CrawlerRunConfig using shared stealth config
+            # We create a browser config first to get the viewport/UA
+            browser_config = self.create_browser_config(headless=True)
+            
             config = CrawlerRunConfig(
                 verbose=False,
-                user_agent=user_agent
+                user_agent=browser_config.user_agent,
+                js_code=self.create_stealth_js(), # Inject stealth JS
+                wait_for="css:body"
             )
 
             async with AsyncWebCrawler() as crawler:
@@ -290,6 +304,17 @@ class MAMPassiveCrawler:
             anonymized["content"] = content[:5000]  # Limit content length
 
         return anonymized
+
+    def trigger_ingestion(self):
+        """Trigger RAG ingestion pipeline."""
+        logger.info("Triggering RAG ingestion...")
+        try:
+            import subprocess
+            import sys
+            subprocess.Popen([sys.executable, "ingest.py"])
+            logger.info("RAG ingestion started in background")
+        except Exception as e:
+            logger.error(f"Failed to trigger ingestion: {e}")
 
     async def crawl_public_pages(self, urls: List[str]) -> List[Dict[str, Any]]:
         """
@@ -655,11 +680,11 @@ class MAMDataProcessor:
                         content = data['content'].strip()
                         if len(content) > 100:  # Only include substantial content
                             markdown_output += f"#### Content\n\n{content}\n\n"
-
-                    # Add summary if content is long
-                    if len(content) > 1000:
-                        summary = self._generate_summary(content)
-                        markdown_output += f"#### Summary\n\n{summary}\n\n"
+                        
+                        # Add summary if content is long
+                        if len(content) > 1000:
+                            summary = self._generate_summary(content)
+                            markdown_output += f"#### Summary\n\n{summary}\n\n"
 
                     markdown_output += "---\n\n"
 
@@ -958,8 +983,26 @@ async def main():
         logger.info("Demo mode completed - check mam_crawl_output.md for results")
 
     else:
-        # Skip crawler initialization in demo mode - only use processor
-        pass
+        # Real crawling mode
+        logger.info("Starting real crawl...")
+        crawler = MAMPassiveCrawler()
+        processor = MAMDataProcessor()
+        
+        # Crawl guides
+        logger.info("Crawling guides section...")
+        guides_data = await crawler.crawl_guides_section()
+        
+        # Crawl qBittorrent settings
+        logger.info("Crawling qBittorrent settings...")
+        qb_data = await crawler.crawl_qbittorrent_settings()
+        
+        # Process and save
+        guides_md = processor.process_guides_data(guides_data)
+        qb_md = processor.process_qbittorrent_data(qb_data)
+        processor.save_markdown_output(guides_md, qb_md)
+        
+        # Trigger RAG ingestion
+        crawler.trigger_ingestion()
 
 
 if __name__ == "__main__":

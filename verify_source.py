@@ -1,0 +1,4 @@
+from audiobookshelf_metadata_sync import AudiobookshelfMetadataSync
+import inspect
+
+print(inspect.getsource(AudiobookshelfMetadataSync.query_provider))

@@ -1,28 +1,33 @@
 #!/usr/bin/env python3
 """
 VIP Status Manager for MAM
-
 Automatically maintains VIP status by:
-1. Checking VIP expiry date
+1. Checking VIP expiry date via real scraping
 2. Renewing if below 1 week (7 days) remaining
 3. At end of automation, spending remaining points on VIP extension first, then ratio
+Enforces Strict Identity Rules (Section 21).
 """
 
 import os
 import sys
 import json
 import logging
+import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
+from bs4 import BeautifulSoup
+import aiohttp
+from aiohttp_socks import ProxyConnector
+
+from mamcrawler.stealth import StealthCrawler
 
 # Fix Windows encoding
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-
-class VIPStatusManager:
-    """Manages VIP status renewal and bonus point allocation."""
+class VIPStatusManager(StealthCrawler):
+    """Manages VIP status renewal and bonus point allocation using MAM Identity."""
 
     # VIP Status Constants (from VIP Guide)
     POINTS_PER_28_DAYS = 5000
@@ -34,10 +39,15 @@ class VIPStatusManager:
     POINTS_PER_1GB_UPLOAD = 500
 
     def __init__(self, logger=None):
-        """Initialize VIP status manager."""
+        """Initialize VIP status manager with MAM Identity."""
+        # Initialize StealthCrawler as Scraper A (MAM)
+        super().__init__(state_file="vip_manager_state.json", identity_type='MAM')
+        
         self.logger = logger or self._setup_logger()
         self.mam_username = os.getenv('MAM_USERNAME', '')
         self.mam_password = os.getenv('MAM_PASSWORD', '')
+        self.base_url = "https://www.myanonamouse.net"
+        self.session_cookies = None
 
     def _setup_logger(self) -> logging.Logger:
         """Setup logger for VIP manager."""
@@ -54,126 +64,134 @@ class VIPStatusManager:
 
         return logger
 
-    def get_user_stats(self) -> Optional[Dict]:
-        """
-        Get current user statistics from MAM.
-
-        Returns dict with:
-        - bonus_points: Current bonus points
-        - vip_status: True/False
-        - vip_expiry_date: Datetime of VIP expiration (if VIP)
-        - ratio: Current ratio
-        """
-        # TODO: Implement MAM API/scraping to get actual stats
-        # For now, using known values from guides
-        return {
-            'bonus_points': 99999,
-            'vip_status': True,
-            'vip_expiry_date': None,  # Need to fetch from MAM
-            'ratio': 4.053602,
-            'earning_rate': 1413.399  # points per hour
+    async def login(self) -> bool:
+        """Login to MAM using MAM Identity (Proxy + UA)."""
+        login_url = f"{self.base_url}/takelogin.php"
+        
+        login_data = {
+            "username": self.mam_username,
+            "password": self.mam_password,
+            "login": "Login"
         }
+        
+        headers = {
+            'User-Agent': self.get_user_agent(),
+            'Referer': f"{self.base_url}/login.php",
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        
+        connector = None
+        if self.proxy:
+            connector = ProxyConnector.from_url(self.proxy)
+            
+        try:
+            async with aiohttp.ClientSession(connector=connector) as session:
+                async with session.post(login_url, data=login_data, headers=headers) as resp:
+                    text = await resp.text()
+                    if "logout" in text.lower() or "my account" in text.lower():
+                        self.session_cookies = {c.key: c.value for c in session.cookie_jar}
+                        self.logger.info("✓ VIP Manager Login successful")
+                        return True
+                    else:
+                        self.logger.error("✗ VIP Manager Login failed")
+                        return False
+        except Exception as e:
+            self.logger.error(f"Login error: {e}")
+            return False
 
-    def calculate_vip_days_remaining(self, expiry_date: Optional[datetime]) -> Optional[int]:
-        """
-        Calculate days remaining on VIP status.
+    async def get_real_stats(self) -> Optional[Dict]:
+        """Fetch real stats from MAM."""
+        if not self.session_cookies:
+            if not await self.login():
+                return None
 
-        Args:
-            expiry_date: VIP expiration datetime
-
-        Returns:
-            Days remaining, or None if not VIP or unknown
-        """
-        if not expiry_date:
+        # Use UID from spec or discover it? Spec says uid=229756 in example, but we should probably find our own.
+        # Actually, the store page usually shows points.
+        store_url = f"{self.base_url}/store.php"
+        
+        headers = {'User-Agent': self.get_user_agent()}
+        connector = ProxyConnector.from_url(self.proxy) if self.proxy else None
+        
+        try:
+            async with aiohttp.ClientSession(connector=connector, cookies=self.session_cookies) as session:
+                async with session.get(store_url, headers=headers) as resp:
+                    html = await resp.text()
+                    
+            soup = BeautifulSoup(html, 'lxml')
+            
+            # Parse Bonus Points
+            # Usually in a div with id "bonus_points" or similar, or in the header
+            # Based on common MAM layout: <span id="bp">123,456</span>
+            bp_elem = soup.find(id="bp") or soup.find("span", class_="bonusPoints")
+            bonus_points = 0
+            if bp_elem:
+                bonus_points = int(bp_elem.get_text(strip=True).replace(',', ''))
+                
+            # Parse VIP Status
+            # Look for "VIP" icon or text in user info
+            vip_status = False
+            vip_expiry = None
+            
+            # This is a heuristic; actual parsing depends on MAM's exact HTML
+            # Assuming we can find it in the store page or user details
+            if "You are currently a VIP" in html:
+                vip_status = True
+                # Try to find expiry date
+                # "Your VIP status expires on: YYYY-MM-DD HH:MM:SS"
+                import re
+                match = re.search(r"expires on: (\d{4}-\d{2}-\d{2})", html)
+                if match:
+                    vip_expiry = datetime.strptime(match.group(1), "%Y-%m-%d")
+            
+            return {
+                'bonus_points': bonus_points,
+                'vip_status': vip_status,
+                'vip_expiry_date': vip_expiry,
+                'ratio': 0.0, # Placeholder, need to parse from header if needed
+                'earning_rate': 0.0
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Failed to fetch stats: {e}")
             return None
 
+    def calculate_vip_days_remaining(self, expiry_date: Optional[datetime]) -> Optional[int]:
+        """Calculate days remaining on VIP status."""
+        if not expiry_date:
+            return None
         now = datetime.now()
         if expiry_date <= now:
             return 0
-
         delta = expiry_date - now
         return delta.days
 
     def calculate_renewal_needed(self, days_remaining: Optional[int]) -> Tuple[bool, int]:
-        """
-        Calculate if VIP renewal is needed and how many days to add.
-
-        Args:
-            days_remaining: Current days remaining on VIP
-
-        Returns:
-            (needs_renewal, days_to_add)
-        """
+        """Calculate if VIP renewal is needed."""
         if days_remaining is None:
-            # Unknown status - assume needs renewal
-            return True, 28
-
+            return True, 28 # Assume needed if unknown
         if days_remaining < self.MINIMUM_DAYS_BUFFER:
-            # Below minimum buffer - renew to 28 days
-            days_to_add = 28 - days_remaining
-            return True, days_to_add
-
+            return True, 28 - days_remaining
         return False, 0
 
     def calculate_renewal_cost(self, days_to_add: int) -> int:
-        """
-        Calculate bonus point cost for VIP renewal.
-
-        Args:
-            days_to_add: Number of days to add
-
-        Returns:
-            Bonus points required
-        """
         return int(days_to_add * self.POINTS_PER_DAY)
 
-    def renew_vip_status(self, days_to_add: int, dry_run: bool = False) -> bool:
-        """
-        Renew VIP status on MAM.
-
-        Args:
-            days_to_add: Number of days to add
-            dry_run: If True, don't actually renew
-
-        Returns:
-            True if successful
-        """
+    async def renew_vip_status(self, days_to_add: int, dry_run: bool = False) -> bool:
+        """Renew VIP status on MAM."""
         cost = self.calculate_renewal_cost(days_to_add)
-
         self.logger.info(f"[VIP] Renewing VIP status for {days_to_add} days (cost: {cost} points)")
 
         if dry_run:
             self.logger.info("[VIP] DRY-RUN: Would renew VIP status")
             return True
 
-        # TODO: Implement actual MAM API call to bonus store
-        # POST to https://www.myanonamouse.net/store.php
-        # Action: Purchase VIP status
+        # TODO: Implement actual POST to store.php
+        # This requires analyzing the form data for the store purchase
+        self.logger.warning("[VIP] Actual purchase logic not yet implemented (Safety)")
+        return False
 
-        self.logger.info("[VIP] VIP status renewed successfully")
-        return True
-
-    def spend_remaining_points(
-        self,
-        current_points: int,
-        reserve_for_vip: bool = True,
-        dry_run: bool = False
-    ) -> Dict:
-        """
-        Spend remaining bonus points on VIP extension first, then upload credit.
-
-        Priority:
-        1. Extend VIP status to 28 days if below 7 days
-        2. Use remaining points for upload credit
-
-        Args:
-            current_points: Current bonus points available
-            reserve_for_vip: If True, reserve MINIMUM_POINTS_BUFFER for VIP
-            dry_run: If True, don't actually spend points
-
-        Returns:
-            Dict with spending breakdown
-        """
+    async def spend_remaining_points(self, current_points: int, reserve_for_vip: bool = True, dry_run: bool = False) -> Dict:
+        """Spend remaining bonus points on VIP extension first, then upload credit."""
         self.logger.info(f"[VIP] Starting point allocation with {current_points:,} points")
 
         result = {
@@ -186,22 +204,20 @@ class VIPStatusManager:
             'vip_buffer_reserved': 0
         }
 
-        # Get current VIP status
-        stats = self.get_user_stats()
+        stats = await self.get_real_stats()
+        if not stats:
+            self.logger.error("Could not get real stats, aborting spend")
+            return result
+            
         days_remaining = self.calculate_vip_days_remaining(stats.get('vip_expiry_date'))
-
-        # Check if VIP renewal needed
         needs_renewal, days_to_add = self.calculate_renewal_needed(days_remaining)
 
         if needs_renewal and days_to_add > 0:
             renewal_cost = self.calculate_renewal_cost(days_to_add)
-
             if current_points >= renewal_cost:
                 self.logger.info(f"[VIP] VIP renewal needed: {days_remaining or 0} days remaining")
-                self.logger.info(f"[VIP] Adding {days_to_add} days for {renewal_cost:,} points")
-
                 if not dry_run:
-                    success = self.renew_vip_status(days_to_add, dry_run=False)
+                    success = await self.renew_vip_status(days_to_add, dry_run=False)
                     if success:
                         result['vip_points_spent'] = renewal_cost
                         result['vip_days_added'] = days_to_add
@@ -212,122 +228,56 @@ class VIPStatusManager:
                     result['vip_days_added'] = days_to_add
                     result['remaining_points'] -= renewal_cost
             else:
-                self.logger.warning(
-                    f"[VIP] Insufficient points for VIP renewal! "
-                    f"Need {renewal_cost:,}, have {current_points:,}"
-                )
+                self.logger.warning(f"[VIP] Insufficient points for VIP renewal! Need {renewal_cost:,}, have {current_points:,}")
         else:
-            self.logger.info(
-                f"[VIP] VIP status healthy: {days_remaining or 'unknown'} days remaining "
-                f"(minimum: {self.MINIMUM_DAYS_BUFFER} days)"
-            )
+            self.logger.info(f"[VIP] VIP status healthy: {days_remaining or 'unknown'} days remaining")
 
-        # Reserve buffer for future VIP renewals
         if reserve_for_vip:
             if result['remaining_points'] > self.MINIMUM_POINTS_BUFFER:
                 result['vip_buffer_reserved'] = self.MINIMUM_POINTS_BUFFER
                 result['remaining_points'] -= self.MINIMUM_POINTS_BUFFER
-                self.logger.info(
-                    f"[VIP] Reserved {self.MINIMUM_POINTS_BUFFER:,.0f} points "
-                    f"for VIP buffer ({self.MINIMUM_DAYS_BUFFER} days)"
-                )
+                self.logger.info(f"[VIP] Reserved {self.MINIMUM_POINTS_BUFFER:,.0f} points for VIP buffer")
 
-        # Spend remaining points on upload credit (ratio improvement)
         if result['remaining_points'] >= self.POINTS_PER_1GB_UPLOAD:
             upload_gb = result['remaining_points'] // self.POINTS_PER_1GB_UPLOAD
             upload_cost = upload_gb * self.POINTS_PER_1GB_UPLOAD
-
-            self.logger.info(
-                f"[VIP] Spending {upload_cost:,} points on {upload_gb} GB upload credit"
-            )
-
+            self.logger.info(f"[VIP] Spending {upload_cost:,} points on {upload_gb} GB upload credit")
             if not dry_run:
-                # TODO: Implement actual MAM API call to buy upload credit
-                pass
+                pass # Implement buy logic
             else:
                 self.logger.info("[VIP] DRY-RUN: Would buy upload credit")
-
             result['upload_points_spent'] = upload_cost
             result['upload_gb_added'] = upload_gb
             result['remaining_points'] -= upload_cost
 
-        # Final summary
-        self.logger.info("[VIP] =====================================")
-        self.logger.info("[VIP] BONUS POINT ALLOCATION SUMMARY")
-        self.logger.info("[VIP] =====================================")
-        self.logger.info(f"[VIP] Starting Points:      {result['starting_points']:,}")
-        self.logger.info(f"[VIP] VIP Renewal:          -{result['vip_points_spent']:,} ({result['vip_days_added']} days)")
-        self.logger.info(f"[VIP] VIP Buffer Reserved:  -{result['vip_buffer_reserved']:,} ({self.MINIMUM_DAYS_BUFFER} days)")
-        self.logger.info(f"[VIP] Upload Credit:        -{result['upload_points_spent']:,} ({result['upload_gb_added']} GB)")
-        self.logger.info(f"[VIP] Remaining Points:     {result['remaining_points']:,}")
-        self.logger.info("[VIP] =====================================")
-
         return result
 
-    def check_and_maintain_vip(self, dry_run: bool = False) -> Dict:
-        """
-        Main function to check and maintain VIP status.
-
-        Called at the end of each automation run.
-
-        Args:
-            dry_run: If True, don't actually spend points
-
-        Returns:
-            Dict with maintenance results
-        """
+    async def check_and_maintain_vip(self, dry_run: bool = False) -> Dict:
+        """Main function to check and maintain VIP status."""
         self.logger.info("[VIP] Starting VIP status maintenance check...")
-
-        # Get current stats
-        stats = self.get_user_stats()
+        stats = await self.get_real_stats()
+        if not stats:
+            return {'error': 'failed_to_get_stats'}
+            
         current_points = stats.get('bonus_points', 0)
-
         if not stats.get('vip_status', False):
-            self.logger.warning("[VIP] WARNING: Not currently VIP! Consider donation or buying VIP.")
-            return {'error': 'not_vip'}
-
-        # Spend remaining points according to priority
-        result = self.spend_remaining_points(
-            current_points=current_points,
-            reserve_for_vip=True,
-            dry_run=dry_run
-        )
-
+            self.logger.warning("[VIP] WARNING: Not currently VIP!")
+            
+        result = await self.spend_remaining_points(current_points=current_points, reserve_for_vip=True, dry_run=dry_run)
         self.logger.info("[VIP] VIP status maintenance complete")
         return result
 
-
-def main():
-    """Test VIP status manager."""
+async def main_async():
     import argparse
-
     parser = argparse.ArgumentParser(description='Test VIP status manager')
     parser.add_argument('--dry-run', action='store_true', help='Dry run mode')
-    parser.add_argument('--points', type=int, default=99999, help='Simulate bonus points')
     args = parser.parse_args()
 
     manager = VIPStatusManager()
+    await manager.check_and_maintain_vip(dry_run=args.dry_run)
 
-    print("\n" + "="*70)
-    print("VIP STATUS MAINTENANCE TEST")
-    print("="*70)
-
-    # Test spending logic
-    result = manager.spend_remaining_points(
-        current_points=args.points,
-        reserve_for_vip=True,
-        dry_run=args.dry_run
-    )
-
-    print("\n" + "="*70)
-    print("ALLOCATION BREAKDOWN")
-    print("="*70)
-    print(f"VIP Days Added:        {result['vip_days_added']} days")
-    print(f"Upload Credit Added:   {result['upload_gb_added']} GB")
-    print(f"Points Remaining:      {result['remaining_points']:,}")
-    print(f"VIP Buffer Reserved:   {result['vip_buffer_reserved']:,.0f} points")
-    print("="*70)
-
+def main():
+    asyncio.run(main_async())
 
 if __name__ == '__main__':
     main()

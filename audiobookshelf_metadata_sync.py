@@ -16,6 +16,10 @@ from dotenv import load_dotenv
 
 import aiohttp
 import requests
+from bs4 import BeautifulSoup
+import urllib.parse
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from mamcrawler.metadata_scraper import MetadataScraper
 
 load_dotenv()
 
@@ -56,7 +60,7 @@ class AudiobookshelfMetadataSync:
         # Metadata provider configurations
         self.provider_urls = {
             "google": "https://www.googleapis.com/books/v1/volumes?q={q}+inauthor:{a}",
-            "goodreads": "http://localhost:5555/goodreads/search?query={q}&author={a}",
+            # "goodreads": "http://localhost:5555/goodreads/search?query={q}&author={a}", # REMOVED - using direct scrape
             "kindle": "http://localhost:5555/kindle/us/search?query={q}&author={a}",
             "hardcover": "https://provider.vito0912.de/hardcover/en/book",
             "lubimyczytac-abs": "http://localhost:3000/search?query={q}&author={a}",
@@ -86,6 +90,9 @@ class AudiobookshelfMetadataSync:
 
         # Cache for series information
         self.series_cache = {}
+        
+        # Initialize Metadata Scraper (Scraper B)
+        self.metadata_scraper = MetadataScraper()
 
     def get_audiobookshelf_library(self) -> List[Dict]:
         """Get all items from Audiobookshelf library."""
@@ -177,8 +184,16 @@ class AudiobookshelfMetadataSync:
     async def query_provider(self, provider: str, title: str, author: str = "") -> Optional[Dict]:
         """Query a specific metadata provider for book information."""
         try:
-            if provider == "google":
+            logger.info(f"DEBUG: query_provider called for {provider}")
+            if provider == "itunes":
+                return await self.search_itunes_audiobook(title, author)
+            elif provider == "hardcover":
+                return await self.search_hardcover_audiobook(title, author)
+            elif provider == "google":
                 return await self.search_google_books(title, author)
+            elif provider == "goodreads":
+                logger.info("DEBUG: Calling search_goodreads_audiobook")
+                return await self.search_goodreads_audiobook(title, author)
             else:
                 # For other providers, use synchronous requests since they may not support async
                 return self.search_other_provider(provider, title, author)
@@ -577,13 +592,15 @@ class AudiobookshelfMetadataSync:
 
             logger.info(f"\n📖 Processing: '{title}' by {author}")
 
-            # Provider call order: Google Books API → Goodreads API → Hardcover (third provider)
-            provider_order = ['google', 'goodreads', 'hardcover']
+            # Provider call order: iTunes (Best for audiobooks) → Hardcover (User provided)
+            # provider_order = ['itunes', 'google', 'goodreads']
+            provider_order = ['itunes', 'hardcover'] # Testing iTunes and Hardcover
             provider_data = None
             successful_provider = None
 
             # Try each provider with exactly 2 attempts and backoff
             for provider in provider_order:
+                logger.info(f"DEBUG: Loop provider: '{provider}'")
                 logger.info(f"  🔍 Trying {provider} API (2 attempts max)")
 
                 for attempt in range(2):
@@ -616,19 +633,19 @@ class AudiobookshelfMetadataSync:
                 logger.warning(f"  ✗ {provider} failed after 2 attempts")
 
             # If all three providers failed, use Goodreads scraper as fallback
-            if not provider_data:
-                logger.info("  🔄 All APIs failed - using Goodreads scraper fallback")
-                try:
-                    goodreads_scraper_data = await self.search_goodreads_audiobook(title, author)
-                    if goodreads_scraper_data:
-                        provider_data = goodreads_scraper_data
-                        successful_provider = 'goodreads_scraper'
-                        logger.info("  ✓ Goodreads scraper fallback succeeded")
-                        self.stats['scraper_fallback_used'] += 1
-                    else:
-                        logger.warning("  ✗ Goodreads scraper fallback also failed")
-                except Exception as e:
-                    logger.error(f"  ✗ Goodreads scraper error: {e}")
+            # if not provider_data:
+            #     logger.info("  🔄 All APIs failed - using Goodreads scraper fallback")
+            #     try:
+            #         goodreads_scraper_data = await self.search_goodreads_audiobook(title, author)
+            #         if goodreads_scraper_data:
+            #             provider_data = goodreads_scraper_data
+            #             successful_provider = 'goodreads_scraper'
+            #             logger.info("  ✓ Goodreads scraper fallback succeeded")
+            #             self.stats['scraper_fallback_used'] += 1
+            #         else:
+            #             logger.warning("  ✗ Goodreads scraper fallback also failed")
+            #     except Exception as e:
+            #         logger.error(f"  ✗ Goodreads scraper error: {e}")
 
             if not provider_data:
                 logger.warning(f"  ❌ ALL PROVIDERS AND SCRAPER FAILED for '{title}' by {author}")
@@ -732,6 +749,253 @@ class AudiobookshelfMetadataSync:
             metadata['tags'] = tags
 
         return metadata
+
+    async def search_itunes_audiobook(self, title: str, author: str) -> Optional[Dict]:
+        """Search iTunes API for audiobook metadata (Reliable & Fast)."""
+        try:
+            query = f"{title} {author}"
+            encoded_query = urllib.parse.quote(query)
+            url = f"https://itunes.apple.com/search?term={encoded_query}&media=audiobook&entity=audiobook&limit=1"
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=10) as response:
+                    if response.status != 200:
+                        return None
+                    data = await response.json()
+            
+            if data.get('resultCount', 0) == 0:
+                return None
+                
+            item = data['results'][0]
+            
+            # Map iTunes data to Google Books format
+            volume_info = {
+                'title': item.get('collectionName'),
+                'authors': [item.get('artistName')],
+                'description': item.get('description', ''),
+                'publishedDate': item.get('releaseDate', '')[:10], # YYYY-MM-DD
+                'publisher': item.get('copyright', ''),
+                'categories': [item.get('primaryGenreName')] if item.get('primaryGenreName') else [],
+                'industryIdentifiers': [], # iTunes doesn't give ISBNs usually
+                'averageRating': 0.0, # iTunes doesn't give ratings in search API
+                'imageLinks': {
+                    'thumbnail': item.get('artworkUrl100', '').replace('100x100', '600x600')
+                }
+            }
+            
+            # Try to extract narrator from description
+            desc = item.get('description', '')
+            if 'Narrated by ' in desc:
+                try:
+                    narrator = desc.split('Narrated by ')[1].split('\n')[0].strip()
+                    # Add narrator to description if not already clear, or maybe as a separate field if supported
+                    # For now, just ensure description is rich
+                except:
+                    pass
+
+            return {
+                'items': [{
+                    'volumeInfo': volume_info
+                }]
+            }
+
+        except Exception as e:
+            logger.warning(f"iTunes search failed: {e}")
+            return None
+
+    async def search_hardcover_audiobook(self, title: str, author: str) -> Optional[Dict]:
+        """Search Hardcover API using GraphQL."""
+        try:
+            url = "https://api.hardcover.app/v1/graphql"
+            token = "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIYXJkY292ZXIiLCJ2ZXJzaW9uIjoiOCIsImp0aSI6IjAzNTBjMTE5LWQ2MjItNDQ3NS05YWQxLWE4MzYzNTBmOGZmYyIsImFwcGxpY2F0aW9uSWQiOjIsInN1YiI6IjQ1OTA5IiwiYXVkIjoiMSIsImlkIjoiNDU5MDkiLCJsb2dnZWRJbiI6dHJ1ZSwiaWF0IjoxNzYzNjcxNzI0LCJleHAiOjE3OTUyMDc3MjQsImh0dHBzOi8vaGFzdXJhLmlvL2p3dC9jbGFpbXMiOnsieC1oYXN1cmEtYWxsb3dlZC1yb2xlcyI6WyJ1c2VyIl0sIngtaGFzdXJhLWRlZmF1bHQtcm9sZSI6InVzZXIiLCJ4LWhhc3VyYS1yb2xlIjoidXNlciIsIlgtaGFzdXJhLXVzZXItaWQiOiI0NTkwOSJ9LCJ1c2VyIjp7ImlkIjo0NTkwOX19.jMFEQ9U04SqSWWYkhl-lPDiu3JuN_gCBeruY7tHQc0I"
+            
+            headers = {
+                "Authorization": f"Bearer {token}",  # Fixed: Use Bearer prefix
+                "Content-Type": "application/json"
+            }
+            
+            # Try exact match first
+            query = """
+            query SearchBooks($title: String!) {
+              books(where: {title: {_eq: $title}}, limit: 5) {
+                title
+                description
+                release_date
+                rating
+                contributions {
+                  author {
+                    name
+                  }
+                }
+                images {
+                  url
+                }
+              }
+            }
+            """
+            
+            variables = {"title": title}
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, headers=headers, json={'query': query, 'variables': variables}) as response:
+                    if response.status != 200:
+                        logger.warning(f"Hardcover API error: {response.status}")
+                        return None
+                    
+                    data = await response.json()
+                    
+                    if 'errors' in data:
+                        logger.warning(f"Hardcover API errors: {data['errors']}")
+                        return None
+                        
+                    books = data.get('data', {}).get('books', [])
+                    if not books:
+                        return None
+                        
+                    # Filter by author if possible
+                    best_match = None
+                    import difflib
+                    
+                    for book in books:
+                        # Check author
+                        book_authors = [c['author']['name'] for c in book.get('contributions', []) if c.get('author')]
+                        if not book_authors:
+                            continue
+                            
+                        # Simple author check
+                        match = False
+                        for ba in book_authors:
+                            if difflib.SequenceMatcher(None, author.lower(), ba.lower()).ratio() > 0.6:
+                                match = True
+                                break
+                        
+                        if match:
+                            best_match = book
+                            break
+                    
+                    if not best_match and books:
+                        best_match = books[0]
+                    
+                    if not best_match:
+                        return None
+
+                    # Map to Google Books format
+                    volume_info = {
+                        'title': best_match.get('title'),
+                        'authors': [c['author']['name'] for c in best_match.get('contributions', []) if c.get('author')],
+                        'description': best_match.get('description', ''),
+                        'publishedDate': best_match.get('release_date', ''),
+                        'averageRating': best_match.get('rating', 0.0),
+                        'imageLinks': {
+                            'thumbnail': best_match.get('images', [{}])[0].get('url', '') if best_match.get('images') else ''
+                        }
+                    }
+                    
+                    return {
+                        'items': [{
+                            'volumeInfo': volume_info
+                        }]
+                    }
+
+        except Exception as e:
+            logger.warning(f"Hardcover search failed: {e}")
+            return None
+
+    async def search_goodreads_audiobook(self, title: str, author: str) -> Optional[Dict]:
+        """Search Goodreads for audiobook metadata using MetadataScraper (Scraper B)."""
+        try:
+            query = f"{title} {author}"
+            encoded_query = urllib.parse.quote(query)
+            search_url = f"https://www.goodreads.com/search?q={encoded_query}"
+            
+            logger.info(f"  👀 Searching Goodreads (Scraper B) for: {title}")
+
+            # Use Metadata Scraper's Browser Config (Random UA, No Proxy)
+            # Headless=True is safer for stability, StealthCrawler handles the rest
+            browser_config = self.metadata_scraper.create_browser_config(headless=True)
+            
+            # Add human-like delay before request
+            await self.metadata_scraper.human_like_delay()
+            
+            run_config = CrawlerRunConfig(
+                cache_mode=CacheMode.BYPASS
+            )
+
+            async with AsyncWebCrawler(config=browser_config) as crawler:
+                result = await crawler.arun(
+                    url=search_url,
+                    config=run_config
+                )
+
+                if not result.success:
+                    logger.warning(f"  ⚠ Crawl failed: {result.error_message}")
+                    return None
+
+                # Parse HTML
+                soup = BeautifulSoup(result.html, 'html.parser')
+                
+                # Check if we landed on a book page directly
+                if "/book/show/" in result.url:
+                    logger.info("  ✓ Direct hit on book page")
+                    
+                    title_elem = soup.find("h1", {"data-testid": "bookTitle"})
+                    full_title = title_elem.get_text().strip() if title_elem else title
+                    
+                    author_elem = soup.find("span", {"data-testid": "name"})
+                    author_name = author_elem.get_text().strip() if author_elem else author
+                    
+                    rating_elem = soup.find("div", class_="RatingStatistics__rating")
+                    try:
+                        rating = float(rating_elem.get_text().strip()) if rating_elem else 0.0
+                    except:
+                        rating = 0.0
+
+                else:
+                    # Search results list
+                    book_row = soup.find('tr', {'itemtype': 'http://schema.org/Book'})
+                    if not book_row:
+                        logger.warning("  ⚠ No results found on Goodreads")
+                        return None
+                        
+                    # Extract basic info from search result
+                    title_link = book_row.find('a', class_='bookTitle')
+                    if not title_link:
+                        return None
+                        
+                    full_title = title_link.text.strip()
+                    
+                    author_link = book_row.find('a', class_='authorName')
+                    author_name = author_link.text.strip() if author_link else ""
+                    
+                    rating_text = book_row.find('span', class_='minirating')
+                    rating = 0.0
+                    if rating_text:
+                        import re
+                        match = re.search(r'(\d+\.\d+)\s+avg', rating_text.text)
+                        if match:
+                            rating = float(match.group(1))
+                            
+                    logger.info(f"  ✓ Found: {full_title} ({rating}★)")
+
+                # Construct result in Google Books format
+                return {
+                    'items': [{
+                        'volumeInfo': {
+                            'title': full_title,
+                            'authors': [author_name],
+                            'averageRating': rating,
+                            'description': '', 
+                            'publisher': '',
+                            'publishedDate': '',
+                            'categories': [],
+                            'industryIdentifiers': []
+                        }
+                    }]
+                }
+
+        except Exception as e:
+            logger.warning(f"Goodreads scraping failed: {e}")
+            return None
 
     async def process_series_linking(self) -> None:
         """Process series linking for all books in the library with validation."""

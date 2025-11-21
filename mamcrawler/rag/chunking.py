@@ -6,10 +6,7 @@ Single implementation to eliminate duplication between ingest.py and watcher.py.
 from typing import List, Tuple
 from langchain_text_splitters.markdown import MarkdownHeaderTextSplitter
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from mamcrawler.config import RAGConfig, DEFAULT_RAG_CONFIG
+from ..config import RAGConfig, DEFAULT_RAG_CONFIG
 
 
 class MarkdownChunker:

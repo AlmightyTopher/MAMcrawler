@@ -2,8 +2,9 @@
 FastAPI Application Entry Point for Audiobook Automation System
 
 This module provides the main FastAPI application with:
-- CORS middleware configuration
-- API authentication via API key
+- CORS middleware configuration with strict security policies
+- API authentication via API key and JWT tokens
+- Security headers and middleware
 - Health check endpoints
 - Database lifecycle management
 - APScheduler integration
@@ -21,7 +22,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Security, Depends, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import APIKeyHeader
+from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from fastapi.responses import JSONResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
@@ -29,6 +30,8 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 
 from backend.config import get_settings
 from backend.database import init_db, close_db
+from backend.middleware import setup_security_middleware, verify_api_key
+from backend.auth import hash_password, verify_password, generate_token, verify_token, sanitize_input
 
 # Configure logging first
 logging.basicConfig(
@@ -156,90 +159,84 @@ app = FastAPI(
     description=settings.API_DESCRIPTION,
     version=settings.API_VERSION,
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json"
+    docs_url="/docs" if settings.API_DOCS else None,
+    redoc_url="/redoc" if settings.API_DOCS else None,
+    openapi_url="/openapi.json" if settings.API_DOCS else None
 )
 
 
 # ============================================================================
-# Middleware Configuration
+# Security Middleware Configuration
 # ============================================================================
 
-# CORS Middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Set up security middleware
+setup_security_middleware(app)
 
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def security_headers_middleware(request: Request, call_next):
     """
-    Middleware to log all HTTP requests
-
+    Middleware to add security headers to all responses
+    
     Args:
         request: Incoming HTTP request
         call_next: Next middleware/handler in chain
+        
+    Returns:
+        Response with security headers
+    """
+    response = await call_next(request)
+    
+    # Add security headers
+    if settings.SECURITY_HEADERS:
+        headers = response.headers
+        
+        # X-Content-Type-Options - prevents MIME sniffing
+        headers["X-Content-Type-Options"] = "nosniff"
+        
+        # X-Frame-Options - prevents clickjacking
+        headers["X-Frame-Options"] = "DENY"
+        
+        # X-XSS-Protection - enables browser XSS filter
+        headers["X-XSS-Protection"] = "1; mode=block"
+        
+        # Referrer-Policy - controls referrer information
+        headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        
+        # HSTS - forces HTTPS connections
+        headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+        
+        # Remove server information
+        headers.pop("server", None)
+    
+    return response
 
+
+@app.middleware("http")
+async def input_validation_middleware(request: Request, call_next):
+    """
+    Middleware to validate and sanitize user input
+    
+    Args:
+        request: Incoming HTTP request
+        call_next: Next middleware/handler in chain
+        
     Returns:
         Response from next handler
     """
-    if settings.ENABLE_API_LOGGING:
-        start_time = datetime.utcnow()
-
-        # Log request
-        logger.info(f"Request: {request.method} {request.url.path}")
-
-        # Process request
-        response = await call_next(request)
-
-        # Log response
-        duration = (datetime.utcnow() - start_time).total_seconds()
-        logger.info(
-            f"Response: {request.method} {request.url.path} "
-            f"Status={response.status_code} Duration={duration:.3f}s"
-        )
-
-        return response
-    else:
-        return await call_next(request)
-
-
-@app.middleware("http")
-async def error_handling_middleware(request: Request, call_next):
-    """
-    Centralized error handling middleware
-    Catches all unhandled exceptions and returns proper JSON responses
-
-    Args:
-        request: Incoming HTTP request
-        call_next: Next middleware/handler in chain
-
-    Returns:
-        Response with error details if exception occurs
-    """
-    try:
-        return await call_next(request)
-    except HTTPException:
-        # Re-raise HTTP exceptions (already handled)
-        raise
-    except Exception as e:
-        logger.error(
-            f"Unhandled exception in {request.method} {request.url.path}: {e}",
-            exc_info=True
-        )
+    # Check for unusual request patterns that might indicate an attack
+    path = request.url.path
+    
+    # Check for path traversal attempts
+    if ".." in path or "//" in path:
+        logger.warning(f"Blocked potentially malicious path: {path}")
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "detail": "Internal server error",
-                "error": str(e) if settings.DEBUG else "An unexpected error occurred",
-                "timestamp": datetime.utcnow().isoformat()
-            }
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": "Invalid request path"}
         )
+    
+    # Process the request normally
+    return await call_next(request)
 
 
 # ============================================================================
@@ -247,43 +244,90 @@ async def error_handling_middleware(request: Request, call_next):
 # ============================================================================
 
 # API Key header security scheme
-api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+# JWT bearer token scheme (for future implementation)
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="token",  # This would be the login endpoint
+    auto_error=False   # Don't automatically fail if token is missing
+)
 
 
-async def verify_api_key(api_key: str = Security(api_key_header)) -> str:
+async def verify_api_key_security(api_key: str = Security(api_key_header)) -> str:
     """
-    Verify API key from Authorization header
-
+    Enhanced API key verification from X-API-Key header
+    
     Args:
-        api_key: API key from Authorization header
-
+        api_key: API key from X-API-Key header
+        
     Returns:
         Validated API key
-
+        
     Raises:
         HTTPException: If API key is invalid or missing
     """
     if not api_key:
-        logger.warning("API request missing Authorization header")
+        logger.warning("API request missing X-API-Key header")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing API key in Authorization header",
+            detail="Missing API key in X-API-Key header",
             headers={"WWW-Authenticate": "ApiKey"}
         )
 
-    # Extract key from "Bearer <key>" or just "<key>"
-    key = api_key.replace("Bearer ", "").strip()
-
+    # Sanitize the API key
+    sanitized_key = sanitize_input(api_key)
+    
     # Validate against configured API key
-    if key != settings.API_KEY:
-        logger.warning(f"Invalid API key attempted: {key[:10]}...")
+    if sanitized_key != settings.API_KEY:
+        logger.warning(f"Invalid API key attempted")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API key",
             headers={"WWW-Authenticate": "ApiKey"}
         )
 
-    return key
+    return sanitized_key
+
+
+async def verify_jwt_token(token: str = Security(oauth2_scheme)) -> Optional[Dict]:
+    """
+    Verify JWT token from Authorization header
+    
+    Args:
+        token: JWT token from Authorization: Bearer header
+        
+    Returns:
+        Token payload if valid, None otherwise
+    """
+    if not token:
+        return None
+    
+    try:
+        # Remove "Bearer " prefix if present
+        if token.startswith("Bearer "):
+            token = token[7:]
+        
+        # Verify token and get payload
+        payload = verify_token(token)
+        return payload
+    except Exception as e:
+        logger.error(f"JWT token verification error: {e}")
+        return None
+
+
+def get_current_user_id(token_payload: Optional[Dict] = Depends(verify_jwt_token)) -> Optional[str]:
+    """
+    Get the current user ID from a verified JWT token
+    
+    Args:
+        token_payload: Verified token payload
+        
+    Returns:
+        User ID if token is valid, None otherwise
+    """
+    if token_payload:
+        return token_payload.get("sub")
+    return None
 
 
 # ============================================================================
@@ -300,7 +344,7 @@ async def verify_api_key(api_key: str = Security(api_key_header)) -> str:
 async def health_check():
     """
     Health check endpoint for monitoring and load balancers
-
+    
     Returns:
         dict: Health status with timestamp
     """
@@ -321,7 +365,7 @@ async def health_check():
 async def root():
     """
     Root endpoint with API information
-
+    
     Returns:
         dict: API metadata and links
     """
@@ -329,7 +373,7 @@ async def root():
         "name": settings.API_TITLE,
         "version": settings.API_VERSION,
         "description": settings.API_DESCRIPTION,
-        "docs": "/docs",
+        "docs": "/docs" if settings.API_DOCS else None,
         "health": "/health",
         "timestamp": datetime.utcnow().isoformat()
     }
@@ -340,13 +384,13 @@ async def root():
     tags=["System"],
     summary="Detailed health check",
     description="Returns detailed health status including database and scheduler",
-    dependencies=[Depends(verify_api_key)]
+    dependencies=[Depends(verify_api_key_security)]
 )
 async def detailed_health_check():
     """
     Detailed health check with system component status
     Requires API key authentication
-
+    
     Returns:
         dict: Detailed health information
     """
@@ -429,13 +473,45 @@ if __name__ == "__main__":
     import uvicorn
 
     logger.info("Starting Uvicorn server...")
-    logger.info(f"API Documentation available at: http://localhost:8000/docs")
-    logger.info(f"Alternative docs available at: http://localhost:8000/redoc")
-
+    logger.info(f"API Documentation available at: http://localhost:8000/docs" if settings.API_DOCS else "API documentation disabled")
+    
+    # Set environment variables for secure logging
+    import os
+    os.environ["PYTHONHASHSEED"] = "random"  # Randomized hash seed for security
+    os.environ["PYTHONDONTWRITEBYTECODE"] = "1"  # Don't write .pyc files
+    
     uvicorn.run(
         "backend.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=settings.DEBUG,
-        log_level="info"
+        host=settings.APP_HOST,
+        port=settings.APP_PORT,
+        reload=settings.DEBUG and settings.DEV_TOOLS,
+        log_level="info",
+        access_log=True,  # Enable access logging
+        log_config={
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "default": {
+                    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                },
+            },
+            "handlers": {
+                "default": {
+                    "formatter": "default",
+                    "class": "logging.StreamHandler",
+                    "stream": "ext://sys.stdout"
+                },
+                "file": {
+                    "formatter": "default",
+                    "class": "logging.handlers.RotatingFileHandler",
+                    "filename": "logs/app.log",
+                    "maxBytes": 10485760,  # 10MB
+                    "backupCount": 5
+                }
+            },
+            "root": {
+                "level": "INFO",
+                "handlers": ["default", "file"]
+            }
+        }
     )

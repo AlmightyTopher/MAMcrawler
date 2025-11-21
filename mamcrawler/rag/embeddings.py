@@ -8,11 +8,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 import faiss
 
-import sys
-import os
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from mamcrawler.config import RAGConfig, DEFAULT_RAG_CONFIG
+from ..config import RAGConfig, DEFAULT_RAG_CONFIG
 
 
 class EmbeddingService:

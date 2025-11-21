@@ -117,6 +117,7 @@ passlib[bcrypt]==1.7.4              # Password hashing
 python-jose[cryptography]==3.3.0    # JWT tokens
 bcrypt==4.1.1                       # Password hashing algorithm
 
+argon2-cffi==23.1.0                 # Argon2 password hashing (recommended alternative)
 # ============================================================================
 # Logging & Monitoring
 # ============================================================================
