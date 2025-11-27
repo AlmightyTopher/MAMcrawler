@@ -7,9 +7,11 @@ import asyncio
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query, status, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Query, Request, status, BackgroundTasks
 from pydantic import BaseModel, Field
 import logging
+
+from backend.rate_limit import limiter, get_rate_limit
 
 logger = logging.getLogger(__name__)
 

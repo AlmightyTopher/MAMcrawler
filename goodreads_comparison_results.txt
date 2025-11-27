@@ -1,0 +1,95 @@
+====================================================================================================
+GOODREADS AUDIOBOOK SEARCH RESULTS
+====================================================================================================
+
+1. WILLIAM D. ARAND
+----------------------------------------------------------------------------------------------------
+Found on Goodreads: 19 titles
+In your library: 12 titles
+Library status: COMPLETE - has all identified titles
+
+Titles found on Goodreads:
+  1. [MISSING] Cultivating Chaos (Cultivating Chaos, #1)
+  2. [MISSING] Cultivating Chaos 2 (Cultivating Chaos, #2)
+  3. [MISSING] Cultivating Chaos 3 (VeilVerse: Cultivating Chaos #3)
+  4. [MISSING] Dungeon Deposed (Dungeon Deposed, #1)
+  5. [MISSING] Dungeon Deposed 2 (Dungeon Deposed, #2)
+  6. [MISSING] Dungeon Deposed 3 (Dungeon Deposed, #3)
+  7. [MISSING] Otherlife Awakenings (The Selfless Hero Trilogy, #3)
+  8. [MISSING] Otherlife Dreams (The Selfless Hero Trilogy, #1)
+  9. [MISSING] Otherlife Nightmares (The Selfless Hero Trilogy, #2)
+  10. [MISSING] Right of Retribution (Right of Retribution, #1)
+  11. [MISSING] Super Sales on Super Heroes (Super Sales on Super Heroes, #1)
+  12. [MISSING] Super Sales on Super Heroes 2 (Super Sales on Super Heroes, #2)
+  13. [MISSING] Super Sales on Super Heroes 3 (Super Sales on Super Heroes, #3)
+  14. [MISSING] Super Sales on Super Heroes 4 (Super Sales on Super Heroes #4)
+  15. [MISSING] Super Sales on Super Heroes 5 (Super Sales on Super Heroes, #5)
+  16. [MISSING] Swing Shift (Swing Shift, #1)
+  17. [MISSING] Swing Shift 2 (Swing Shift, #2)
+  18. [MISSING] Swing Shift 3 (Swing Shift, #3)
+  19. [MISSING] The Axe Falls
+
+====================================================================================================
+2. RANDI DARREN
+----------------------------------------------------------------------------------------------------
+Found on Goodreads: 26 titles
+In your library: 0 titles
+MISSING FROM LIBRARY: 26 titles
+
+Titles found on Goodreads:
+  1. [MISSING - SEARCH MAM] Eastern Expansion (Wild Wastes, #2)
+  2. [MISSING - SEARCH MAM] Fic: Why Fanfiction is Taking Over the World
+  3. [MISSING - SEARCH MAM] Fostering Faust (Fostering Faust, #1)
+  4. [MISSING - SEARCH MAM] Fostering Faust 2 (Fostering Faust, #2)
+  5. [MISSING - SEARCH MAM] Fostering Faust 3 (Fostering Faust, #3)
+  6. [MISSING - SEARCH MAM] Fostering Faust: Compilation: Rebirth  (Fostering Faust, #1-3)
+  7. [MISSING - SEARCH MAM] Incubus Inc. (Incubus Inc., #1)
+  8. [MISSING - SEARCH MAM] Incubus Inc. II (Incubus Inc., #2)
+  9. [MISSING - SEARCH MAM] Incubus Inc. III (Incubus Inc., #3)
+  10. [MISSING - SEARCH MAM] Incubus Inc., Book 2
+  11. [MISSING - SEARCH MAM] Incubus Inc: Compilation: Running the Precipice (Books 1-3)
+  12. [MISSING - SEARCH MAM] Privateer's Commission
+  13. [MISSING - SEARCH MAM] Privateer's Commission 2
+  14. [MISSING - SEARCH MAM] Remnant (Remnant, #1)
+  15. [MISSING - SEARCH MAM] Remnant II (Remnant, #2)
+  16. [MISSING - SEARCH MAM] Remnant III (Remnant, #3)
+  17. [MISSING - SEARCH MAM] Remnant: Compilation: The Road To Hell (Remnant, #1-3)
+  18. [MISSING - SEARCH MAM] Southern Storm (Wild Wastes, #3)
+  19. [MISSING - SEARCH MAM] System Overclocked 2
+  20. [MISSING - SEARCH MAM] System Overclocked 3
+  21. [MISSING - SEARCH MAM] Wild Wastes (Wild Wastes, #1)
+  22. [MISSING - SEARCH MAM] Wild Wastes 4
+  23. [MISSING - SEARCH MAM] Wild Wastes 5
+  24. [MISSING - SEARCH MAM] Wild Wastes 6
+  25. [MISSING - SEARCH MAM] Wild Wastes Omnibus Edition: Yosemite's Founding (Wild Wastes, #1-3)
+  26. [MISSING - SEARCH MAM] Wild Wastes [5/31/2017] Randi Darren
+
+====================================================================================================
+3. A. R. REND
+----------------------------------------------------------------------------------------------------
+Found on Goodreads search: 96 results
+In your library: 0 titles
+NOTE: Goodreads returned many unrelated results (books with 'Rend' in title)
+Filtering likely A.R. Rend titles...
+
+Likely A.R. Rend titles from Goodreads:
+  1. [MISSING - SEARCH MAM] Summary & Study Guide Rendezvous with Rama by Arthur C. Clarke
+  2. [MISSING - SEARCH MAM] Articles on Novels by Arthur C. Clarke, Including: Rendezvous with Rama, the Fountains of Paradise, 2010: Odyssey Two, Childhood's End, Imperial Earth, Rama II (Novel), Prelude to Space, 2061: Odyssey Three, 3001: The Final Odyssey
+  3. [MISSING - SEARCH MAM] The Rama Series: Rendezvous with Rama, Rama II, The Garden of Rama, Rama Revealed
+  4. [MISSING - SEARCH MAM] The Honor of Duty
+  5. [MISSING - SEARCH MAM] The P Arrangement (Rendezvous, #3)
+  6. [MISSING - SEARCH MAM] Rendezvous
+  7. [MISSING - SEARCH MAM] Rendezvous with Rama (Rama, #1)
+  8. [MISSING - SEARCH MAM] Rama II: The Sequel to Rendezvous with Rama [Mass Market Paperback] [1990] Arthur C. Clarke, Gentry Lee
+  9. [MISSING - SEARCH MAM] Rendezvous mit einem Vampir (Argeneau #15)
+  10. [MISSING - SEARCH MAM] The Billionaire Cowboy's Rendezvous
+  11. [MISSING - SEARCH MAM] Top-Secret Rendezvous
+
+====================================================================================================
+SUMMARY AND NEXT STEPS
+====================================================================================================
+William D. Arand: COMPLETE - 12 titles in library
+Randi Darren: ACTION NEEDED - 26 titles need to be searched on MAM
+A. R. Rend: ACTION NEEDED - Need to properly identify titles on MAM
+
+To complete: Search MAM for missing titles and add to qBittorrent

@@ -1,0 +1,14 @@
+2025-11-21 11:57:02,692 - INFO - Loading MAM session cookies: uid=229756..., mam_id=zDSl88m09sdaFkmFL9sgPSxmmLvB7D...
+2025-11-21 11:57:02,692 - INFO - ================================================================================
+2025-11-21 11:57:02,692 - INFO - PHASE 1 EXECUTION STARTED
+2025-11-21 11:57:02,692 - INFO - ================================================================================
+2025-11-21 11:57:02,693 - INFO - 
+Searching Terry Pratchett books...
+2025-11-21 11:57:02,693 - INFO - Searching MAM: Terry Pratchett Discworld Book 3
+2025-11-21 11:57:03,740 - ERROR -   Access denied (403). Session may have expired. Check uid and mam_id in .env
+2025-11-21 11:57:06,742 - INFO - Searching MAM: Terry Pratchett Discworld Book 4
+2025-11-21 11:57:07,034 - ERROR -   Access denied (403). Session may have expired. Check uid and mam_id in .env
+2025-11-21 11:57:10,034 - INFO - Searching MAM: Terry Pratchett Discworld Book 5
+2025-11-21 11:57:10,279 - ERROR -   Access denied (403). Session may have expired. Check uid and mam_id in .env
+2025-11-21 11:57:13,281 - INFO - Searching MAM: Terry Pratchett Discworld Book 6
+2025-11-21 11:57:13,560 - ERROR -   Access denied (403). Session may have expired. Check uid and mam_id in .env

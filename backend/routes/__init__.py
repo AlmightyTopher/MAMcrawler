@@ -13,8 +13,7 @@ from backend.routes import (
     metadata,
     scheduler,
     system,
-    admin
-    system,
+    admin,
     gaps
 )
 
@@ -121,7 +120,6 @@ __all__ = [
     "metadata",
     "scheduler",
     "system",
-    "admin"
-    "system",
+    "admin",
     "gaps"
 ]

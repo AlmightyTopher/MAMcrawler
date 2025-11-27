@@ -1,0 +1,261 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 13.792,
+      "title": "Opening Credits",
+      "id": 0
+    },
+    {
+      "start": 13.792,
+      "end": 1473.073,
+      "title": "Chapter 1",
+      "id": 1
+    },
+    {
+      "start": 1473.073,
+      "end": 2811.471,
+      "title": "Chapter 2",
+      "id": 2
+    },
+    {
+      "start": 2811.471,
+      "end": 4407.006,
+      "title": "Chapter 3",
+      "id": 3
+    },
+    {
+      "start": 4407.006,
+      "end": 5793.748,
+      "title": "Chapter 4",
+      "id": 4
+    },
+    {
+      "start": 5793.748,
+      "end": 7406.652,
+      "title": "Chapter 5",
+      "id": 5
+    },
+    {
+      "start": 7406.652,
+      "end": 8613.114,
+      "title": "Chapter 6",
+      "id": 6
+    },
+    {
+      "start": 8613.114,
+      "end": 10014.484,
+      "title": "Chapter 7",
+      "id": 7
+    },
+    {
+      "start": 10014.484,
+      "end": 11318.748,
+      "title": "Chapter 8",
+      "id": 8
+    },
+    {
+      "start": 11318.748,
+      "end": 12811.419,
+      "title": "Chapter 9",
+      "id": 9
+    },
+    {
+      "start": 12811.419,
+      "end": 14136.442,
+      "title": "Chapter 10",
+      "id": 10
+    },
+    {
+      "start": 14136.442,
+      "end": 15531.218,
+      "title": "Chapter 11",
+      "id": 11
+    },
+    {
+      "start": 15531.218,
+      "end": 16907.186,
+      "title": "Chapter 12",
+      "id": 12
+    },
+    {
+      "start": 16907.186,
+      "end": 18198.261,
+      "title": "Chapter 13",
+      "id": 13
+    },
+    {
+      "start": 18198.261,
+      "end": 19518.594,
+      "title": "Chapter 14",
+      "id": 14
+    },
+    {
+      "start": 19518.594,
+      "end": 20807.765,
+      "title": "Chapter 15",
+      "id": 15
+    },
+    {
+      "start": 20807.765,
+      "end": 22138.361,
+      "title": "Chapter 16",
+      "id": 16
+    },
+    {
+      "start": 22138.361,
+      "end": 23483.307,
+      "title": "Chapter 17",
+      "id": 17
+    },
+    {
+      "start": 23483.307,
+      "end": 24721.905,
+      "title": "Chapter 18",
+      "id": 18
+    },
+    {
+      "start": 24721.905,
+      "end": 26036.897,
+      "title": "Chapter 19",
+      "id": 19
+    },
+    {
+      "start": 26036.897,
+      "end": 27561.008,
+      "title": "Chapter 20",
+      "id": 20
+    },
+    {
+      "start": 27561.008,
+      "end": 28962.889,
+      "title": "Chapter 21",
+      "id": 21
+    },
+    {
+      "start": 28962.889,
+      "end": 30240.961,
+      "title": "Chapter 22",
+      "id": 22
+    },
+    {
+      "start": 30240.961,
+      "end": 31556.371,
+      "title": "Chapter 23",
+      "id": 23
+    },
+    {
+      "start": 31556.371,
+      "end": 32941.487,
+      "title": "Chapter 24",
+      "id": 24
+    },
+    {
+      "start": 32941.487,
+      "end": 34069.791,
+      "title": "Chapter 25",
+      "id": 25
+    },
+    {
+      "start": 34069.791,
+      "end": 35516.626,
+      "title": "Chapter 26",
+      "id": 26
+    },
+    {
+      "start": 35516.626,
+      "end": 36843.878,
+      "title": "Chapter 27",
+      "id": 27
+    },
+    {
+      "start": 36843.878,
+      "end": 38077.136,
+      "title": "Chapter 28",
+      "id": 28
+    },
+    {
+      "start": 38077.136,
+      "end": 39404.76,
+      "title": "Chapter 29",
+      "id": 29
+    },
+    {
+      "start": 39404.76,
+      "end": 40846.254,
+      "title": "Chapter 30",
+      "id": 30
+    },
+    {
+      "start": 40846.254,
+      "end": 42132.407,
+      "title": "Chapter 31",
+      "id": 31
+    },
+    {
+      "start": 42132.407,
+      "end": 43336.826,
+      "title": "Chapter 32",
+      "id": 32
+    },
+    {
+      "start": 43336.826,
+      "end": 44797.5,
+      "title": "Chapter 33",
+      "id": 33
+    },
+    {
+      "start": 44797.5,
+      "end": 46028.157,
+      "title": "Chapter 34",
+      "id": 34
+    },
+    {
+      "start": 46028.157,
+      "end": 47298.752,
+      "title": "Chapter 35",
+      "id": 35
+    },
+    {
+      "start": 47298.752,
+      "end": 48526.576,
+      "title": "Chapter 36",
+      "id": 36
+    },
+    {
+      "start": 48526.576,
+      "end": 48952.894,
+      "title": "Epilogue",
+      "id": 37
+    },
+    {
+      "start": 48952.894,
+      "end": 48984.1,
+      "title": "End Credits",
+      "id": 38
+    }
+  ],
+  "title": "Book 01 - Fostering Faust - Fostering Faust Series",
+  "subtitle": null,
+  "authors": [
+    "Randi Darren"
+  ],
+  "narrators": [
+    "Andrea Parsneau"
+  ],
+  "series": [],
+  "genres": [
+    "Audiobook"
+  ],
+  "publishedYear": "2018-05-17",
+  "publishedDate": null,
+  "publisher": null,
+  "description": "Alex is dead. \n Dead, and apparently with a one-way ticket to a place that only the worst of the worst go. \n All for a simple choice he made about a product his company owned. \n Damned for all time. \n Luckily for him, he's about to be given a chance. \n Another choice to make. \n He can return to the land of the living, though his soul would belong to another. Except the world he's being sent to isn't the same one he came from. It's not even a similar period in time, but from something long past in history. \n The dark ages. \n And part of the deal to live again, is to make pacts with others. Pacts that would bind others in secrecy. That they could never speak of what they'd done. \n Deals for anything, and everything. From things as simple as a meal to their very lives. How much would you give of yourself to live on in the world is an easy question. \n The better question is, how much would you take from others? \n If Alex wants to keep living, to keep his soul from being sent to the darkest corner of hell, he'll have to ask himself that question. '\n Daily.",
+  "isbn": null,
+  "asin": null,
+  "language": null,
+  "explicit": false,
+  "abridged": false,
+  "seriesName": "Fostering Faust"
+}

@@ -1,0 +1,273 @@
+{
+  "tags": [
+    "Science Fiction",
+    "Adventure",
+    "First Contact",
+    "Space Opera"
+  ],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 6.583,
+      "title": "Opening Credits",
+      "id": 0
+    },
+    {
+      "start": 6.583,
+      "end": 17.437,
+      "title": "Title Page",
+      "id": 1
+    },
+    {
+      "start": 17.437,
+      "end": 1290.354,
+      "title": "Chapter 1",
+      "id": 2
+    },
+    {
+      "start": 1290.354,
+      "end": 2531.97,
+      "title": "Chapter 2",
+      "id": 3
+    },
+    {
+      "start": 2531.97,
+      "end": 3785.244,
+      "title": "Chapter 3",
+      "id": 4
+    },
+    {
+      "start": 3785.244,
+      "end": 5191.072,
+      "title": "Chapter 4",
+      "id": 5
+    },
+    {
+      "start": 5191.072,
+      "end": 6436.009,
+      "title": "Chapter 5",
+      "id": 6
+    },
+    {
+      "start": 6436.009,
+      "end": 7675.351,
+      "title": "Chapter 6",
+      "id": 7
+    },
+    {
+      "start": 7675.351,
+      "end": 8960.366,
+      "title": "Chapter 7",
+      "id": 8
+    },
+    {
+      "start": 8960.366,
+      "end": 10122.663,
+      "title": "Chapter 8",
+      "id": 9
+    },
+    {
+      "start": 10122.663,
+      "end": 11231.555,
+      "title": "Chapter 9",
+      "id": 10
+    },
+    {
+      "start": 11231.555,
+      "end": 12483.575,
+      "title": "Chapter 10",
+      "id": 11
+    },
+    {
+      "start": 12483.575,
+      "end": 13488.464,
+      "title": "Chapter 11",
+      "id": 12
+    },
+    {
+      "start": 13488.464,
+      "end": 14621.551,
+      "title": "Chapter 12",
+      "id": 13
+    },
+    {
+      "start": 14621.551,
+      "end": 15803.888,
+      "title": "Chapter 13",
+      "id": 14
+    },
+    {
+      "start": 15803.888,
+      "end": 17026.976,
+      "title": "Chapter 14",
+      "id": 15
+    },
+    {
+      "start": 17026.976,
+      "end": 18220.945,
+      "title": "Chapter 15",
+      "id": 16
+    },
+    {
+      "start": 18220.945,
+      "end": 19320.85,
+      "title": "Chapter 16",
+      "id": 17
+    },
+    {
+      "start": 19320.85,
+      "end": 20500.494,
+      "title": "Chapter 17",
+      "id": 18
+    },
+    {
+      "start": 20500.494,
+      "end": 21742.18,
+      "title": "Chapter 18",
+      "id": 19
+    },
+    {
+      "start": 21742.18,
+      "end": 22844.919,
+      "title": "Chapter 19",
+      "id": 20
+    },
+    {
+      "start": 22844.919,
+      "end": 23913.687,
+      "title": "Chapter 20",
+      "id": 21
+    },
+    {
+      "start": 23913.687,
+      "end": 24980.898,
+      "title": "Chapter 21",
+      "id": 22
+    },
+    {
+      "start": 24980.898,
+      "end": 26320.086,
+      "title": "Chapter 22",
+      "id": 23
+    },
+    {
+      "start": 26320.086,
+      "end": 27458.443,
+      "title": "Chapter 23",
+      "id": 24
+    },
+    {
+      "start": 27458.443,
+      "end": 28592.598,
+      "title": "Chapter 24",
+      "id": 25
+    },
+    {
+      "start": 28592.598,
+      "end": 29760.051,
+      "title": "Chapter 25",
+      "id": 26
+    },
+    {
+      "start": 29760.051,
+      "end": 30899.453,
+      "title": "Chapter 26",
+      "id": 27
+    },
+    {
+      "start": 30899.453,
+      "end": 31929.583,
+      "title": "Chapter 27",
+      "id": 28
+    },
+    {
+      "start": 31929.583,
+      "end": 33124.876,
+      "title": "Chapter 28",
+      "id": 29
+    },
+    {
+      "start": 33124.876,
+      "end": 34214.518,
+      "title": "Chapter 29",
+      "id": 30
+    },
+    {
+      "start": 34214.518,
+      "end": 35677.7,
+      "title": "Chapter 30",
+      "id": 31
+    },
+    {
+      "start": 35677.7,
+      "end": 36891.338,
+      "title": "Chapter 31",
+      "id": 32
+    },
+    {
+      "start": 36891.338,
+      "end": 37998.232,
+      "title": "Chapter 32",
+      "id": 33
+    },
+    {
+      "start": 37998.232,
+      "end": 39126.327,
+      "title": "Chapter 33",
+      "id": 34
+    },
+    {
+      "start": 39126.327,
+      "end": 40288.114,
+      "title": "Chapter 34",
+      "id": 35
+    },
+    {
+      "start": 40288.114,
+      "end": 41401.511,
+      "title": "Chapter 35",
+      "id": 36
+    },
+    {
+      "start": 41401.511,
+      "end": 42356.082,
+      "title": "Chapter 36",
+      "id": 37
+    },
+    {
+      "start": 42356.082,
+      "end": 43520.307,
+      "title": "Epilogue",
+      "id": 38
+    },
+    {
+      "start": 43520.307,
+      "end": 43589.56,
+      "title": "End Credits",
+      "id": 39
+    }
+  ],
+  "title": "System Overclocked 3",
+  "subtitle": "System Overclocked, Book 3",
+  "authors": [
+    "Randi Darren"
+  ],
+  "narrators": [
+    "Stephanie Savannah"
+  ],
+  "series": [
+    "System Overclocked #3"
+  ],
+  "genres": [
+    "Science Fiction & Fantasy"
+  ],
+  "publishedYear": "2025",
+  "publishedDate": null,
+  "publisher": "Podium Audio",
+  "description": "<p><b>Wrench is a Fixer.</b></p> <p>Someone born to maintain, fix, and correct any and every issue that could go wrong in the Habitat that he lives in to make sure he and his fellow humans can remain on display and entertain their owners as any good human pet would.</p> <p>Or at least, that's what he was born to be.</p> <p>Now, after getting a second chance along with a superpower that lets him alter anything and everything in regard to his own body, he's trying to fix his life.</p> <p>To live his life for himself with the goal of actually enjoying it, all while being thrust ever deeper into a situation he didn't expect.</p> <p>A situation involving Tongsta, their pets, and the galaxy as a whole. One that's going to need his help to fix it, whether anyone wants it to happen, including Wrench, or not.</p> <p>Now that the Tongsta are firmly aware that Hume and Grae are living creatures, life is changing. Wrench and his people are working the part of a crew and earning their keep. Being treated as equals of worth instead of pets.</p> <p>Except even as things change, there will always be problems that spring up. Things that break all on their own. Which will of course require Wrench to fix it and anything that gets in his way.</p> <p>At this point though, he's getting tired of fixing everything and everyone that comes his way and his patience is wearing thin. The fix-it list only grows and the tools he has at his disposal are getting worn out.</p> <p>With any luck, this job will be done and Wrench can take some time off.</p>",
+  "isbn": "9781039451018",
+  "asin": "B0DTVF1TYD",
+  "language": "English",
+  "explicit": false,
+  "abridged": false
+}

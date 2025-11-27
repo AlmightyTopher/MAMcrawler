@@ -1,0 +1,55 @@
+# Environment and secrets
+.env
+.env.*
+*.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and state
+*.log
+crawler_state.json
+mam_cookies.json
+.mam_cookies.json
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+!CLAUDE.md
+
+# Test files
+test_*.py
+*_debug.html
+
+# Data directories (mount as volumes instead)
+data/
+logs/
+
+# VPN config (should be on host)
+temp_vpn_config.conf
+*.conf
+
+# Docker files themselves
+Dockerfile*
+docker-compose*.yml
+.dockerignore

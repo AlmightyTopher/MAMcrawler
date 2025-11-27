@@ -1,0 +1,44 @@
+# Max Stealth Crawler Requirements
+# ================================
+#
+# Core dependencies for the maximally stealthy web crawler
+# implementing state-of-the-art anti-detection techniques.
+
+# Browser Automation
+playwright>=1.40.0
+playwright-stealth>=1.0.6
+
+# HTTP Client for API interactions
+httpx>=0.25.0
+httpx[http2]>=0.25.0  # HTTP/2 support for TLS fingerprinting
+
+# Environment and Configuration
+python-dotenv>=1.0.0
+
+# Data Processing
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Logging and Monitoring
+structlog>=23.1.0
+
+# Optional: CAPTCHA Solving APIs
+# Uncomment and install as needed
+# 2captcha-python>=1.2.0
+# anticaptchaofficial>=1.0.0
+# capsolver>=1.0.0
+
+# Optional: Advanced Proxy Management
+# requests>=2.31.0  # For proxy validation
+# aiohttp>=3.9.0    # For async proxy testing
+
+# Development and Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# Type Hints (Python 3.8+)
+typing-extensions>=4.8.0
+
+# Security and Cryptography (for TLS fingerprinting)
+cryptography>=41.0.0
+tls-client>=0.2.0  # Alternative TLS client for fingerprint matching

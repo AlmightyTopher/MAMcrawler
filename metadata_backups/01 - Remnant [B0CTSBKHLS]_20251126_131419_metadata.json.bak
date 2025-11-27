@@ -1,0 +1,348 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 19.410998,
+      "title": "Opening Credits",
+      "id": 0
+    },
+    {
+      "start": 19.410998,
+      "end": 1120.500998,
+      "title": "1 Death of an Immortal",
+      "id": 1
+    },
+    {
+      "start": 1120.500998,
+      "end": 1873.221995,
+      "title": "2 Vultures",
+      "id": 2
+    },
+    {
+      "start": 1873.221995,
+      "end": 3539.043991,
+      "title": "3 Handshakes",
+      "id": 3
+    },
+    {
+      "start": 3539.043991,
+      "end": 4994.075986,
+      "title": "4 The Storyteller",
+      "id": 4
+    },
+    {
+      "start": 4994.075986,
+      "end": 6434.060975,
+      "title": "5 The Red Watch",
+      "id": 5
+    },
+    {
+      "start": 6434.060975,
+      "end": 7812.210975,
+      "title": "6 Trinkets and Trespassers",
+      "id": 6
+    },
+    {
+      "start": 7812.210975,
+      "end": 9431.755964,
+      "title": "7 A Bitter Homecoming",
+      "id": 7
+    },
+    {
+      "start": 9431.755964,
+      "end": 9917.423946,
+      "title": "8 Questions",
+      "id": 8
+    },
+    {
+      "start": 9917.423946,
+      "end": 11292.276939,
+      "title": "9 The Spire Lords",
+      "id": 9
+    },
+    {
+      "start": 11292.276939,
+      "end": 12385.007937,
+      "title": "10 A Change of Plan",
+      "id": 10
+    },
+    {
+      "start": 12385.007937,
+      "end": 13661.756916,
+      "title": "11 Crossing the Door",
+      "id": 11
+    },
+    {
+      "start": 13661.756916,
+      "end": 15215.078912,
+      "title": "12 Meetings and Manners",
+      "id": 12
+    },
+    {
+      "start": 15215.078912,
+      "end": 16414.574898,
+      "title": "13 Curfew",
+      "id": 13
+    },
+    {
+      "start": 16414.574898,
+      "end": 16968.300884,
+      "title": "14 Harry",
+      "id": 14
+    },
+    {
+      "start": 16968.300884,
+      "end": 18333.447868,
+      "title": "15 A Farewell",
+      "id": 15
+    },
+    {
+      "start": 18333.447868,
+      "end": 19257.647868,
+      "title": "16 The Cook",
+      "id": 16
+    },
+    {
+      "start": 19257.647868,
+      "end": 20365.494853,
+      "title": "17 Rendal",
+      "id": 17
+    },
+    {
+      "start": 20365.494853,
+      "end": 21479.773832,
+      "title": "18 The Stolen Sister",
+      "id": 18
+    },
+    {
+      "start": 21479.773832,
+      "end": 23034.906825,
+      "title": "19 The Hunt",
+      "id": 19
+    },
+    {
+      "start": 23034.906825,
+      "end": 23963.19381,
+      "title": "20 A Prospect",
+      "id": 20
+    },
+    {
+      "start": 23963.19381,
+      "end": 24642.190794,
+      "title": "21 The Harvest Temple",
+      "id": 21
+    },
+    {
+      "start": 24642.190794,
+      "end": 25964.171791,
+      "title": "22 Encounters",
+      "id": 22
+    },
+    {
+      "start": 25964.171791,
+      "end": 26640.521791,
+      "title": "23 The Rogue Master",
+      "id": 23
+    },
+    {
+      "start": 26640.521791,
+      "end": 27533.374785,
+      "title": "24 Lair of Immortals",
+      "id": 24
+    },
+    {
+      "start": 27533.374785,
+      "end": 28981.091769,
+      "title": "25 Behind the Curtain",
+      "id": 25
+    },
+    {
+      "start": 28981.091769,
+      "end": 30273.211746,
+      "title": "26 The Bronze Ring",
+      "id": 26
+    },
+    {
+      "start": 30273.211746,
+      "end": 31628.350726,
+      "title": "27 Ghosts of the Deep Wood",
+      "id": 27
+    },
+    {
+      "start": 31628.350726,
+      "end": 33328.584717,
+      "title": "28 Sidras",
+      "id": 28
+    },
+    {
+      "start": 33328.584717,
+      "end": 35211.188707,
+      "title": "29 Forest Demons",
+      "id": 29
+    },
+    {
+      "start": 35211.188707,
+      "end": 36214.522698,
+      "title": "30 Debt",
+      "id": 30
+    },
+    {
+      "start": 36214.522698,
+      "end": 37786.977687,
+      "title": "31 The Cellar",
+      "id": 31
+    },
+    {
+      "start": 37786.977687,
+      "end": 39078.679683,
+      "title": "32 Brimholt",
+      "id": 32
+    },
+    {
+      "start": 39078.679683,
+      "end": 40058.816667,
+      "title": "33 The Well",
+      "id": 33
+    },
+    {
+      "start": 40058.816667,
+      "end": 40757.10966,
+      "title": "34 The Hall of Prophecy",
+      "id": 34
+    },
+    {
+      "start": 40757.10966,
+      "end": 41086.135646,
+      "title": "35 Manhunt",
+      "id": 35
+    },
+    {
+      "start": 41086.135646,
+      "end": 42606.97263,
+      "title": "36 The Godkiller",
+      "id": 36
+    },
+    {
+      "start": 42606.97263,
+      "end": 43245.31161,
+      "title": "37 The Specter",
+      "id": 37
+    },
+    {
+      "start": 43245.31161,
+      "end": 43939.448594,
+      "title": "38 The Banshee",
+      "id": 38
+    },
+    {
+      "start": 43939.448594,
+      "end": 44881.249592,
+      "title": "39 Infiltrators",
+      "id": 39
+    },
+    {
+      "start": 44881.249592,
+      "end": 45829.737574,
+      "title": "40 The Battle at the Gate",
+      "id": 40
+    },
+    {
+      "start": 45829.737574,
+      "end": 46524.524558,
+      "title": "41 The Summons",
+      "id": 41
+    },
+    {
+      "start": 46524.524558,
+      "end": 47518.338549,
+      "title": "42 Between Brothers",
+      "id": 42
+    },
+    {
+      "start": 47518.338549,
+      "end": 48428.606531,
+      "title": "43 The Poisoned Road",
+      "id": 43
+    },
+    {
+      "start": 48428.606531,
+      "end": 49024.174512,
+      "title": "44 The Arch Purifier",
+      "id": 44
+    },
+    {
+      "start": 49024.174512,
+      "end": 49719.890499,
+      "title": "45 Fire Wielders",
+      "id": 45
+    },
+    {
+      "start": 49719.890499,
+      "end": 50894.030499,
+      "title": "46 Remnant",
+      "id": 46
+    },
+    {
+      "start": 50894.030499,
+      "end": 51691.078481,
+      "title": "47 Making Plans",
+      "id": 47
+    },
+    {
+      "start": 51691.078481,
+      "end": 53463.108481,
+      "title": "48 A Scolding",
+      "id": 48
+    },
+    {
+      "start": 53463.108481,
+      "end": 54475.63746,
+      "title": "49 Uninvited Guests",
+      "id": 49
+    },
+    {
+      "start": 54475.63746,
+      "end": 54901.862449,
+      "title": "50 The Other Gate",
+      "id": 50
+    },
+    {
+      "start": 54901.862449,
+      "end": 55307.932449,
+      "title": "51 A Spoil of Victory",
+      "id": 51
+    },
+    {
+      "start": 55307.932449,
+      "end": 55341.19,
+      "title": "End Credits",
+      "id": 52
+    }
+  ],
+  "title": "Remnant (Unabridged)",
+  "subtitle": "The Palimar Saga, Book One",
+  "authors": [
+    "K. R. Solberg",
+    "C. R. Jacobson"
+  ],
+  "narrators": [
+    "Michael Kramer",
+    "Kate Reading"
+  ],
+  "series": [
+    "The Palimar Saga #1"
+  ],
+  "genres": [
+    "Epic"
+  ],
+  "publishedYear": "2000",
+  "publishedDate": null,
+  "publisher": "Epic North Publishing",
+  "description": "The shocking death of an immortal sends Collector Mavell, a master of shadows, on a quest for the killer. He believes a foreseer of Drawlen, a religious regime, knows something about the murder. Jon Therman and his family of sunrock smugglers stumble into this manhunt. A former slave, he only desires to live unnoticed and to avoid the corruption of the world. But when a Drawlen immortal pursues his children, Jon retaliates.",
+  "isbn": null,
+  "asin": "B0CTSBKHLS",
+  "language": "English",
+  "explicit": false,
+  "abridged": false
+}

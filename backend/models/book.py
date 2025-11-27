@@ -3,7 +3,7 @@ SQLAlchemy ORM model for Books table
 Represents all imported books with metadata completeness tracking
 """
 
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, JSON, Index, func
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, JSON, Index, func, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -76,6 +76,12 @@ class Book(Base):
 
     # Status
     status = Column(String(50), default="active")
+
+    # Phase 1: VIP Maintenance + Ratio Emergency tracking
+    narrator = Column(String(255), nullable=True)
+    quality_score = Column(Float, nullable=True)
+    mam_rule_version = Column(Integer, nullable=True)
+    duplicate_status = Column(String(50), default="none")  # none/inferior/superior_available
 
     # Relationships
     downloads = relationship("Download", back_populates="book")

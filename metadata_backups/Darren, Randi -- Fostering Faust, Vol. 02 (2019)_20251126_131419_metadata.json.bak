@@ -1,0 +1,257 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 14.284,
+      "title": "Opening Credits",
+      "id": 0
+    },
+    {
+      "start": 14.284,
+      "end": 1531.457,
+      "title": "Chapter 01",
+      "id": 1
+    },
+    {
+      "start": 1531.457,
+      "end": 3003.955,
+      "title": "Chapter 02",
+      "id": 2
+    },
+    {
+      "start": 3003.955,
+      "end": 4776.687,
+      "title": "Chapter 03",
+      "id": 3
+    },
+    {
+      "start": 4776.687,
+      "end": 6207.901,
+      "title": "Chapter 04",
+      "id": 4
+    },
+    {
+      "start": 6207.901,
+      "end": 7588.959,
+      "title": "Chapter 05",
+      "id": 5
+    },
+    {
+      "start": 7588.959,
+      "end": 9352.729,
+      "title": "Chapter 06",
+      "id": 6
+    },
+    {
+      "start": 9352.729,
+      "end": 10776.234,
+      "title": "Chapter 07",
+      "id": 7
+    },
+    {
+      "start": 10776.234,
+      "end": 12261.225,
+      "title": "Chapter 08",
+      "id": 8
+    },
+    {
+      "start": 12261.225,
+      "end": 13632.115,
+      "title": "Chapter 09",
+      "id": 9
+    },
+    {
+      "start": 13632.115,
+      "end": 14979.088,
+      "title": "Chapter 10",
+      "id": 10
+    },
+    {
+      "start": 14979.088,
+      "end": 16465.892,
+      "title": "Chapter 11",
+      "id": 11
+    },
+    {
+      "start": 16465.892,
+      "end": 18100.375,
+      "title": "Chapter 12",
+      "id": 12
+    },
+    {
+      "start": 18100.375,
+      "end": 19628.234,
+      "title": "Chapter 13",
+      "id": 13
+    },
+    {
+      "start": 19628.234,
+      "end": 21082.16,
+      "title": "Chapter 14",
+      "id": 14
+    },
+    {
+      "start": 21082.16,
+      "end": 22694.865,
+      "title": "Chapter 15",
+      "id": 15
+    },
+    {
+      "start": 22694.865,
+      "end": 24110.99,
+      "title": "Chapter 16",
+      "id": 16
+    },
+    {
+      "start": 24110.99,
+      "end": 25541.557,
+      "title": "Chapter 17",
+      "id": 17
+    },
+    {
+      "start": 25541.557,
+      "end": 26909.85,
+      "title": "Chapter 18",
+      "id": 18
+    },
+    {
+      "start": 26909.85,
+      "end": 28354.165,
+      "title": "Chapter 19",
+      "id": 19
+    },
+    {
+      "start": 28354.165,
+      "end": 29753.573,
+      "title": "Chapter 20",
+      "id": 20
+    },
+    {
+      "start": 29753.573,
+      "end": 31048.538,
+      "title": "Chapter 21",
+      "id": 21
+    },
+    {
+      "start": 31048.538,
+      "end": 32508.459,
+      "title": "Chapter 22",
+      "id": 22
+    },
+    {
+      "start": 32508.459,
+      "end": 33760.329,
+      "title": "Chapter 23",
+      "id": 23
+    },
+    {
+      "start": 33760.329,
+      "end": 35306.861,
+      "title": "Chapter 24",
+      "id": 24
+    },
+    {
+      "start": 35306.861,
+      "end": 36645.296,
+      "title": "Chapter 25",
+      "id": 25
+    },
+    {
+      "start": 36645.296,
+      "end": 37980.527,
+      "title": "Chapter 26",
+      "id": 26
+    },
+    {
+      "start": 37980.527,
+      "end": 39587.293,
+      "title": "Chapter 27",
+      "id": 27
+    },
+    {
+      "start": 39587.293,
+      "end": 41355.763,
+      "title": "Chapter 28",
+      "id": 28
+    },
+    {
+      "start": 41355.763,
+      "end": 42857.53,
+      "title": "Chapter 29",
+      "id": 29
+    },
+    {
+      "start": 42857.53,
+      "end": 44188.12,
+      "title": "Chapter 30",
+      "id": 30
+    },
+    {
+      "start": 44188.12,
+      "end": 45609.733,
+      "title": "Chapter 31",
+      "id": 31
+    },
+    {
+      "start": 45609.733,
+      "end": 47041.377,
+      "title": "Chapter 32",
+      "id": 32
+    },
+    {
+      "start": 47041.377,
+      "end": 48486.489,
+      "title": "Chapter 33",
+      "id": 33
+    },
+    {
+      "start": 48486.489,
+      "end": 49871.415,
+      "title": "Chapter 34",
+      "id": 34
+    },
+    {
+      "start": 49871.415,
+      "end": 51231.589,
+      "title": "Chapter 35",
+      "id": 35
+    },
+    {
+      "start": 51231.589,
+      "end": 52753.699,
+      "title": "Epilogue",
+      "id": 36
+    },
+    {
+      "start": 52753.699,
+      "end": 52785.287,
+      "title": "End Credits",
+      "id": 37
+    }
+  ],
+  "title": "Fostering Faust: Book 2",
+  "subtitle": "Book 2",
+  "authors": [
+    "Randi Darren",
+    "William D. Arand"
+  ],
+  "narrators": [
+    "Andrea Parsneau"
+  ],
+  "series": [
+    "Fostering Faust #2"
+  ],
+  "genres": [
+    "Science Fiction & Fantasy"
+  ],
+  "publishedYear": "2019",
+  "publishedDate": null,
+  "publisher": "Randi Darren",
+  "description": "<p>Alex has taken firm control over his county as the count of Brit. By and large, everything has settled into a fairly normal pattern for him, his Numbered, and his wife. The problem of course is there's still an ongoing war between two duchies, and Regina Tanulf, Alex's liege and lord, has plans for him. Plans that he wants no part of. Except that he doesn't really have a choice in the matter. Everything begins to spin back out of control as a messenger from the Wild Lands arrives with a plea for help. It's time for Alex to get back to work. Because Leah still owns his soul, and if he wants to keep it safe, he needs to make deals in his favor, in her name.</p>",
+  "isbn": null,
+  "asin": null,
+  "language": "English",
+  "explicit": false,
+  "abridged": false
+}

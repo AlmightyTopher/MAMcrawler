@@ -6,16 +6,19 @@ FastAPI router for managing APScheduler tasks, execution history, and manual tri
 from typing import Optional, List
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 import logging
 
 from backend.database import get_db
 from backend.services.task_service import TaskService
-from backend.main import scheduler
+from backend.rate_limit import limiter, get_rate_limit
 
 logger = logging.getLogger(__name__)
+
+# Scheduler will be injected at runtime to avoid circular imports
+scheduler = None
 
 # Create router
 router = APIRouter()

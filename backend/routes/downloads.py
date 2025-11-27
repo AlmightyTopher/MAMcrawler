@@ -6,13 +6,14 @@ FastAPI router for download management, queue operations, and status tracking
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 import logging
 
 from backend.database import get_db
 from backend.services.download_service import DownloadService
+from backend.rate_limit import limiter, get_rate_limit
 
 logger = logging.getLogger(__name__)
 

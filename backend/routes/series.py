@@ -6,7 +6,7 @@ FastAPI router for series CRUD operations, completion tracking, and statistics
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 import logging
@@ -14,6 +14,7 @@ import logging
 from backend.database import get_db
 from backend.services.series_service import SeriesService
 from backend.services.book_service import BookService
+from backend.rate_limit import limiter, get_rate_limit
 
 logger = logging.getLogger(__name__)
 

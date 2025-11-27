@@ -15,12 +15,13 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 import jwt
 
 from backend.database import get_db
 from backend.models.user import User, AuditLog
 from backend.config import get_settings
+from backend.rate_limit import limiter, get_rate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -62,14 +63,28 @@ class UserCreateRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=8)
-    role: str = Field("viewer", regex="^(admin|moderator|viewer)$")
+    role: str = Field("viewer", pattern="^(admin|moderator|viewer)$")
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v):
+        if v not in ("admin", "moderator", "viewer"):
+            raise ValueError("Invalid role")
+        return v
 
 
 class UserUpdateRequest(BaseModel):
     """User update request"""
     email: Optional[EmailStr] = None
-    role: Optional[str] = Field(None, regex="^(admin|moderator|viewer)$")
+    role: Optional[str] = Field(None, pattern="^(admin|moderator|viewer)$")
     is_active: Optional[bool] = None
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v):
+        if v is not None and v not in ("admin", "moderator", "viewer"):
+            raise ValueError("Invalid role")
+        return v
 
 
 class PasswordChangeRequest(BaseModel):

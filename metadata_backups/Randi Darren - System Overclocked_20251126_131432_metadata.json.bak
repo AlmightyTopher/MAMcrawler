@@ -1,0 +1,255 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 18.506,
+      "title": "Opening Credits",
+      "id": 0
+    },
+    {
+      "start": 18.506,
+      "end": 1379.984,
+      "title": "Chapter 1",
+      "id": 1
+    },
+    {
+      "start": 1379.984,
+      "end": 2641.64,
+      "title": "Chapter 2",
+      "id": 2
+    },
+    {
+      "start": 2641.64,
+      "end": 3883.466,
+      "title": "Chapter 3",
+      "id": 3
+    },
+    {
+      "start": 3883.466,
+      "end": 4977.009,
+      "title": "Chapter 4",
+      "id": 4
+    },
+    {
+      "start": 4977.009,
+      "end": 6242.914,
+      "title": "Chapter 5",
+      "id": 5
+    },
+    {
+      "start": 6242.914,
+      "end": 7602.303,
+      "title": "Chapter 6",
+      "id": 6
+    },
+    {
+      "start": 7602.303,
+      "end": 9084.966,
+      "title": "Chapter 7",
+      "id": 7
+    },
+    {
+      "start": 9084.966,
+      "end": 10242.991,
+      "title": "Chapter 8",
+      "id": 8
+    },
+    {
+      "start": 10242.991,
+      "end": 11311.433,
+      "title": "Chapter 9",
+      "id": 9
+    },
+    {
+      "start": 11311.433,
+      "end": 12467.368,
+      "title": "Chapter 10",
+      "id": 10
+    },
+    {
+      "start": 12467.368,
+      "end": 13626.136,
+      "title": "Chapter 11",
+      "id": 11
+    },
+    {
+      "start": 13626.136,
+      "end": 14720.794,
+      "title": "Chapter 12",
+      "id": 12
+    },
+    {
+      "start": 14720.794,
+      "end": 15784.221,
+      "title": "Chapter 13",
+      "id": 13
+    },
+    {
+      "start": 15784.221,
+      "end": 17068.702,
+      "title": "Chapter 14",
+      "id": 14
+    },
+    {
+      "start": 17068.702,
+      "end": 18356.898,
+      "title": "Chapter 15",
+      "id": 15
+    },
+    {
+      "start": 18356.898,
+      "end": 19576.479,
+      "title": "Chapter 16",
+      "id": 16
+    },
+    {
+      "start": 19576.479,
+      "end": 20737.708,
+      "title": "Chapter 17",
+      "id": 17
+    },
+    {
+      "start": 20737.708,
+      "end": 21881.105,
+      "title": "Chapter 18",
+      "id": 18
+    },
+    {
+      "start": 21881.105,
+      "end": 22962.156,
+      "title": "Chapter 19",
+      "id": 19
+    },
+    {
+      "start": 22962.156,
+      "end": 24044.809,
+      "title": "Chapter 20",
+      "id": 20
+    },
+    {
+      "start": 24044.809,
+      "end": 25209.545,
+      "title": "Chapter 21",
+      "id": 21
+    },
+    {
+      "start": 25209.545,
+      "end": 26276.037,
+      "title": "Chapter 22",
+      "id": 22
+    },
+    {
+      "start": 26276.037,
+      "end": 27539.272,
+      "title": "Chapter 23",
+      "id": 23
+    },
+    {
+      "start": 27539.272,
+      "end": 28758.273,
+      "title": "Chapter 24",
+      "id": 24
+    },
+    {
+      "start": 28758.273,
+      "end": 29927.42,
+      "title": "Chapter 25",
+      "id": 25
+    },
+    {
+      "start": 29927.42,
+      "end": 30996.095,
+      "title": "Chapter 26",
+      "id": 26
+    },
+    {
+      "start": 30996.095,
+      "end": 32396.722,
+      "title": "Chapter 27",
+      "id": 27
+    },
+    {
+      "start": 32396.722,
+      "end": 33414.429,
+      "title": "Chapter 28",
+      "id": 28
+    },
+    {
+      "start": 33414.429,
+      "end": 34579.699,
+      "title": "Chapter 29",
+      "id": 29
+    },
+    {
+      "start": 34579.699,
+      "end": 35842.144,
+      "title": "Chapter 30",
+      "id": 30
+    },
+    {
+      "start": 35842.144,
+      "end": 37086.571,
+      "title": "Chapter 31",
+      "id": 31
+    },
+    {
+      "start": 37086.571,
+      "end": 38292.615,
+      "title": "Chapter 32",
+      "id": 32
+    },
+    {
+      "start": 38292.615,
+      "end": 39284.316,
+      "title": "Chapter 33",
+      "id": 33
+    },
+    {
+      "start": 39284.316,
+      "end": 40551.196,
+      "title": "Chapter 34",
+      "id": 34
+    },
+    {
+      "start": 40551.196,
+      "end": 41624.886,
+      "title": "Chapter 35",
+      "id": 35
+    },
+    {
+      "start": 41624.886,
+      "end": 42471.973,
+      "title": "Epilogue",
+      "id": 36
+    },
+    {
+      "start": 42471.973,
+      "end": 42534.851,
+      "title": "End Credits",
+      "id": 37
+    }
+  ],
+  "title": "System Overclocked",
+  "subtitle": null,
+  "authors": [
+    "Randi Darren"
+  ],
+  "narrators": [
+    "Stephanie Savannah"
+  ],
+  "series": [],
+  "genres": [
+    "Science Fiction & Fantasy:Fantasy"
+  ],
+  "publishedYear": "2023-05-02",
+  "publishedDate": null,
+  "publisher": null,
+  "description": "<p><b>Wrench is a Fixer.</b></p> <p>Someone born to maintain, fix, and correct any and every issue that could go wrong in the habitat he lives in. Someone who makes sure he and his fellow humans can remain on display and entertain their owners as any good human pet would.</p> <p>At least, that’s what he was born to be.</p> <p>He’s taken a different route and joined a resistance faction to help free humanity to become more than just pets to an alien race.</p> <p>Now at the end of his life, and realizing what a waste all his effort has been, Wrench finds himself given a chance to go back to his youth and relive his life.</p> <p>He’s going to be granted a superpower: the ability to alter anything and everything regarding his own body, from forcing his body to heal faster to speeding up his perception of time so that everything runs in slow motion.</p> <p>That power comes with a price tag, of course: a favor in the distant future for the man giving him his do-over.</p> <p>Accepting the deal, since being alive is far more beneficial than being dead, Wrench is thrown back into the past to live his life all over again, in whatever way he sees fit—whether it be rejoining the resistance, living as a Fixer and taking a leadership role, or just finding a wife and having kids.</p> <p>Or utilizing his newfound superpower to alter anything and everything about his body’s systems to become something completely different.</p> <p>Regardless of whatever choice he makes, though, he’s got a lot of things to fix. Good thing he’s well suited to fixing problems.</p> <p>After all, most issues only need a great deal of violence to be solved. Wrench has lots of that in his toolbox to go around.</p>",
+  "isbn": null,
+  "asin": null,
+  "language": null,
+  "explicit": false,
+  "abridged": false,
+  "seriesName": "System Overclocked"
+}

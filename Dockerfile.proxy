@@ -1,0 +1,13 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy proxy script
+COPY vpn_socks_proxy.py .
+
+# Note: This assumes WireGuard VPN is already running on the host
+# The proxy will bind to the VPN interface IP (10.2.0.2)
+
+# Run SOCKS proxy
+CMD ["python", "vpn_socks_proxy.py"]
+

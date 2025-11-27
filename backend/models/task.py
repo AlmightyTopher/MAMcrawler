@@ -3,7 +3,7 @@ SQLAlchemy ORM model for Tasks table
 Tracks execution history of all scheduled jobs
 """
 
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, JSON, Index, func
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, JSON, Index, func, Float, Boolean
 from datetime import datetime
 
 from backend.database import Base
@@ -65,6 +65,23 @@ class Task(Base):
 
     # Timestamps
     date_created = Column(TIMESTAMP, default=func.now(), index=True)
+
+    # VIP Management fields (for VIP renewal tasks)
+    vip_status = Column(String(100), nullable=True)  # active, expired, pending_renewal
+    vip_expiry_date = Column(TIMESTAMP, nullable=True)
+    renewal_decision = Column(String(100), nullable=True)  # renewed, skipped, failed, blocked_ratio_emergency, blocked_low_points
+    point_balance = Column(Integer, nullable=True)  # Points available at task execution
+    renewal_cost = Column(Integer, nullable=True)  # Cost of VIP renewal
+
+    # Category sync fields (for rule cache updates)
+    rules_updated = Column(Integer, nullable=True)  # Count of categories updated
+
+    # Pending items fields (for VIP pending item processing)
+    pending_items_processed = Column(Integer, nullable=True)  # Count of pending items processed
+
+    # Ratio emergency fields (for ratio monitoring tasks)
+    current_ratio = Column(Float, nullable=True)  # Ratio at task execution
+    emergency_active = Column(Boolean, default=False, nullable=False)  # Whether emergency freeze was triggered
 
     def __repr__(self) -> str:
         return f"<Task(id={self.id}, name={self.task_name}, status={self.status}, processed={self.items_processed})>"

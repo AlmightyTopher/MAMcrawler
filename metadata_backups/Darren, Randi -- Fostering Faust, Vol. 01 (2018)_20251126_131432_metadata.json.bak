@@ -1,0 +1,265 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 13.819,
+      "title": "Opening Credits",
+      "id": 0
+    },
+    {
+      "start": 13.819,
+      "end": 1473.128,
+      "title": "Chapter 01",
+      "id": 1
+    },
+    {
+      "start": 1473.128,
+      "end": 2811.553,
+      "title": "Chapter 02",
+      "id": 2
+    },
+    {
+      "start": 2811.553,
+      "end": 4407.117,
+      "title": "Chapter 03",
+      "id": 3
+    },
+    {
+      "start": 4407.117,
+      "end": 5793.888,
+      "title": "Chapter 04",
+      "id": 4
+    },
+    {
+      "start": 5793.888,
+      "end": 7406.821,
+      "title": "Chapter 05",
+      "id": 5
+    },
+    {
+      "start": 7406.821,
+      "end": 8613.312,
+      "title": "Chapter 06",
+      "id": 6
+    },
+    {
+      "start": 8613.312,
+      "end": 10014.713,
+      "title": "Chapter 07",
+      "id": 7
+    },
+    {
+      "start": 10014.713,
+      "end": 11319.008,
+      "title": "Chapter 08",
+      "id": 8
+    },
+    {
+      "start": 11319.008,
+      "end": 12811.711,
+      "title": "Chapter 09",
+      "id": 9
+    },
+    {
+      "start": 12811.711,
+      "end": 14136.766,
+      "title": "Chapter 10",
+      "id": 10
+    },
+    {
+      "start": 14136.766,
+      "end": 15531.574,
+      "title": "Chapter 11",
+      "id": 11
+    },
+    {
+      "start": 15531.574,
+      "end": 16907.575,
+      "title": "Chapter 12",
+      "id": 12
+    },
+    {
+      "start": 16907.575,
+      "end": 18198.683,
+      "title": "Chapter 13",
+      "id": 13
+    },
+    {
+      "start": 18198.683,
+      "end": 19519.05,
+      "title": "Chapter 14",
+      "id": 14
+    },
+    {
+      "start": 19519.05,
+      "end": 20808.255,
+      "title": "Chapter 15",
+      "id": 15
+    },
+    {
+      "start": 20808.255,
+      "end": 22138.886,
+      "title": "Chapter 16",
+      "id": 16
+    },
+    {
+      "start": 22138.886,
+      "end": 23483.867,
+      "title": "Chapter 17",
+      "id": 17
+    },
+    {
+      "start": 23483.867,
+      "end": 24722.5,
+      "title": "Chapter 18",
+      "id": 18
+    },
+    {
+      "start": 24722.5,
+      "end": 26037.529,
+      "title": "Chapter 19",
+      "id": 19
+    },
+    {
+      "start": 26037.529,
+      "end": 27561.676,
+      "title": "Chapter 20",
+      "id": 20
+    },
+    {
+      "start": 27561.676,
+      "end": 28963.594,
+      "title": "Chapter 21",
+      "id": 21
+    },
+    {
+      "start": 28963.594,
+      "end": 30241.704,
+      "title": "Chapter 22",
+      "id": 22
+    },
+    {
+      "start": 30241.704,
+      "end": 31557.152,
+      "title": "Chapter 23",
+      "id": 23
+    },
+    {
+      "start": 31557.152,
+      "end": 32942.307,
+      "title": "Chapter 24",
+      "id": 24
+    },
+    {
+      "start": 32942.307,
+      "end": 34070.65,
+      "title": "Chapter 25",
+      "id": 25
+    },
+    {
+      "start": 34070.65,
+      "end": 35517.525,
+      "title": "Chapter 26",
+      "id": 26
+    },
+    {
+      "start": 35517.525,
+      "end": 36844.817,
+      "title": "Chapter 27",
+      "id": 27
+    },
+    {
+      "start": 36844.817,
+      "end": 38078.115,
+      "title": "Chapter 28",
+      "id": 28
+    },
+    {
+      "start": 38078.115,
+      "end": 39405.779,
+      "title": "Chapter 29",
+      "id": 29
+    },
+    {
+      "start": 39405.779,
+      "end": 40847.315,
+      "title": "Chapter 30",
+      "id": 30
+    },
+    {
+      "start": 40847.315,
+      "end": 42133.509,
+      "title": "Chapter 31",
+      "id": 31
+    },
+    {
+      "start": 42133.509,
+      "end": 43337.97,
+      "title": "Chapter 32",
+      "id": 32
+    },
+    {
+      "start": 43337.97,
+      "end": 44798.686,
+      "title": "Chapter 33",
+      "id": 33
+    },
+    {
+      "start": 44798.686,
+      "end": 46029.385,
+      "title": "Chapter 34",
+      "id": 34
+    },
+    {
+      "start": 46029.385,
+      "end": 47300.024,
+      "title": "Chapter 35",
+      "id": 35
+    },
+    {
+      "start": 47300.024,
+      "end": 48527.892,
+      "title": "Chapter 36",
+      "id": 36
+    },
+    {
+      "start": 48527.892,
+      "end": 48954.254,
+      "title": "Epilogue",
+      "id": 37
+    },
+    {
+      "start": 48954.254,
+      "end": 48984.893,
+      "title": "End Credits",
+      "id": 38
+    }
+  ],
+  "title": "Fostering Faust: Fostering Faust, Book 1",
+  "subtitle": "Fostering Faust, Book 1",
+  "authors": [
+    "William D. Arand",
+    "Randi Darren"
+  ],
+  "narrators": [
+    "Andrea Parsneau"
+  ],
+  "series": [
+    "Fostering Faust #1"
+  ],
+  "genres": [
+    "Erotica",
+    "Science Fiction & Fantasy"
+  ],
+  "publishedYear": "2018",
+  "publishedDate": null,
+  "publisher": "Randi Darren",
+  "description": "<p>Alex is dead. </p> <p>Dead, and apparently with a one-way ticket to a place that only the worst of the worst go. </p> <p>All for a simple choice he made about a product his company owned. </p> <p>Damned for all time. </p> <p>Luckily for him, he's about to be given a chance. </p> <p>Another choice to make. </p> <p>He can return to the land of the living, though his soul would belong to another. Except the world he's being sent to isn't the same one he came from. It's not even a similar period in time, but from something long past in history. </p> <p>The dark ages. </p> <p>And part of the deal to live again, is to make pacts with others. Pacts that would bind others in secrecy. That they could never speak of what they'd done. </p> <p>Deals for anything, and everything. From things as simple as a meal to their very lives. How much would you give of yourself to live on in the world is an easy question. </p> <p>The better question is, how much would you take from others? </p> <p>If Alex wants to keep living, to keep his soul from being sent to the darkest corner of hell, he'll have to ask himself that question. '</p> <p>Daily.</p>",
+  "isbn": null,
+  "asin": null,
+  "language": "English",
+  "explicit": false,
+  "abridged": false,
+  "seriesName": "Fostering Faust"
+}

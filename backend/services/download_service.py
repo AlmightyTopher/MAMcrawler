@@ -7,8 +7,10 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 import logging
+import asyncio
 
 from backend.models.download import Download
+from backend.models.book import Book
 
 logger = logging.getLogger(__name__)
 
@@ -476,6 +478,204 @@ class DownloadService:
 
         except Exception as e:
             logger.error(f"Error getting downloads ready for retry: {e}", exc_info=True)
+            return {
+                "success": False,
+                "error": str(e),
+                "data": [],
+                "count": 0
+            }
+
+    @staticmethod
+    async def on_download_completed(
+        db: Session,
+        download_id: int,
+        torrent_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        GAP 1 + GAP 4 IMPLEMENTATION: Handle download completion event.
+
+        Triggered when qBittorrent marks torrent as complete.
+
+        Workflow:
+        1. Verify download record exists
+        2. GAP 4: Run integrity check
+        3. If integrity fails: queue alternate release
+        4. If integrity passes: GAP 1: Trigger metadata scan
+        5. Mark as seeding
+
+        Args:
+            db: Database session
+            download_id: Download ID
+            torrent_name: Torrent name (optional, loaded from DB if not provided)
+
+        Returns:
+            Dict with status, scan_result, integrity_result, errors
+        """
+        try:
+            from backend.services.integrity_check_service import IntegrityCheckService
+
+            # 1. Load download record
+            download = db.query(Download).filter(
+                Download.id == download_id
+            ).first()
+
+            if not download:
+                error_msg = f"Download {download_id} not found"
+                logger.error(error_msg)
+                return {
+                    "status": "error",
+                    "error": error_msg,
+                    "download_id": download_id
+                }
+
+            logger.info(f"Processing download completion for download {download_id}: {download.title}")
+
+            # 2. Update status to integrity_checking
+            download.status = "integrity_checking"
+            download.last_attempt = datetime.now()
+            db.commit()
+
+            # GAP 4: Run integrity check
+            integrity_service = IntegrityCheckService(db)
+            integrity_result = await integrity_service.verify_download(
+                download_id=download_id,
+                torrent_hash=download.qbittorrent_hash
+            )
+
+            logger.info(f"Integrity check result: {integrity_result.get('status')}")
+
+            # Check integrity result
+            if integrity_result.get("status") == "failed":
+                logger.warning(f"Integrity check failed for download {download_id}")
+
+                # Try to handle failure (queue alternate)
+                alternate_download_id = await integrity_service.handle_integrity_failure(
+                    download_id=download_id
+                )
+
+                download.status = "integrity_failed"
+                if alternate_download_id:
+                    download.status = "integrity_failed_retrying"
+
+                db.commit()
+
+                return {
+                    "status": "integrity_failed",
+                    "download_id": download_id,
+                    "title": download.title,
+                    "integrity_result": integrity_result,
+                    "retry_download_id": alternate_download_id,
+                    "timestamp": datetime.now().isoformat()
+                }
+
+            # GAP 1: Trigger metadata scan if integrity passed and book exists
+            if download.book_id:
+                # Update status to metadata_processing
+                download.status = "metadata_processing"
+                db.commit()
+
+                try:
+                    from backend.services.metadata_service import MetadataService
+
+                    # Perform full scan
+                    scan_result = MetadataService.perform_full_scan(
+                        db=db,
+                        book_id=download.book_id,
+                        source="download_completion"
+                    )
+
+                    logger.info(
+                        f"Metadata scan completed for book {download.book_id}: "
+                        f"{scan_result.get('fields_updated', 0)} fields updated"
+                    )
+
+                except Exception as scan_error:
+                    logger.warning(
+                        f"Metadata scan failed for download {download_id}: {scan_error}"
+                    )
+                    # Don't fail the entire process if scan fails
+                    scan_result = {
+                        "status": "scan_error",
+                        "error": str(scan_error)
+                    }
+
+                # Mark as fully processed and seeding
+                download.status = "seeding"
+                download.metadata_processed_at = datetime.now()
+                download.fully_processed = True
+                download.abs_import_status = "imported"
+                db.commit()
+
+                return {
+                    "status": "success",
+                    "download_id": download_id,
+                    "title": download.title,
+                    "integrity_result": integrity_result,
+                    "scan_result": scan_result,
+                    "timestamp": datetime.now().isoformat()
+                }
+            else:
+                # No book associated, just mark as seeding
+                download.status = "seeding"
+                download.metadata_processed_at = datetime.now()
+                download.fully_processed = True
+                db.commit()
+
+                return {
+                    "status": "success",
+                    "download_id": download_id,
+                    "title": download.title,
+                    "integrity_result": integrity_result,
+                    "note": "No book associated, skipped metadata scan",
+                    "timestamp": datetime.now().isoformat()
+                }
+
+        except Exception as e:
+            logger.error(f"Error processing download completion for {download_id}: {e}", exc_info=True)
+            try:
+                download = db.query(Download).filter(Download.id == download_id).first()
+                if download:
+                    download.status = "processing_error"
+                    download.abs_import_error = str(e)
+                    db.commit()
+            except:
+                pass
+
+            return {
+                "status": "error",
+                "download_id": download_id,
+                "error": str(e)
+            }
+
+    @staticmethod
+    def get_downloads_needing_scan(
+        db: Session,
+        limit: int = 10
+    ) -> Dict[str, Any]:
+        """
+        Get downloads that completed but need metadata scan.
+
+        Returns:
+            Dict with success, data (list of Downloads), count
+        """
+        try:
+            # Find downloads that are completed but not yet fully processed
+            downloads = db.query(Download).filter(
+                Download.status.in_(["seeding", "metadata_processing"]),
+                (Download.fully_processed == False) | (Download.fully_processed.is_(None))
+            ).order_by(
+                Download.date_completed.desc()
+            ).limit(limit).all()
+
+            return {
+                "success": True,
+                "data": downloads,
+                "count": len(downloads),
+                "error": None
+            }
+
+        except Exception as e:
+            logger.error(f"Error getting downloads needing scan: {e}", exc_info=True)
             return {
                 "success": False,
                 "error": str(e),

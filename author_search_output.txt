@@ -1,0 +1,2 @@
+Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+2025-11-26 01:50:47,564 - __main__ - ERROR - Missing required library: No module named 'selenium'

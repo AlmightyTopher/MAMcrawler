@@ -1,0 +1,41 @@
+version: '3.8'
+
+networks:
+  mam-network:
+    driver: bridge
+
+services:
+  # VPN SOCKS Proxy (runs on host network for VPN access)
+  vpn-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    container_name: vpn-socks-proxy
+    network_mode: "host"
+    restart: unless-stopped
+    
+  # MAM Audiobook Downloader
+  mam-downloader:
+    build: .
+    container_name: mam-audiobook-downloader
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data  # Persist state files
+      - ./logs:/app/logs  # Persist logs
+    network_mode: "host"  # Access proxy on 127.0.0.1:8080
+    restart: unless-stopped
+    
+  # Optional: Run once instead of continuously
+  # Uncomment and use: docker-compose run mam-downloader-once
+  # mam-downloader-once:
+  #   build: .
+  #   container_name: mam-audiobook-downloader-once
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./data:/app/data
+  #   network_mode: "host"
+  #   profiles:
+  #     - manual
+

@@ -20,12 +20,17 @@ settings = get_settings()
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Prepare connection arguments based on database type
+connect_args = {}
+if settings.DATABASE_URL.startswith("sqlite://"):
+    connect_args = {"timeout": 10}
+
 # Create database engine
 engine = create_engine(
     settings.DATABASE_URL,
     echo=settings.DATABASE_ECHO,
     pool_pre_ping=True,  # Verify connections before using them
-    connect_args={"timeout": 10},
+    connect_args=connect_args,
     poolclass=NullPool  # Don't use connection pooling
 )
 

@@ -12,6 +12,12 @@ from backend.models.task import Task
 from backend.models.failed_attempt import FailedAttempt
 from backend.models.metadata_correction import MetadataCorrection
 from backend.models.user import User, AuditLog
+from backend.models.mam_rules import MamRules
+from backend.models.ratio_log import RatioLog
+from backend.models.event_status import EventStatus
+from backend.models.rule_cache import RuleCache
+from backend.models.vip_pending_item import VIPPendingItem
+from backend.models.ratio_metrics import RatioMetrics
 
 __all__ = [
     "Book",
@@ -24,4 +30,10 @@ __all__ = [
     "MetadataCorrection",
     "User",
     "AuditLog",
+    "MamRules",
+    "RatioLog",
+    "EventStatus",
+    "RuleCache",
+    "VIPPendingItem",
+    "RatioMetrics",
 ]

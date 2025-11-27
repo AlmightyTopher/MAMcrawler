@@ -1,0 +1,252 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 14.953,
+      "title": "Chapter 1",
+      "id": 0
+    },
+    {
+      "start": 14.953,
+      "end": 1278.164,
+      "title": "Chapter 2",
+      "id": 1
+    },
+    {
+      "start": 1278.164,
+      "end": 2756.601,
+      "title": "Chapter 3",
+      "id": 2
+    },
+    {
+      "start": 2756.601,
+      "end": 4062.421,
+      "title": "Chapter 4",
+      "id": 3
+    },
+    {
+      "start": 4062.421,
+      "end": 5453.691,
+      "title": "Chapter 5",
+      "id": 4
+    },
+    {
+      "start": 5453.691,
+      "end": 6648.241,
+      "title": "Chapter 6",
+      "id": 5
+    },
+    {
+      "start": 6648.241,
+      "end": 7881.103,
+      "title": "Chapter 7",
+      "id": 6
+    },
+    {
+      "start": 7881.103,
+      "end": 9094.74,
+      "title": "Chapter 8",
+      "id": 7
+    },
+    {
+      "start": 9094.74,
+      "end": 10758.031,
+      "title": "Chapter 9",
+      "id": 8
+    },
+    {
+      "start": 10758.031,
+      "end": 12010.051,
+      "title": "Chapter 10",
+      "id": 9
+    },
+    {
+      "start": 12010.051,
+      "end": 13095.421,
+      "title": "Chapter 11",
+      "id": 10
+    },
+    {
+      "start": 13095.421,
+      "end": 14310.127,
+      "title": "Chapter 12",
+      "id": 11
+    },
+    {
+      "start": 14310.127,
+      "end": 15348.569,
+      "title": "Chapter 13",
+      "id": 12
+    },
+    {
+      "start": 15348.569,
+      "end": 16590.767,
+      "title": "Chapter 14",
+      "id": 13
+    },
+    {
+      "start": 16590.767,
+      "end": 17713.777,
+      "title": "Chapter 15",
+      "id": 14
+    },
+    {
+      "start": 17713.777,
+      "end": 18935.425,
+      "title": "Chapter 16",
+      "id": 15
+    },
+    {
+      "start": 18935.425,
+      "end": 19952.249,
+      "title": "Chapter 17",
+      "id": 16
+    },
+    {
+      "start": 19952.249,
+      "end": 21203.247,
+      "title": "Chapter 18",
+      "id": 17
+    },
+    {
+      "start": 21203.247,
+      "end": 22319.663,
+      "title": "Chapter 19",
+      "id": 18
+    },
+    {
+      "start": 22319.663,
+      "end": 23573.772,
+      "title": "Chapter 20",
+      "id": 19
+    },
+    {
+      "start": 23573.772,
+      "end": 24633.299,
+      "title": "Chapter 21",
+      "id": 20
+    },
+    {
+      "start": 24633.299,
+      "end": 25882.299,
+      "title": "Chapter 22",
+      "id": 21
+    },
+    {
+      "start": 25882.299,
+      "end": 26958.474,
+      "title": "Chapter 23",
+      "id": 22
+    },
+    {
+      "start": 26958.474,
+      "end": 28076.562,
+      "title": "Chapter 24",
+      "id": 23
+    },
+    {
+      "start": 28076.562,
+      "end": 29253.766,
+      "title": "Chapter 25",
+      "id": 24
+    },
+    {
+      "start": 29253.766,
+      "end": 30580.902,
+      "title": "Chapter 26",
+      "id": 25
+    },
+    {
+      "start": 30580.902,
+      "end": 31800.622,
+      "title": "Chapter 27",
+      "id": 26
+    },
+    {
+      "start": 31800.622,
+      "end": 33087.449,
+      "title": "Chapter 28",
+      "id": 27
+    },
+    {
+      "start": 33087.449,
+      "end": 34137.269,
+      "title": "Chapter 29",
+      "id": 28
+    },
+    {
+      "start": 34137.269,
+      "end": 35504.576,
+      "title": "Chapter 30",
+      "id": 29
+    },
+    {
+      "start": 35504.576,
+      "end": 36725.178,
+      "title": "Chapter 31",
+      "id": 30
+    },
+    {
+      "start": 36725.178,
+      "end": 37965.982,
+      "title": "Chapter 32",
+      "id": 31
+    },
+    {
+      "start": 37965.982,
+      "end": 39165.013,
+      "title": "Chapter 33",
+      "id": 32
+    },
+    {
+      "start": 39165.013,
+      "end": 40353.062,
+      "title": "Chapter 34",
+      "id": 33
+    },
+    {
+      "start": 40353.062,
+      "end": 41390.575,
+      "title": "Chapter 35",
+      "id": 34
+    },
+    {
+      "start": 41390.575,
+      "end": 43169.99,
+      "title": "Chapter 36",
+      "id": 35
+    },
+    {
+      "start": 43169.99,
+      "end": 44332.218,
+      "title": "Chapter 37",
+      "id": 36
+    },
+    {
+      "start": 44332.218,
+      "end": 44359.216,
+      "title": "Chapter 38",
+      "id": 37
+    }
+  ],
+  "title": "Wild Wastes 4",
+  "subtitle": null,
+  "authors": [
+    "Randi Darren"
+  ],
+  "narrators": [],
+  "series": [],
+  "genres": [
+    "Audiobook"
+  ],
+  "publishedYear": "2022",
+  "publishedDate": null,
+  "publisher": null,
+  "description": "For North America, in the shattered bones of the country, the West and East Coasts, new governments have rose, then fell. Vince has become the master of a major portion of the Wastes of North America. Responsible for everything and everyone inside his boundaries. There is little that doesn’t fall under his purview. Now, he has to take up a courier mission of sorts, except he’s the item to be delivered, straight to the European continent—where Vince plans on delivering a massive helping of Yosemite to the masses.",
+  "isbn": null,
+  "asin": null,
+  "language": null,
+  "explicit": false,
+  "abridged": false
+}

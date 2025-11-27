@@ -1,0 +1,260 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 16.811,
+      "title": "Chapter 1",
+      "id": 0
+    },
+    {
+      "start": 16.811,
+      "end": 1566.604,
+      "title": "Chapter 2",
+      "id": 1
+    },
+    {
+      "start": 1566.604,
+      "end": 2871.449,
+      "title": "Chapter 3",
+      "id": 2
+    },
+    {
+      "start": 2871.449,
+      "end": 4177.247,
+      "title": "Chapter 4",
+      "id": 3
+    },
+    {
+      "start": 4177.247,
+      "end": 5365.946,
+      "title": "Chapter 5",
+      "id": 4
+    },
+    {
+      "start": 5365.946,
+      "end": 7330.725,
+      "title": "Chapter 6",
+      "id": 5
+    },
+    {
+      "start": 7330.725,
+      "end": 8521.607,
+      "title": "Chapter 7",
+      "id": 6
+    },
+    {
+      "start": 8521.607,
+      "end": 9827.544,
+      "title": "Chapter 8",
+      "id": 7
+    },
+    {
+      "start": 9827.544,
+      "end": 11099.487,
+      "title": "Chapter 9",
+      "id": 8
+    },
+    {
+      "start": 11099.487,
+      "end": 12259.37,
+      "title": "Chapter 10",
+      "id": 9
+    },
+    {
+      "start": 12259.37,
+      "end": 13597.489,
+      "title": "Chapter 11",
+      "id": 10
+    },
+    {
+      "start": 13597.489,
+      "end": 14887.892,
+      "title": "Chapter 12",
+      "id": 11
+    },
+    {
+      "start": 14887.892,
+      "end": 16081.839,
+      "title": "Chapter 13",
+      "id": 12
+    },
+    {
+      "start": 16081.839,
+      "end": 17293.27,
+      "title": "Chapter 14",
+      "id": 13
+    },
+    {
+      "start": 17293.27,
+      "end": 18788.357,
+      "title": "Chapter 15",
+      "id": 14
+    },
+    {
+      "start": 18788.357,
+      "end": 20243.807,
+      "title": "Chapter 16",
+      "id": 15
+    },
+    {
+      "start": 20243.807,
+      "end": 21814.428,
+      "title": "Chapter 17",
+      "id": 16
+    },
+    {
+      "start": 21814.428,
+      "end": 23105.573,
+      "title": "Chapter 18",
+      "id": 17
+    },
+    {
+      "start": 23105.573,
+      "end": 24396.719,
+      "title": "Chapter 19",
+      "id": 18
+    },
+    {
+      "start": 24396.719,
+      "end": 25766.208,
+      "title": "Chapter 20",
+      "id": 19
+    },
+    {
+      "start": 25766.208,
+      "end": 27240.768,
+      "title": "Chapter 21",
+      "id": 20
+    },
+    {
+      "start": 27240.768,
+      "end": 28559.94,
+      "title": "Chapter 22",
+      "id": 21
+    },
+    {
+      "start": 28559.94,
+      "end": 30528.041,
+      "title": "Chapter 23",
+      "id": 22
+    },
+    {
+      "start": 30528.041,
+      "end": 31818.072,
+      "title": "Chapter 24",
+      "id": 23
+    },
+    {
+      "start": 31818.072,
+      "end": 32959.866,
+      "title": "Chapter 25",
+      "id": 24
+    },
+    {
+      "start": 32959.866,
+      "end": 34221.5,
+      "title": "Chapter 26",
+      "id": 25
+    },
+    {
+      "start": 34221.5,
+      "end": 35443.101,
+      "title": "Chapter 27",
+      "id": 26
+    },
+    {
+      "start": 35443.101,
+      "end": 36776.298,
+      "title": "Chapter 28",
+      "id": 27
+    },
+    {
+      "start": 36776.298,
+      "end": 38420.341,
+      "title": "Chapter 29",
+      "id": 28
+    },
+    {
+      "start": 38420.341,
+      "end": 39741.556,
+      "title": "Chapter 30",
+      "id": 29
+    },
+    {
+      "start": 39741.556,
+      "end": 41021.324,
+      "title": "Chapter 31",
+      "id": 30
+    },
+    {
+      "start": 41021.324,
+      "end": 42337.129,
+      "title": "Chapter 32",
+      "id": 31
+    },
+    {
+      "start": 42337.129,
+      "end": 43665.891,
+      "title": "Chapter 33",
+      "id": 32
+    },
+    {
+      "start": 43665.891,
+      "end": 45041.116,
+      "title": "Chapter 34",
+      "id": 33
+    },
+    {
+      "start": 45041.116,
+      "end": 46043.475,
+      "title": "Chapter 35",
+      "id": 34
+    },
+    {
+      "start": 46043.475,
+      "end": 47272.298,
+      "title": "Chapter 36",
+      "id": 35
+    },
+    {
+      "start": 47272.298,
+      "end": 48155.121,
+      "title": "Chapter 37",
+      "id": 36
+    },
+    {
+      "start": 48155.121,
+      "end": 49257.999,
+      "title": "Chapter 38",
+      "id": 37
+    },
+    {
+      "start": 49257.999,
+      "end": 49324.547,
+      "title": "Chapter 39",
+      "id": 38
+    }
+  ],
+  "title": "System Overclocked 2: System Overclocked, Book 2",
+  "subtitle": "System Overclocked",
+  "authors": [],
+  "narrators": [
+    "Stephanie Savannah"
+  ],
+  "series": [
+    "System Overclocked 2: System Overclocked #2"
+  ],
+  "genres": [
+    "Audiobook"
+  ],
+  "publishedYear": "2024",
+  "publishedDate": null,
+  "publisher": "Independently Published",
+  "description": "Chapter 39",
+  "isbn": "9798866346547",
+  "asin": "B0CQMLWM45",
+  "language": "en",
+  "explicit": false,
+  "abridged": false
+}

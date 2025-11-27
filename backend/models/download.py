@@ -3,7 +3,7 @@ SQLAlchemy ORM model for Downloads table
 Tracks all download attempts (queued, in-progress, completed, failed)
 """
 
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, Index, func
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, Index, func, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -76,6 +76,22 @@ class Download(Base):
     # Timestamps
     date_queued = Column(TIMESTAMP, default=func.now(), index=True)
     date_completed = Column(TIMESTAMP, nullable=True)
+
+    # MAM Metadata collection
+    metadata_json = Column(Text, nullable=True)  # Stores complete MAM metadata as JSON
+    metadata_applied_at = Column(TIMESTAMP, nullable=True)  # When metadata was applied to ABS
+
+    # Phase 1: Quality tracking and integrity checking
+    integrity_status = Column(String(50), default="pending")  # pending/passed/failed/redownloading
+    release_edition = Column(String(50), nullable=True)  # Free/FL/Paid
+    quality_score = Column(Float, nullable=True)
+
+    # SECTION 2: Ratio emergency fields
+    is_paid = Column(Integer, default=0)  # Boolean: 0=False, 1=True - Whether this was a paid FL purchase
+    emergency_blocked = Column(Integer, default=0)  # Boolean: 0=False, 1=True (SQLite compatibility)
+    paid_download_allowed = Column(Integer, default=1)  # Boolean: 0=False, 1=True
+    freeze_timestamp = Column(TIMESTAMP, nullable=True)  # When emergency freeze started
+    emergency_reason = Column(String(500), nullable=True)  # Why download was blocked (e.g., "ratio below 0.75")
 
     # Relationships
     book = relationship("Book", back_populates="downloads")

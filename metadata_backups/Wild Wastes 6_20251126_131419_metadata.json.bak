@@ -1,0 +1,262 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 14.580998,
+      "title": "Opening Credits",
+      "id": 0
+    },
+    {
+      "start": 14.580998,
+      "end": 1425.23898,
+      "title": "Chapter 1",
+      "id": 1
+    },
+    {
+      "start": 1425.23898,
+      "end": 2853.450975,
+      "title": "Chapter 2",
+      "id": 2
+    },
+    {
+      "start": 2853.450975,
+      "end": 4153.628957,
+      "title": "Chapter 3",
+      "id": 3
+    },
+    {
+      "start": 4153.628957,
+      "end": 5380.454943,
+      "title": "Chapter 4",
+      "id": 4
+    },
+    {
+      "start": 5380.454943,
+      "end": 6677.776939,
+      "title": "Chapter 5",
+      "id": 5
+    },
+    {
+      "start": 6677.776939,
+      "end": 7962.466939,
+      "title": "Chapter 6",
+      "id": 6
+    },
+    {
+      "start": 7962.466939,
+      "end": 9155.971927,
+      "title": "Chapter 7",
+      "id": 7
+    },
+    {
+      "start": 9155.971927,
+      "end": 10338.052925,
+      "title": "Chapter 8",
+      "id": 8
+    },
+    {
+      "start": 10338.052925,
+      "end": 11525.683923,
+      "title": "Chapter 9",
+      "id": 9
+    },
+    {
+      "start": 11525.683923,
+      "end": 12717.377914,
+      "title": "Chapter 10",
+      "id": 10
+    },
+    {
+      "start": 12717.377914,
+      "end": 13905.797914,
+      "title": "Chapter 11",
+      "id": 11
+    },
+    {
+      "start": 13905.797914,
+      "end": 15064.356893,
+      "title": "Chapter 12",
+      "id": 12
+    },
+    {
+      "start": 15064.356893,
+      "end": 16197.791882,
+      "title": "Chapter 13",
+      "id": 13
+    },
+    {
+      "start": 16197.791882,
+      "end": 17350.568866,
+      "title": "Chapter 14",
+      "id": 14
+    },
+    {
+      "start": 17350.568866,
+      "end": 18522.363855,
+      "title": "Chapter 15",
+      "id": 15
+    },
+    {
+      "start": 18522.363855,
+      "end": 19890.064853,
+      "title": "Chapter 16",
+      "id": 16
+    },
+    {
+      "start": 19890.064853,
+      "end": 21117.842834,
+      "title": "Chapter 17",
+      "id": 17
+    },
+    {
+      "start": 21117.842834,
+      "end": 22365.891814,
+      "title": "Chapter 18",
+      "id": 18
+    },
+    {
+      "start": 22365.891814,
+      "end": 23511.4478,
+      "title": "Chapter 19",
+      "id": 19
+    },
+    {
+      "start": 23511.4478,
+      "end": 24780.069796,
+      "title": "Chapter 20",
+      "id": 20
+    },
+    {
+      "start": 24780.069796,
+      "end": 26165.789796,
+      "title": "Chapter 21",
+      "id": 21
+    },
+    {
+      "start": 26165.789796,
+      "end": 27501.702789,
+      "title": "Chapter 22",
+      "id": 22
+    },
+    {
+      "start": 27501.702789,
+      "end": 28747.220771,
+      "title": "Chapter 23",
+      "id": 23
+    },
+    {
+      "start": 28747.220771,
+      "end": 30031.840748,
+      "title": "Chapter 24",
+      "id": 24
+    },
+    {
+      "start": 30031.840748,
+      "end": 31319.897732,
+      "title": "Chapter 25",
+      "id": 25
+    },
+    {
+      "start": 31319.897732,
+      "end": 32479.640726,
+      "title": "Chapter 26",
+      "id": 26
+    },
+    {
+      "start": 32479.640726,
+      "end": 33626.194717,
+      "title": "Chapter 27",
+      "id": 27
+    },
+    {
+      "start": 33626.194717,
+      "end": 34775.372698,
+      "title": "Chapter 28",
+      "id": 28
+    },
+    {
+      "start": 34775.372698,
+      "end": 35935.557687,
+      "title": "Chapter 29",
+      "id": 29
+    },
+    {
+      "start": 35935.557687,
+      "end": 37169.117687,
+      "title": "Chapter 30",
+      "id": 30
+    },
+    {
+      "start": 37169.117687,
+      "end": 38306.128685,
+      "title": "Chapter 31",
+      "id": 31
+    },
+    {
+      "start": 38306.128685,
+      "end": 39458.534671,
+      "title": "Chapter 32",
+      "id": 32
+    },
+    {
+      "start": 39458.534671,
+      "end": 40549.523651,
+      "title": "Chapter 33",
+      "id": 33
+    },
+    {
+      "start": 40549.523651,
+      "end": 41474.977642,
+      "title": "Chapter 34",
+      "id": 34
+    },
+    {
+      "start": 41474.977642,
+      "end": 42635.974626,
+      "title": "Chapter 35",
+      "id": 35
+    },
+    {
+      "start": 42635.974626,
+      "end": 44620.212608,
+      "title": "Chapter 36",
+      "id": 36
+    },
+    {
+      "start": 44620.212608,
+      "end": 45384.171587,
+      "title": "Epilogue",
+      "id": 37
+    },
+    {
+      "start": 45384.171587,
+      "end": 45408.211678,
+      "title": "End Credits",
+      "id": 38
+    }
+  ],
+  "title": "Wild Wastes 6 (Unabridged)",
+  "subtitle": null,
+  "authors": [
+    "Randi Darren"
+  ],
+  "narrators": [
+    "Stephanie Savannah"
+  ],
+  "series": [
+    "Wild Wastes #6"
+  ],
+  "genres": [
+    "Action & Adventure, Fantasy"
+  ],
+  "publishedYear": "2000",
+  "publishedDate": null,
+  "publisher": "Randi Darren",
+  "description": "Before world war two could reach its conclusion, the world suffered what could only be defined as a cataclysm. Legend has it that an experiment failed. Catastrophically so. And when it failed, the center of the United States, from the Sierra Nevada to the Mississippi river became \\\"The Waste\\\", where everything changed. Except it didn't only happen in North America. In fact, it happened all around the world.",
+  "isbn": null,
+  "asin": "B0F9B1QBBY",
+  "language": "English",
+  "explicit": false,
+  "abridged": false
+}

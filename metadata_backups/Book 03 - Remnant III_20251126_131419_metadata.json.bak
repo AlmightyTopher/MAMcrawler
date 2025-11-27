@@ -1,0 +1,254 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 13.05,
+      "title": "Chapter 1",
+      "id": 0
+    },
+    {
+      "start": 13.05,
+      "end": 1469.637,
+      "title": "Chapter 2",
+      "id": 1
+    },
+    {
+      "start": 1469.637,
+      "end": 2916.148,
+      "title": "Chapter 3",
+      "id": 2
+    },
+    {
+      "start": 2916.148,
+      "end": 4226.403,
+      "title": "Chapter 4",
+      "id": 3
+    },
+    {
+      "start": 4226.403,
+      "end": 5676.582,
+      "title": "Chapter 5",
+      "id": 4
+    },
+    {
+      "start": 5676.582,
+      "end": 7193.078,
+      "title": "Chapter 6",
+      "id": 5
+    },
+    {
+      "start": 7193.078,
+      "end": 8793.072,
+      "title": "Chapter 7",
+      "id": 6
+    },
+    {
+      "start": 8793.072,
+      "end": 10324.846,
+      "title": "Chapter 8",
+      "id": 7
+    },
+    {
+      "start": 10324.846,
+      "end": 11667.749,
+      "title": "Chapter 9",
+      "id": 8
+    },
+    {
+      "start": 11667.749,
+      "end": 13133.624,
+      "title": "Chapter 10",
+      "id": 9
+    },
+    {
+      "start": 13133.624,
+      "end": 14545.212,
+      "title": "Chapter 11",
+      "id": 10
+    },
+    {
+      "start": 14545.212,
+      "end": 15762.913,
+      "title": "Chapter 12",
+      "id": 11
+    },
+    {
+      "start": 15762.913,
+      "end": 16982.982,
+      "title": "Chapter 13",
+      "id": 12
+    },
+    {
+      "start": 16982.982,
+      "end": 18475.7,
+      "title": "Chapter 14",
+      "id": 13
+    },
+    {
+      "start": 18475.7,
+      "end": 19797.891,
+      "title": "Chapter 15",
+      "id": 14
+    },
+    {
+      "start": 19797.891,
+      "end": 21319.076,
+      "title": "Chapter 16",
+      "id": 15
+    },
+    {
+      "start": 21319.076,
+      "end": 22737.908,
+      "title": "Chapter 17",
+      "id": 16
+    },
+    {
+      "start": 22737.908,
+      "end": 24139.511,
+      "title": "Chapter 18",
+      "id": 17
+    },
+    {
+      "start": 24139.511,
+      "end": 25462.631,
+      "title": "Chapter 19",
+      "id": 18
+    },
+    {
+      "start": 25462.631,
+      "end": 26969.559,
+      "title": "Chapter 20",
+      "id": 19
+    },
+    {
+      "start": 26969.559,
+      "end": 28348.407,
+      "title": "Chapter 21",
+      "id": 20
+    },
+    {
+      "start": 28348.407,
+      "end": 29567.129,
+      "title": "Chapter 22",
+      "id": 21
+    },
+    {
+      "start": 29567.129,
+      "end": 30806.843,
+      "title": "Chapter 23",
+      "id": 22
+    },
+    {
+      "start": 30806.843,
+      "end": 32092.949,
+      "title": "Chapter 24",
+      "id": 23
+    },
+    {
+      "start": 32092.949,
+      "end": 33625.049,
+      "title": "Chapter 25",
+      "id": 24
+    },
+    {
+      "start": 33625.049,
+      "end": 34864.251,
+      "title": "Chapter 26",
+      "id": 25
+    },
+    {
+      "start": 34864.251,
+      "end": 36343.827,
+      "title": "Chapter 27",
+      "id": 26
+    },
+    {
+      "start": 36343.827,
+      "end": 38199.101,
+      "title": "Chapter 28",
+      "id": 27
+    },
+    {
+      "start": 38199.101,
+      "end": 39672.128,
+      "title": "Chapter 29",
+      "id": 28
+    },
+    {
+      "start": 39672.128,
+      "end": 41463.966,
+      "title": "Chapter 30",
+      "id": 29
+    },
+    {
+      "start": 41463.966,
+      "end": 42752.395,
+      "title": "Chapter 31",
+      "id": 30
+    },
+    {
+      "start": 42752.395,
+      "end": 43929.693,
+      "title": "Chapter 32",
+      "id": 31
+    },
+    {
+      "start": 43929.693,
+      "end": 45311.884,
+      "title": "Chapter 33",
+      "id": 32
+    },
+    {
+      "start": 45311.884,
+      "end": 46594.926,
+      "title": "Chapter 34",
+      "id": 33
+    },
+    {
+      "start": 46594.926,
+      "end": 48126.096,
+      "title": "Chapter 35",
+      "id": 34
+    },
+    {
+      "start": 48126.096,
+      "end": 49491.94,
+      "title": "Chapter 36",
+      "id": 35
+    },
+    {
+      "start": 49491.94,
+      "end": 50817.567,
+      "title": "Chapter 37",
+      "id": 36
+    },
+    {
+      "start": 50817.567,
+      "end": 50846.935,
+      "title": "Chapter 38",
+      "id": 37
+    }
+  ],
+  "title": "Remnant III",
+  "subtitle": null,
+  "authors": [
+    "Randi Darren"
+  ],
+  "narrators": [],
+  "series": [
+    "Randi Darren - Remnant III"
+  ],
+  "genres": [
+    "Audiobook"
+  ],
+  "publishedYear": "2021",
+  "publishedDate": null,
+  "publisher": "Randi Darren",
+  "description": "Chapter 38",
+  "isbn": null,
+  "asin": null,
+  "language": null,
+  "explicit": false,
+  "abridged": false
+}

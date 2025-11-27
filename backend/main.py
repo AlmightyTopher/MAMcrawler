@@ -17,7 +17,7 @@ Version: 1.0.0
 
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Security, Depends, Request, status
@@ -32,6 +32,7 @@ from backend.config import get_settings
 from backend.database import init_db, close_db
 from backend.middleware import setup_security_middleware, verify_api_key
 from backend.auth import hash_password, verify_password, generate_token, verify_token, sanitize_input
+from backend.rate_limit import add_rate_limiting
 
 # Configure logging first
 logging.basicConfig(
@@ -44,14 +45,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Import routers and utilities
+# Defer route imports to avoid circular dependencies
+ROUTES_AVAILABLE = True  # Will be set to False if routes fail to import later
+include_all_routes = None
+
+# Try to import setup_logging, but it's optional
 try:
-    from backend.routes import include_all_routes
     from backend.utils import setup_logging
-    ROUTES_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"Routes not available yet: {e}")
-    ROUTES_AVAILABLE = False
+except ImportError:
+    setup_logging = None
 
 # Get application settings
 settings = get_settings()
@@ -104,18 +106,25 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 80)
 
     try:
-        # Initialize database
+        # Initialize database (non-critical, app can run without it)
         logger.info("Initializing database...")
-        init_db()
-        logger.info("Database initialized successfully")
+        try:
+            init_db()
+            logger.info("Database initialized successfully")
+        except Exception as db_error:
+            logger.warning(f"Database initialization failed (non-critical): {db_error}")
+            logger.warning("Application will continue without database features")
 
         # Start scheduler if enabled
         if settings.SCHEDULER_ENABLED:
-            global scheduler
-            logger.info("Starting APScheduler...")
-            scheduler = create_scheduler()
-            scheduler.start()
-            logger.info(f"APScheduler started with {len(scheduler.get_jobs())} jobs")
+            try:
+                global scheduler
+                logger.info("Starting APScheduler...")
+                scheduler = create_scheduler()
+                scheduler.start()
+                logger.info(f"APScheduler started with {len(scheduler.get_jobs())} jobs")
+            except Exception as scheduler_error:
+                logger.warning(f"APScheduler initialization failed (non-critical): {scheduler_error}")
         else:
             logger.info("APScheduler disabled in configuration")
 
@@ -123,8 +132,9 @@ async def lifespan(app: FastAPI):
         logger.info("=" * 80)
 
     except Exception as e:
-        logger.error(f"Error during application startup: {e}", exc_info=True)
-        raise
+        logger.error(f"Critical error during application startup: {e}", exc_info=True)
+        # Don't raise here - let the app start anyway with limited functionality
+        logger.warning("Application started with reduced functionality")
 
     # Application is running
     yield
@@ -163,6 +173,15 @@ app = FastAPI(
     redoc_url="/redoc" if settings.API_DOCS else None,
     openapi_url="/openapi.json" if settings.API_DOCS else None
 )
+
+
+# ============================================================================
+# Rate Limiting Configuration
+# ============================================================================
+
+# Configure rate limiting to prevent abuse and protect system resources
+add_rate_limiting(app)
+logger.info("Rate limiting configured for API protection")
 
 
 # ============================================================================
@@ -205,9 +224,10 @@ async def security_headers_middleware(request: Request, call_next):
         
         # HSTS - forces HTTPS connections
         headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
-        
-        # Remove server information
-        headers.pop("server", None)
+
+        # Remove server information (use del for MutableHeaders)
+        if "server" in headers:
+            del headers["server"]
     
     return response
 
@@ -453,16 +473,32 @@ async def detailed_health_check():
 # Router Registration (Phase 5)
 # ============================================================================
 
-# Register all API routers (if available)
-if ROUTES_AVAILABLE:
-    try:
-        logger.info("Registering API routes...")
-        include_all_routes(app)
-        logger.info("API routes registered successfully")
-    except Exception as e:
-        logger.error(f"Error registering API routes: {e}", exc_info=True)
-else:
-    logger.warning("API routes not available - routes module not imported")
+# ============================================================================
+# Health Check Endpoints
+# ============================================================================
+
+# Register health check endpoints (always available, before other routes)
+try:
+    logger.info("Registering health check endpoints...")
+    from backend.health import router as health_router
+    app.include_router(health_router)
+    logger.info("Health check endpoints registered: /health, /health/live, /health/ready, /health/deep")
+except ImportError as e:
+    logger.warning(f"Health check endpoints not available: {e}", exc_info=True)
+except Exception as e:
+    logger.error(f"Error registering health check endpoints: {e}", exc_info=True)
+
+
+# Register all API routers (lazy-loaded to avoid circular imports)
+try:
+    logger.info("Registering API routes...")
+    from backend.routes import include_all_routes as load_routes
+    load_routes(app)
+    logger.info("API routes registered successfully")
+except ImportError as e:
+    logger.warning(f"Routes not available: {e}", exc_info=True)
+except Exception as e:
+    logger.error(f"Error registering API routes: {e}", exc_info=True)
 
 
 # ============================================================================

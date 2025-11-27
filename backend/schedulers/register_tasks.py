@@ -17,8 +17,18 @@ from backend.schedulers.tasks import (
     metadata_new_books_task,
     series_completion_task,
     author_completion_task,
-    cleanup_old_tasks
+    cleanup_old_tasks,
+    mam_rules_scraping_task,
+    ratio_emergency_monitoring_task,
+    weekly_metadata_maintenance_task,
+    weekly_category_sync_task,
+    weekly_seeding_management_task,
+    series_author_completion_task,
+    weekly_metadata_sync_task,
+    monthly_drift_correction_task,
+    daily_metadata_update_task
 )
+from backend.services.vip_management_service import daily_vip_management_task
 
 logger = logging.getLogger(__name__)
 
@@ -178,6 +188,191 @@ def register_all_tasks(scheduler: BackgroundScheduler) -> None:
     logger.info("✓ Registered: Task Cleanup (Daily 1:00 AM)")
 
     # ========================================================================
+    # Phase 1 Tasks
+    # ========================================================================
+
+    # ========================================================================
+    # Task 8: MAM Rules Scraping (Daily 12:00 PM)
+    # ========================================================================
+    scheduler.add_job(
+        mam_rules_scraping_task,
+        trigger='cron',
+        hour=12,
+        minute=0,
+        id='mam_rules_scraping',
+        name='Daily MAM Rules Scraping',
+        replace_existing=True
+    )
+    logger.info("✓ Registered: MAM Rules Scraping (Daily 12:00 PM)")
+
+    # ========================================================================
+    # Task 9: Ratio Emergency Monitoring (Every 5 Minutes)
+    # ========================================================================
+    scheduler.add_job(
+        ratio_emergency_monitoring_task,
+        trigger='interval',
+        minutes=5,
+        id='ratio_emergency_monitoring',
+        name='Continuous Ratio Emergency Monitoring',
+        replace_existing=True
+    )
+    logger.info("✓ Registered: Ratio Emergency Monitoring (Every 5 minutes)")
+
+    # ========================================================================
+    # Phase 2 Tasks
+    # ========================================================================
+
+    # ========================================================================
+    # Task 10: Weekly Metadata Maintenance (Sunday 5:00 AM)
+    # ========================================================================
+    scheduler.add_job(
+        weekly_metadata_maintenance_task,
+        trigger='cron',
+        day_of_week='sun',
+        hour=5,
+        minute=0,
+        id='metadata_maintenance_weekly',
+        name='Weekly Metadata Maintenance',
+        replace_existing=True
+    )
+    logger.info("✓ Registered: Weekly Metadata Maintenance (Sunday 5:00 AM)")
+
+    # ========================================================================
+    # Task 11: Weekly Category Sync (Sunday 6:00 AM)
+    # ========================================================================
+    scheduler.add_job(
+        weekly_category_sync_task,
+        trigger='cron',
+        day_of_week='sun',
+        hour=6,
+        minute=0,
+        id='category_sync_weekly',
+        name='Weekly Category Synchronization',
+        replace_existing=True
+    )
+    logger.info("✓ Registered: Weekly Category Synchronization (Sunday 6:00 AM)")
+
+    # ========================================================================
+    # Task 12: Weekly Seeding Management (Sunday 7:00 AM)
+    # ========================================================================
+    scheduler.add_job(
+        weekly_seeding_management_task,
+        trigger='cron',
+        day_of_week='sun',
+        hour=7,
+        minute=0,
+        id='seeding_management_weekly',
+        name='Weekly Seeding Management',
+        replace_existing=True
+    )
+    logger.info("✓ Registered: Weekly Seeding Management (Sunday 7:00 AM)")
+
+    # ========================================================================
+    # Task 13: Weekly Series/Author Completion (Monday 2:00 AM)
+    # ========================================================================
+    scheduler.add_job(
+        series_author_completion_task,
+        trigger='cron',
+        day_of_week='mon',
+        hour=2,
+        minute=0,
+        id='series_author_completion_weekly',
+        name='Weekly Series/Author Completion',
+        replace_existing=True
+    )
+    logger.info("✓ Registered: Weekly Series/Author Completion (Monday 2:00 AM)")
+
+    # ========================================================================
+    # VIP Management and Monitoring Tasks
+    # ========================================================================
+
+    # ========================================================================
+    # Task 14: Daily VIP Status Check (12:00 PM UTC)
+    # ========================================================================
+    try:
+        scheduler.add_job(
+            daily_vip_management_task,
+            trigger='cron',
+            hour=12,
+            minute=0,
+            id='daily_vip_check',
+            name='Daily VIP Status Check and Renewal (12:00 PM)',
+            replace_existing=True,
+            coalesce=True,
+            max_instances=1
+        )
+        logger.info("✓ Registered: Daily VIP Status Check and Renewal (12:00 PM UTC)")
+    except Exception as e:
+        logger.error(f"Failed to register daily VIP check: {e}")
+
+    # ========================================================================
+    # Task 15: Continuous Ratio Monitoring (Every 5 Minutes)
+    # ========================================================================
+    # Note: This task is already registered as 'ratio_emergency_monitoring'
+    # Keeping existing registration (Task 9) - no duplicate needed
+    logger.info("✓ Ratio Emergency Monitoring already registered (Every 5 minutes)")
+
+    # ========================================================================
+    # Task 16: Weekly Metadata Sync (Sundays at 2:00 AM UTC)
+    # ========================================================================
+    try:
+        scheduler.add_job(
+            weekly_metadata_sync_task,
+            trigger='cron',
+            day_of_week='sun',
+            hour=2,
+            minute=0,
+            id='weekly_metadata_sync',
+            name='Weekly Metadata Sync (Sundays 2:00 AM)',
+            replace_existing=True,
+            coalesce=True,
+            max_instances=1
+        )
+        logger.info("✓ Registered: Weekly Metadata Sync (Sundays 2:00 AM UTC)")
+    except Exception as e:
+        logger.error(f"Failed to register weekly metadata sync: {e}")
+
+    # ========================================================================
+    # Task 17: Monthly Drift Correction (First Sunday at 3:00 AM UTC)
+    # ========================================================================
+    try:
+        scheduler.add_job(
+            monthly_drift_correction_task,
+            trigger='cron',
+            day_of_week='sun',
+            day='1-7',  # First week of month
+            hour=3,
+            minute=0,
+            id='monthly_drift_correction',
+            name='Monthly Metadata Drift Correction (First Sunday 3:00 AM)',
+            replace_existing=True,
+            coalesce=True,
+            max_instances=1
+        )
+        logger.info("✓ Registered: Monthly Metadata Drift Correction (First Sunday 3:00 AM UTC)")
+    except Exception as e:
+        logger.error(f"Failed to register monthly drift correction: {e}")
+
+    # ========================================================================
+    # Task 18: Daily Metadata Update (Google Books API) (Daily 3:00 AM UTC)
+    # ========================================================================
+    try:
+        scheduler.add_job(
+            daily_metadata_update_task,
+            trigger='cron',
+            hour=3,
+            minute=0,
+            id='daily_metadata_update',
+            name='Daily Metadata Update (Google Books API - 3:00 AM)',
+            replace_existing=True,
+            coalesce=True,
+            max_instances=1
+        )
+        logger.info("✓ Registered: Daily Metadata Update (Google Books API - 3:00 AM UTC)")
+    except Exception as e:
+        logger.error(f"Failed to register daily metadata update: {e}")
+
+    # ========================================================================
     # Summary
     # ========================================================================
     registered_count = len(scheduler.get_jobs())
@@ -212,7 +407,17 @@ def unregister_all_tasks(scheduler: BackgroundScheduler) -> None:
         'metadata_new',
         'series_completion',
         'author_completion',
-        'cleanup_tasks'
+        'cleanup_tasks',
+        'mam_rules_scraping',
+        'ratio_emergency_monitoring',
+        'metadata_maintenance_weekly',
+        'category_sync_weekly',
+        'seeding_management_weekly',
+        'series_author_completion_weekly',
+        'daily_vip_check',
+        'weekly_metadata_sync',
+        'monthly_drift_correction',
+        'daily_metadata_update'
     ]
 
     unregistered_count = 0
@@ -311,6 +516,92 @@ def register_task(
             'minute': 0,
             'name': 'Daily Task Cleanup',
             'enabled': True  # Always enabled
+        },
+        'mam_rules_scraping': {
+            'func': mam_rules_scraping_task,
+            'trigger': 'cron',
+            'hour': 12,
+            'minute': 0,
+            'name': 'Daily MAM Rules Scraping',
+            'enabled': True  # Phase 1 - Always enabled
+        },
+        'ratio_emergency_monitoring': {
+            'func': ratio_emergency_monitoring_task,
+            'trigger': 'interval',
+            'minutes': 5,
+            'name': 'Continuous Ratio Emergency Monitoring',
+            'enabled': True  # Phase 1 - Always enabled
+        },
+        'metadata_maintenance_weekly': {
+            'func': weekly_metadata_maintenance_task,
+            'trigger': 'cron',
+            'day_of_week': 'sun',
+            'hour': 5,
+            'minute': 0,
+            'name': 'Weekly Metadata Maintenance',
+            'enabled': True  # Phase 2 - Always enabled
+        },
+        'category_sync_weekly': {
+            'func': weekly_category_sync_task,
+            'trigger': 'cron',
+            'day_of_week': 'sun',
+            'hour': 6,
+            'minute': 0,
+            'name': 'Weekly Category Synchronization',
+            'enabled': True  # Phase 2 - Always enabled
+        },
+        'seeding_management_weekly': {
+            'func': weekly_seeding_management_task,
+            'trigger': 'cron',
+            'day_of_week': 'sun',
+            'hour': 7,
+            'minute': 0,
+            'name': 'Weekly Seeding Management',
+            'enabled': True  # Phase 2 - Always enabled
+        },
+        'series_author_completion_weekly': {
+            'func': series_author_completion_task,
+            'trigger': 'cron',
+            'day_of_week': 'mon',
+            'hour': 2,
+            'minute': 0,
+            'name': 'Weekly Series/Author Completion',
+            'enabled': True  # Phase 2 - Always enabled
+        },
+        'daily_vip_check': {
+            'func': daily_vip_management_task,
+            'trigger': 'cron',
+            'hour': 12,
+            'minute': 0,
+            'name': 'Daily VIP Status Check and Renewal (12:00 PM)',
+            'enabled': True  # VIP Management - Always enabled
+        },
+        'weekly_metadata_sync': {
+            'func': weekly_metadata_sync_task,
+            'trigger': 'cron',
+            'day_of_week': 'sun',
+            'hour': 2,
+            'minute': 0,
+            'name': 'Weekly Metadata Sync (Sundays 2:00 AM)',
+            'enabled': True  # Metadata Sync - Always enabled
+        },
+        'monthly_drift_correction': {
+            'func': monthly_drift_correction_task,
+            'trigger': 'cron',
+            'day_of_week': 'sun',
+            'day': '1-7',  # First week of month
+            'hour': 3,
+            'minute': 0,
+            'name': 'Monthly Metadata Drift Correction (First Sunday 3:00 AM)',
+            'enabled': True  # Drift Correction - Always enabled
+        },
+        'daily_metadata_update': {
+            'func': daily_metadata_update_task,
+            'trigger': 'cron',
+            'hour': 3,
+            'minute': 0,
+            'name': 'Daily Metadata Update (Google Books API - 3:00 AM)',
+            'enabled': True  # Daily Update - Always enabled
         }
     }
 

@@ -1,0 +1,261 @@
+{
+  "tags": [],
+  "chapters": [
+    {
+      "start": 0,
+      "end": 14.117,
+      "title": "Opening Credits",
+      "id": 0
+    },
+    {
+      "start": 14.117,
+      "end": 1424.729,
+      "title": "Chapter 1",
+      "id": 1
+    },
+    {
+      "start": 1424.729,
+      "end": 2989.939,
+      "title": "Chapter 2",
+      "id": 2
+    },
+    {
+      "start": 2989.939,
+      "end": 4601.589,
+      "title": "Chapter 3",
+      "id": 3
+    },
+    {
+      "start": 4601.589,
+      "end": 6015.173,
+      "title": "Chapter 4",
+      "id": 4
+    },
+    {
+      "start": 6015.173,
+      "end": 7565.244,
+      "title": "Chapter 5",
+      "id": 5
+    },
+    {
+      "start": 7565.244,
+      "end": 9182.931,
+      "title": "Chapter 6",
+      "id": 6
+    },
+    {
+      "start": 9182.931,
+      "end": 10562.614,
+      "title": "Chapter 7",
+      "id": 7
+    },
+    {
+      "start": 10562.614,
+      "end": 11911.925,
+      "title": "Chapter 8",
+      "id": 8
+    },
+    {
+      "start": 11911.925,
+      "end": 13200.307,
+      "title": "Chapter 9",
+      "id": 9
+    },
+    {
+      "start": 13200.307,
+      "end": 14668.226,
+      "title": "Chapter 10",
+      "id": 10
+    },
+    {
+      "start": 14668.226,
+      "end": 15918.852,
+      "title": "Chapter 11",
+      "id": 11
+    },
+    {
+      "start": 15918.852,
+      "end": 17062.759,
+      "title": "Chapter 12",
+      "id": 12
+    },
+    {
+      "start": 17062.759,
+      "end": 18403.99,
+      "title": "Chapter 13",
+      "id": 13
+    },
+    {
+      "start": 18403.99,
+      "end": 19837.868,
+      "title": "Chapter 14",
+      "id": 14
+    },
+    {
+      "start": 19837.868,
+      "end": 21365.462,
+      "title": "Chapter 15",
+      "id": 15
+    },
+    {
+      "start": 21365.462,
+      "end": 22939.449,
+      "title": "Chapter 16",
+      "id": 16
+    },
+    {
+      "start": 22939.449,
+      "end": 24451.486,
+      "title": "Chapter 17",
+      "id": 17
+    },
+    {
+      "start": 24451.486,
+      "end": 26131.124,
+      "title": "Chapter 18",
+      "id": 18
+    },
+    {
+      "start": 26131.124,
+      "end": 27831.335,
+      "title": "Chapter 19",
+      "id": 19
+    },
+    {
+      "start": 27831.335,
+      "end": 29407.923,
+      "title": "Chapter 20",
+      "id": 20
+    },
+    {
+      "start": 29407.923,
+      "end": 30864.882,
+      "title": "Chapter 21",
+      "id": 21
+    },
+    {
+      "start": 30864.882,
+      "end": 32473.142,
+      "title": "Chapter 22",
+      "id": 22
+    },
+    {
+      "start": 32473.142,
+      "end": 33952.438,
+      "title": "Chapter 23",
+      "id": 23
+    },
+    {
+      "start": 33952.438,
+      "end": 35319.489,
+      "title": "Chapter 24",
+      "id": 24
+    },
+    {
+      "start": 35319.489,
+      "end": 37030.613,
+      "title": "Chapter 25",
+      "id": 25
+    },
+    {
+      "start": 37030.613,
+      "end": 38406.209,
+      "title": "Chapter 26",
+      "id": 26
+    },
+    {
+      "start": 38406.209,
+      "end": 39789.143,
+      "title": "Chapter 27",
+      "id": 27
+    },
+    {
+      "start": 39789.143,
+      "end": 41256.086,
+      "title": "Chapter 28",
+      "id": 28
+    },
+    {
+      "start": 41256.086,
+      "end": 42541.171,
+      "title": "Chapter 29",
+      "id": 29
+    },
+    {
+      "start": 42541.171,
+      "end": 44227.729,
+      "title": "Chapter 30",
+      "id": 30
+    },
+    {
+      "start": 44227.729,
+      "end": 45562.133,
+      "title": "Chapter 31",
+      "id": 31
+    },
+    {
+      "start": 45562.133,
+      "end": 46966.382,
+      "title": "Chapter 32",
+      "id": 32
+    },
+    {
+      "start": 46966.382,
+      "end": 48365.43,
+      "title": "Chapter 33",
+      "id": 33
+    },
+    {
+      "start": 48365.43,
+      "end": 49757.234,
+      "title": "Chapter 34",
+      "id": 34
+    },
+    {
+      "start": 49757.234,
+      "end": 51081.235,
+      "title": "Chapter 35",
+      "id": 35
+    },
+    {
+      "start": 51081.235,
+      "end": 52474.06,
+      "title": "Chapter 36",
+      "id": 36
+    },
+    {
+      "start": 52474.06,
+      "end": 54044.797,
+      "title": "Epilogue",
+      "id": 37
+    },
+    {
+      "start": 54044.797,
+      "end": 54076.282,
+      "title": "End Credits",
+      "id": 38
+    }
+  ],
+  "title": "Book 03 - Fostering Faust 3 - Fostering Faust Series",
+  "subtitle": null,
+  "authors": [
+    "Randi Darren"
+  ],
+  "narrators": [
+    "Andrea Parsneau"
+  ],
+  "series": [],
+  "genres": [
+    "Audiobook"
+  ],
+  "publishedYear": "2019-06-07",
+  "publishedDate": null,
+  "publisher": null,
+  "description": "The war with Gaelis has gone poorly for Alex's foes and well for his allies. He's enriched himself, empowered his county with that coin, and built his county ever higher. \n The war swings in favor of his Duchess. \n Yet the war still goes on. The end doesn't seem to be near, nor does Alex feel as if it is as simple as he'd once thought it. Alex would rather settle down in his county and live a quiet and enjoyable life. One filled with familial things and friends. Where he could make his county the pride of the empire in peace. \n Because he'd already gotten to the top once before. He'd climbed the corporate ladder in his previous life and missed out on really having one. \n Having friends. Or just a family. \n Now Alex wants only for the simple things. Things that have no place on the battlefield, kingdom politics, or the courts. \n That, of course, doesn't matter much when fate is concerned. Or really, everyone else in the empire. They all have their own plans that all seem to run counter to Alex's. \n Fortunately, Alex has been preparing. Making changes and building his foundation and seat of power ever higher. \n He's empowered the people he relies on and in. His armies are expertly trained and almost overequipped. His treasury is overflowing and ready to be spent. \n Even with all of that, Alex isn't sure it'll be enough for what he believes is coming. \n Because spring is here. And that means roads will be opening. Passes will be traversable. \n Making it possible for armies to march. \n Which means it's time for Alex to get back to work. Because more than ever, he has a lot to lose, including his newborn children. If he wants to keep them safe, he's going to have to ride to war once again. \n And end it once and for all, no matter the cost.",
+  "isbn": null,
+  "asin": null,
+  "language": null,
+  "explicit": false,
+  "abridged": false,
+  "seriesName": "Fostering Faust"
+}

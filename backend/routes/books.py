@@ -6,7 +6,7 @@ FastAPI router for book CRUD operations, metadata tracking, and search
 from typing import Optional, List
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 import logging
@@ -14,6 +14,7 @@ import logging
 from backend.database import get_db
 from backend.services.book_service import BookService
 from backend.models.book import Book
+from backend.rate_limit import limiter, get_rate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +116,9 @@ class StandardResponse(BaseModel):
     summary="List all books",
     description="Get paginated list of books with optional filtering by status and search query"
 )
+@limiter.limit(get_rate_limit("authenticated"))
 async def list_books(
+    request: Request,
     limit: int = Query(100, ge=1, le=500, description="Maximum results per page"),
     offset: int = Query(0, ge=0, description="Number of records to skip"),
     status: Optional[str] = Query("active", description="Filter by status (active, duplicate, archived, or null for all)"),
@@ -231,7 +234,9 @@ async def list_books(
     summary="Get single book",
     description="Get detailed information about a specific book including all metadata"
 )
+@limiter.limit(get_rate_limit("authenticated"))
 async def get_book(
+    request: Request,
     book_id: int,
     db: Session = Depends(get_db)
 ):
@@ -301,7 +306,9 @@ async def get_book(
     summary="Create book",
     description="Create a new book record with metadata"
 )
+@limiter.limit(get_rate_limit("authenticated"))
 async def create_book(
+    request: Request,
     book: BookCreate,
     db: Session = Depends(get_db)
 ):
@@ -372,7 +379,9 @@ async def create_book(
     summary="Update book",
     description="Update book fields"
 )
+@limiter.limit(get_rate_limit("authenticated"))
 async def update_book(
+    request: Request,
     book_id: int,
     updates: BookUpdate,
     db: Session = Depends(get_db)
@@ -436,7 +445,9 @@ async def update_book(
     summary="Delete book",
     description="Soft delete book (marks as archived)"
 )
+@limiter.limit(get_rate_limit("authenticated"))
 async def delete_book(
+    request: Request,
     book_id: int,
     db: Session = Depends(get_db)
 ):
@@ -485,7 +496,9 @@ async def delete_book(
     summary="Get metadata correction history",
     description="Get all metadata corrections for a specific book"
 )
+@limiter.limit(get_rate_limit("authenticated"))
 async def get_metadata_history(
+    request: Request,
     book_id: int,
     db: Session = Depends(get_db)
 ):
@@ -551,7 +564,9 @@ async def get_metadata_history(
     summary="Get books in series",
     description="Get all books in a specific series, sorted by series number"
 )
+@limiter.limit(get_rate_limit("authenticated"))
 async def get_books_by_series(
+    request: Request,
     series_name: str,
     db: Session = Depends(get_db)
 ):
@@ -613,7 +628,9 @@ async def get_books_by_series(
     summary="Search books",
     description="Full-text search for books by title or author"
 )
+@limiter.limit(get_rate_limit("search"))
 async def search_books(
+    request: Request,
     query: str = Query(..., min_length=1, description="Search query"),
     limit: int = Query(10, ge=1, le=100, description="Maximum results"),
     db: Session = Depends(get_db)
@@ -677,7 +694,9 @@ async def search_books(
     summary="Update metadata source",
     description="Track which source provided a specific metadata field"
 )
+@limiter.limit(get_rate_limit("metadata"))
 async def update_metadata_source(
+    request: Request,
     book_id: int,
     metadata_update: MetadataSourceUpdate,
     db: Session = Depends(get_db)
@@ -739,7 +758,9 @@ async def update_metadata_source(
     summary="Get books with incomplete metadata",
     description="Get books below metadata completeness threshold"
 )
+@limiter.limit(get_rate_limit("authenticated"))
 async def get_incomplete_metadata_books(
+    request: Request,
     threshold: int = Query(80, ge=0, le=100, description="Completeness threshold percentage"),
     limit: int = Query(100, ge=1, le=500, description="Maximum results"),
     db: Session = Depends(get_db)

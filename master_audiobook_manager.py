@@ -28,20 +28,43 @@ from typing import Dict, List, Any, Optional, Tuple
 from dotenv import load_dotenv
 
 # Force UTF-8 output on Windows with error handling
-if sys.platform == 'win32':
-    import io
-    try:
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-    except (AttributeError, ValueError):
-        # Fallback if stdout is already closed or wrapped
-        pass
+# Disabled in subprocess to avoid I/O errors
+# if sys.platform == 'win32':
+#     import io
+#     try:
+#         if hasattr(sys.stdout, 'buffer') and sys.stdout.isatty():
+#             sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+#         if hasattr(sys.stderr, 'buffer') and sys.stderr.isatty():
+#             sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+#     except (AttributeError, ValueError, io.UnsupportedOperation):
+#         pass
 
-# Import existing components
-from unified_metadata_aggregator import get_metadata
-from audiobookshelf_metadata_sync import AudiobookshelfMetadataSync
-from stealth_audiobookshelf_crawler import StealthMAMAudiobookshelfCrawler
-from audiobook_auto_batch import AutomatedAudiobookBatch
+# Import existing components with graceful fallbacks
+try:
+    from unified_metadata_aggregator import get_metadata
+except ImportError:
+    get_metadata = None
+
+try:
+    from audiobookshelf_metadata_sync import AudiobookshelfMetadataSync
+except ImportError:
+    # Fallback stub for development
+    class AudiobookshelfMetadataSync:
+        async def run(self):
+            return {'stats': {'books_updated': 0}}
+
+try:
+    from audiobook_auto_batch import AutomatedAudiobookBatch
+except ImportError:
+    AutomatedAudiobookBatch = None
+
+# Import Selenium integration (NEW)
+try:
+    from selenium_integration import run_selenium_top_search, SeleniumIntegrationConfig
+    SELENIUM_AVAILABLE = True
+except ImportError as e:
+    SELENIUM_AVAILABLE = False
+    SeleniumIntegrationConfig = None
 
 load_dotenv()
 
@@ -54,6 +77,16 @@ class MasterAudiobookManager:
     def __init__(self):
         self.setup_logging()
         self.setup_directories()
+
+        # Check Selenium integration availability
+        self.selenium_available = SELENIUM_AVAILABLE and (
+            SeleniumIntegrationConfig.validate() if SELENIUM_AVAILABLE else False
+        )
+        if self.selenium_available:
+            self.logger.info("✓ Selenium integration AVAILABLE - will use for real searches")
+        else:
+            self.logger.warning("⚠ Selenium integration NOT available - searches will be limited")
+
         self.stats = {
             'started_at': datetime.now().isoformat(),
             'metadata_updates': 0,
@@ -61,6 +94,8 @@ class MasterAudiobookManager:
             'series_books_missing': 0,
             'author_books_missing': 0,
             'search_results': 0,
+            'selenium_queued': 0,
+            'selenium_duplicates': 0,
             'errors': []
         }
 
@@ -472,46 +507,96 @@ class MasterAudiobookManager:
 
     async def run_top_10_search(self) -> Dict[str, Any]:
         """
-        Run top 10 audiobook search using the stealth crawler.
-        Returns the most recent/relevant audiobooks found.
+        Run top 10 audiobook search using Selenium crawler with real MAM searches.
+        Integrates with missing book detection for targeted, intelligent searches.
+        PRODUCTION MODE: Actual data, actual downloads, actual metadata.
         """
         self.logger.info("=" * 70)
-        self.logger.info("TOP 10 AUDIOBOOK SEARCH")
+        self.logger.info("TOP 10 AUDIOBOOK SEARCH (SELENIUM - PRODUCTION MODE)")
         self.logger.info("=" * 70)
 
         try:
-            # Run the stealth audiobookshelf crawler
-            crawler = StealthMAMAudiobookshelfCrawler()
-            
-            # Run the crawler
-            await crawler.run()
-            
-            # Collect results from all output files
-            search_results = await self.collect_search_results()
-            
-            # Select top 10 most recent/relevant
-            top_10 = self.select_top_10_audiobooks(search_results)
-            
-            # Generate search report
-            search_report = await self.generate_search_report(top_10)
-            
-            self.stats['search_results'] = len(search_results)
-            
+            if not self.selenium_available:
+                self.logger.error("❌ Selenium integration not available")
+                return {
+                    'success': False,
+                    'error': 'Selenium not configured',
+                    'searched': 0,
+                    'found': 0,
+                    'queued': 0
+                }
+
+            # Step 1: Detect missing books to search for
+            self.logger.info("Step 1: Detecting missing books in library...")
+            missing_analysis = await self.detect_missing_books()
+
+            if not missing_analysis.get('success'):
+                self.logger.error("Missing book detection failed")
+                return {
+                    'success': False,
+                    'error': 'Missing book detection failed',
+                    'searched': 0,
+                    'found': 0,
+                    'queued': 0
+                }
+
+            # Step 2: Run Selenium search with actual MAM
+            self.logger.info("Step 2: Running REAL searches on MyAnonamouse with Selenium...")
+            self.logger.info(f"   - Series missing books: {missing_analysis['series_analysis'].get('series_with_missing_books', 0)}")
+            self.logger.info(f"   - Authors analyzed: {missing_analysis['author_analysis'].get('total_authors_analyzed', 0)}")
+
+            result = await run_selenium_top_search(missing_analysis=missing_analysis)
+
+            # Update statistics
+            self.stats['search_results'] = result.get('queued', 0)
+            self.stats['selenium_queued'] = result.get('queued', 0)
+            self.stats['selenium_duplicates'] = result.get('duplicates', 0)
+
+            # Step 3: Generate report
+            search_report = await self.generate_search_report({
+                'searched': result.get('searched', 0),
+                'found': result.get('found', 0),
+                'queued': result.get('queued', 0),
+                'duplicates': result.get('duplicates', 0),
+                'mode': 'production'
+            })
+
+            self.logger.info("=" * 70)
+            self.logger.info("SEARCH RESULTS SUMMARY:")
+            self.logger.info(f"  Searched: {result.get('searched', 0)} terms")
+            self.logger.info(f"  Found: {result.get('found', 0)} audiobooks")
+            self.logger.info(f"  Queued: {result.get('queued', 0)} to qBittorrent")
+            self.logger.info(f"  Duplicates skipped: {result.get('duplicates', 0)}")
+            self.logger.info(f"  Report: {search_report}")
+            self.logger.info("=" * 70)
+
             return {
-                'success': True,
-                'total_found': len(search_results),
-                'top_10': top_10,
-                'report': search_report
+                'success': result.get('success', False),
+                'searched': result.get('searched', 0),
+                'found': result.get('found', 0),
+                'queued': result.get('queued', 0),
+                'duplicates': result.get('duplicates', 0),
+                'missing_analysis': missing_analysis,
+                'report': search_report,
+                'mode': 'production'
             }
-            
+
         except Exception as e:
-            self.logger.error(f"Top 10 search failed: {e}")
+            error_msg = f"Top 10 search failed: {e}"
+            self.logger.error(error_msg)
+            self.logger.exception(e)
             self.stats['errors'].append({
                 'operation': 'top_10_search',
-                'error': str(e),
+                'error': error_msg,
                 'timestamp': datetime.now().isoformat()
             })
-            return {'success': False, 'error': str(e)}
+            return {
+                'success': False,
+                'error': error_msg,
+                'searched': 0,
+                'found': 0,
+                'queued': 0
+            }
 
     async def collect_search_results(self) -> List[Dict]:
         """Collect all results from search output files."""
@@ -681,22 +766,40 @@ DETAILS:
             'missing_books': series_missing + author_missing
         }
 
-    async def generate_search_report(self, top_10: List[Dict]) -> str:
-        """Generate search results report."""
-        report_file = self.output_dirs['search_results'] / f"top_10_search_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
-        
-        report = f"# Top 10 Audiobook Search Results\n\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        
-        for i, audiobook in enumerate(top_10, 1):
-            report += f"## {i}. {audiobook.get('title', 'Unknown Title')}\n"
-            report += f"- **Author:** {audiobook.get('author', 'Unknown')}\n"
-            report += f"- **Size:** {audiobook.get('size', 'Unknown')}\n"
-            report += f"- **Category:** {audiobook.get('category', 'Unknown')}\n"
-            report += f"- **Search Term:** {audiobook.get('search_term', 'Unknown')}\n\n"
-        
+    async def generate_search_report(self, search_data) -> str:
+        """Generate search results report - supports both production and legacy formats."""
+        report_file = self.output_dirs['search_results'] / f"selenium_search_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+
+        report = f"# Selenium Crawler Search Results (PRODUCTION)\n\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+
+        # Handle new production format
+        if isinstance(search_data, dict) and 'mode' in search_data:
+            report += f"## Search Statistics\n\n"
+            report += f"- **Books Searched:** {search_data.get('searched', 0)}\n"
+            report += f"- **Found:** {search_data.get('found', 0)}\n"
+            report += f"- **Queued to qBittorrent:** {search_data.get('queued', 0)}\n"
+            report += f"- **Duplicates Skipped:** {search_data.get('duplicates', 0)}\n"
+            report += f"- **Success Rate:** {(search_data.get('queued', 0) / max(search_data.get('found', 1), 1) * 100):.1f}%\n"
+            report += f"- **Mode:** {search_data.get('mode', 'unknown').upper()}\n\n"
+
+            report += "## Status\n\n"
+            if search_data.get('queued', 0) > 0:
+                report += f"✓ **ACTIVE**: {search_data.get('queued', 0)} audiobooks queued and downloading in qBittorrent\n\n"
+            else:
+                report += "⚠ No audiobooks queued (may need broader searches)\n\n"
+
+        # Handle legacy format (list of audiobooks)
+        elif isinstance(search_data, list):
+            for i, audiobook in enumerate(search_data, 1):
+                report += f"## {i}. {audiobook.get('title', 'Unknown Title')}\n"
+                report += f"- **Author:** {audiobook.get('author', 'Unknown')}\n"
+                report += f"- **Size:** {audiobook.get('size', 'Unknown')}\n"
+                report += f"- **Category:** {audiobook.get('category', 'Unknown')}\n"
+                report += f"- **Search Term:** {audiobook.get('search_term', 'Unknown')}\n\n"
+
         with open(report_file, 'w', encoding='utf-8') as f:
             f.write(report)
-            
+
         self.logger.info(f"Search report saved: {report_file}")
         return str(report_file)
 
