@@ -1283,3 +1283,174 @@ async def daily_metadata_update_task() -> None:
 
             logger.error(error_msg)
             raise
+
+
+# ============================================================================
+# Phase 5: Automated Batch Repair Task
+# ============================================================================
+
+async def repair_batch_task() -> None:
+    """
+    Automated batch repair of failed audiobooks
+
+    Schedule: Weekly (Saturday 8:00 AM)
+    Purpose: Scan for failed/low-quality audiobooks and attempt repairs
+    Output: Failed books repaired and replaced, quality improved
+
+    Process:
+    1. Query failed and low-quality books from verification results
+    2. For each book, find replacement candidates
+    3. Evaluate replacement quality (codec, bitrate, duration)
+    4. Execute replacements meeting quality thresholds
+    5. Log all repair operations with detailed results
+    """
+    logger.info("Starting automated batch repair task")
+
+    with get_db_context() as db:
+        task = create_task_record(db, 'REPAIR_BATCH')
+        log_lines = []
+
+        try:
+            from mamcrawler.repair import get_repair_orchestrator, get_repair_reporter
+            from backend.models import Book, Download
+
+            log_lines.append(f"[{datetime.utcnow()}] Starting batch repair task...")
+
+            orchestrator = get_repair_orchestrator()
+            reporter = get_repair_reporter()
+
+            # Find books that need repair (status = 'failed_verification' or low quality)
+            failed_books = db.query(Book).filter(
+                Book.status.in_(['failed_verification', 'low_quality'])
+            ).limit(50).all()
+
+            log_lines.append(f"[INFO] Found {len(failed_books)} books needing repair")
+
+            items_processed = len(failed_books)
+            items_succeeded = 0
+            items_failed = 0
+            repair_reports = []
+
+            # Process each failed book
+            for book in failed_books:
+                try:
+                    log_lines.append(f"[INFO] Processing: {book.title} by {book.author}")
+
+                    # Find replacement candidates from downloads table
+                    candidates = db.query(Download).filter(
+                        Download.book_id == book.id,
+                        Download.status == 'completed'
+                    ).limit(5).all()
+
+                    if not candidates:
+                        log_lines.append(f"[SKIP] No replacement candidates for {book.title}")
+                        items_failed += 1
+                        continue
+
+                    candidate_files = [c.file_path for c in candidates if c.file_path]
+
+                    # Batch evaluate replacement candidates
+                    if book.file_path and candidate_files:
+                        evaluation = orchestrator.batch_evaluate_replacements(
+                            original_file=book.file_path,
+                            replacement_candidates=candidate_files,
+                            audiobook_title=book.title,
+                            author=book.author
+                        )
+
+                        # Generate batch evaluation report
+                        batch_report = reporter.generate_batch_report(evaluation)
+                        repair_reports.append(batch_report)
+
+                        # If acceptable replacement found, execute it
+                        if evaluation.get('best_replacement'):
+                            best_file = evaluation['best_replacement']
+                            log_lines.append(
+                                f"[REPAIR] Executing replacement with: {best_file}"
+                            )
+
+                            # Execute replacement
+                            execution = orchestrator.execute_replacement(
+                                original_file=book.file_path,
+                                replacement_file=best_file,
+                                audiobook_title=book.title
+                            )
+
+                            # Generate execution report
+                            exec_report = reporter.generate_execution_report(execution)
+                            repair_reports.append(exec_report)
+
+                            if execution.get('success'):
+                                items_succeeded += 1
+                                # Update book status
+                                book.status = 'active'
+                                book.date_modified = datetime.utcnow()
+                                log_lines.append(
+                                    f"[SUCCESS] {book.title} repaired: "
+                                    f"Backup at {execution.get('backup_file')}"
+                                )
+                            else:
+                                items_failed += 1
+                                log_lines.append(
+                                    f"[ERROR] Failed to repair {book.title}: "
+                                    f"{execution.get('error')}"
+                                )
+                        else:
+                            items_failed += 1
+                            log_lines.append(
+                                f"[SKIP] No acceptable replacement for {book.title}"
+                            )
+                    else:
+                        items_failed += 1
+                        log_lines.append(f"[SKIP] Original file missing for {book.title}")
+
+                except Exception as e:
+                    items_failed += 1
+                    log_lines.append(
+                        f"[ERROR] Failed to process {book.title}: {str(e)}"
+                    )
+
+            # Commit book status updates
+            db.commit()
+
+            # Generate summary report
+            summary_report = reporter.generate_summary_report(repair_reports)
+
+            log_lines.append(f"[{datetime.utcnow()}] Batch repair task completed")
+            log_lines.append(f"[SUMMARY] Processed: {items_processed}")
+            log_lines.append(f"[SUMMARY] Repaired: {items_succeeded}")
+            log_lines.append(f"[SUMMARY] Failed: {items_failed}")
+
+            update_task_success(
+                db,
+                task,
+                items_processed=items_processed,
+                items_succeeded=items_succeeded,
+                items_failed=items_failed,
+                log_output="\n".join(log_lines),
+                metadata={
+                    'books_repaired': items_succeeded,
+                    'books_failed': items_failed,
+                    'success_rate': (items_succeeded / items_processed * 100) if items_processed > 0 else 0,
+                    'unique_audiobooks': summary_report.get('unique_audiobooks', 0)
+                }
+            )
+
+            logger.info(
+                f"Batch repair completed: {items_succeeded} repaired, "
+                f"{items_failed} failed out of {items_processed}"
+            )
+
+        except Exception as e:
+            error_msg = f"Batch repair task failed: {str(e)}\n{traceback.format_exc()}"
+            log_lines.append(f"[ERROR] {error_msg}")
+
+            update_task_failure(
+                db,
+                task,
+                error_message=error_msg,
+                log_output="\n".join(log_lines)
+            )
+
+            logger.error(error_msg)
+            raise

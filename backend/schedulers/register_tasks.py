@@ -26,7 +26,8 @@ from backend.schedulers.tasks import (
     series_author_completion_task,
     weekly_metadata_sync_task,
     monthly_drift_correction_task,
-    daily_metadata_update_task
+    daily_metadata_update_task,
+    repair_batch_task
 )
 from backend.services.vip_management_service import daily_vip_management_task
 
@@ -373,6 +374,26 @@ def register_all_tasks(scheduler: BackgroundScheduler) -> None:
         logger.error(f"Failed to register daily metadata update: {e}")
 
     # ========================================================================
+    # Phase 5: Automated Batch Repair (Saturday 8:00 AM)
+    # ========================================================================
+    try:
+        scheduler.add_job(
+            repair_batch_task,
+            trigger='cron',
+            day_of_week='sat',
+            hour=8,
+            minute=0,
+            id='repair_batch',
+            name='Weekly Automated Batch Repair',
+            replace_existing=True,
+            coalesce=True,
+            max_instances=1
+        )
+        logger.info("✓ Registered: Weekly Automated Batch Repair (Saturday 8:00 AM)")
+    except Exception as e:
+        logger.error(f"Failed to register repair batch task: {e}")
+
+    # ========================================================================
     # Summary
     # ========================================================================
     registered_count = len(scheduler.get_jobs())
@@ -417,7 +438,8 @@ def unregister_all_tasks(scheduler: BackgroundScheduler) -> None:
         'daily_vip_check',
         'weekly_metadata_sync',
         'monthly_drift_correction',
-        'daily_metadata_update'
+        'daily_metadata_update',
+        'repair_batch'
     ]
 
     unregistered_count = 0
@@ -602,6 +624,15 @@ def register_task(
             'minute': 0,
             'name': 'Daily Metadata Update (Google Books API - 3:00 AM)',
             'enabled': True  # Daily Update - Always enabled
+        },
+        'repair_batch': {
+            'func': repair_batch_task,
+            'trigger': 'cron',
+            'day_of_week': 'sat',
+            'hour': 8,
+            'minute': 0,
+            'name': 'Weekly Automated Batch Repair',
+            'enabled': True  # Phase 5 - Always enabled
         }
     }
 
