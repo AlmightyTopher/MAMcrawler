@@ -14,7 +14,8 @@ from backend.routes import (
     scheduler,
     system,
     admin,
-    gaps
+    gaps,
+    repairs
 )
 
 # Import verify_api_key for authentication
@@ -110,6 +111,14 @@ def include_all_routes(app: FastAPI) -> None:
         dependencies=[Depends(verify_api_key)]
     )
 
+    # Repair & Replacement routes
+    app.include_router(
+        repairs.router,
+        prefix="/api/repairs",
+        tags=["Repairs"],
+        dependencies=[Depends(verify_api_key)]
+    )
+
 
 __all__ = [
     "include_all_routes",
@@ -121,5 +130,6 @@ __all__ = [
     "scheduler",
     "system",
     "admin",
-    "gaps"
+    "gaps",
+    "repairs"
 ]
