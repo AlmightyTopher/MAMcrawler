@@ -26,6 +26,7 @@ import asyncio
 import aiohttp
 import json
 import time
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple
@@ -362,7 +363,7 @@ class RealExecutionWorkflow:
         return magnet_links
 
     async def add_to_qbittorrent(self, magnet_links: List[str], max_downloads: int = 10) -> List[str]:
-        """Add books to qBittorrent queue with proper session persistence"""
+        """Add books to qBittorrent queue with proper session persistence and SID cookie handling"""
         self.log(f"Adding {min(len(magnet_links), max_downloads)} books to qBittorrent...", "DOWNLOAD")
 
         added = []
@@ -380,6 +381,7 @@ class RealExecutionWorkflow:
                 login_data.add_field('password', self.qb_pass)
 
                 auth_success = False
+                sid = None  # Store SID for manual cookie handling
                 try:
                     async with session.post(login_url, data=login_data, ssl=False) as resp:
                         auth_text = await resp.text()
@@ -387,6 +389,15 @@ class RealExecutionWorkflow:
 
                         if resp.status == 200 and auth_text.strip() == 'Ok.':
                             auth_success = True
+                            # Extract SID from Set-Cookie header for SameSite=Strict handling
+                            for header_name in resp.headers:
+                                if header_name.lower() == 'set-cookie':
+                                    cookie_val = resp.headers[header_name]
+                                    match = re.search(r'SID=([^;]+)', cookie_val)
+                                    if match:
+                                        sid = match.group(1)
+                                        self.log(f"Extracted SID for manual cookie handling", "DEBUG")
+                                        break
                         else:
                             self.log(f"qBittorrent login failed: HTTP {resp.status} - {auth_text}", "FAIL")
                 except Exception as e:
@@ -406,7 +417,12 @@ class RealExecutionWorkflow:
                         add_data.add_field('paused', 'false')
                         add_data.add_field('category', 'audiobooks')
 
-                        async with session.post(add_url, data=add_data, ssl=False) as resp:
+                        # Prepare headers with SID cookie if available
+                        headers = {}
+                        if sid:
+                            headers['Cookie'] = f'SID={sid}'
+
+                        async with session.post(add_url, data=add_data, headers=headers, ssl=False) as resp:
                             response_text = await resp.text()
 
                             # qBittorrent returns "Ok." on success
@@ -421,8 +437,19 @@ class RealExecutionWorkflow:
                                 async with session.post(login_url, data=login_data, ssl=False) as auth_resp:
                                     auth_text = await auth_resp.text()
                                     if auth_resp.status == 200 and auth_text.strip() == 'Ok.':
-                                        # Retry the add
-                                        async with session.post(add_url, data=add_data, ssl=False) as retry_resp:
+                                        # Extract new SID
+                                        for header_name in auth_resp.headers:
+                                            if header_name.lower() == 'set-cookie':
+                                                cookie_val = auth_resp.headers[header_name]
+                                                match = re.search(r'SID=([^;]+)', cookie_val)
+                                                if match:
+                                                    sid = match.group(1)
+                                                    break
+                                        # Retry the add with new SID
+                                        headers = {}
+                                        if sid:
+                                            headers['Cookie'] = f'SID={sid}'
+                                        async with session.post(add_url, data=add_data, headers=headers, ssl=False) as retry_resp:
                                             retry_text = await retry_resp.text()
                                             if retry_resp.status == 200 and retry_text.strip() == 'Ok.':
                                                 added.append(magnet)

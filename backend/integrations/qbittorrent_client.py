@@ -9,6 +9,7 @@ import logging
 from typing import Any, Dict, List, Optional
 from pathlib import Path
 import asyncio
+import re
 from urllib.parse import urljoin
 
 import aiohttp
@@ -65,6 +66,7 @@ class QBittorrentClient:
         self.timeout = ClientTimeout(total=timeout)
         self.session: Optional[aiohttp.ClientSession] = None
         self._authenticated = False
+        self._sid: Optional[str] = None  # Manual SID cookie handling
 
         logger.info(f"Initialized QBittorrentClient for {self.base_url}")
 
@@ -91,6 +93,8 @@ class QBittorrentClient:
         """
         Authenticate with qBittorrent Web UI.
 
+        Handles SameSite=Strict cookies by manually extracting and storing the SID.
+
         Raises:
             QBittorrentAuthError: If authentication fails
         """
@@ -107,6 +111,16 @@ class QBittorrentClient:
                 result = await response.text()
 
                 if result.strip() == "Ok.":
+                    # Extract SID from Set-Cookie header for SameSite=Strict handling
+                    for header_name in response.headers:
+                        if header_name.lower() == 'set-cookie':
+                            cookie_val = response.headers[header_name]
+                            match = re.search(r'SID=([^;]+)', cookie_val)
+                            if match:
+                                self._sid = match.group(1)
+                                logger.debug(f"Extracted SID for manual cookie handling")
+                                break
+
                     self._authenticated = True
                     logger.info("Successfully authenticated with qBittorrent")
                 else:
@@ -147,6 +161,9 @@ class QBittorrentClient:
         """
         Make HTTP request with retry logic.
 
+        Includes SID cookie for proper authentication with qBittorrent's
+        SameSite=Strict cookie policy.
+
         Args:
             method: HTTP method (GET, POST)
             endpoint: API endpoint path
@@ -162,6 +179,14 @@ class QBittorrentClient:
         url = urljoin(self.base_url, endpoint)
 
         logger.debug(f"{method} {url}")
+
+        # Add manual SID cookie if available (handles SameSite=Strict)
+        if self._sid:
+            headers = kwargs.get('headers', {})
+            if not isinstance(headers, dict):
+                headers = dict(headers)
+            headers['Cookie'] = f'SID={self._sid}'
+            kwargs['headers'] = headers
 
         try:
             async with self.session.request(method, url, **kwargs) as response:
@@ -182,6 +207,7 @@ class QBittorrentClient:
             if e.status == 403:
                 logger.warning("Authentication expired, re-authenticating")
                 self._authenticated = False
+                self._sid = None
                 await self._login()
                 # Retry the request after re-authentication
                 return await self._request(method, endpoint, **kwargs)
