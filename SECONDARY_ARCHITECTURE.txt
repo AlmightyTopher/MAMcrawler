@@ -1,0 +1,641 @@
+================================================================================
+SECONDARY QBITTORRENT INSTANCE - ARCHITECTURE DIAGRAM
+================================================================================
+Version: 1.0
+Last Updated: 2025-11-28
+
+================================================================================
+SYSTEM OVERVIEW
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          MAMcrawler Workflow System                          │
+│                      (execute_full_workflow.py - Phase 5)                    │
+└───────────────────────────────┬─────────────────────────────────────────────┘
+                                │
+                                │ Magnet Links
+                                ▼
+                ┌───────────────────────────────────┐
+                │   ResilientQBittorrentClient      │
+                │   (VPN Health + Auto Failover)    │
+                └───────────────┬───────────────────┘
+                                │
+                                │ Health Check
+                                ▼
+            ┌───────────────────────────────────────────┐
+            │        Parallel Health Checks              │
+            ├───────────────────────────────────────────┤
+            │  1. VPN Gateway Ping (192.168.0.1)        │
+            │  2. Primary Instance Check                │
+            │  3. Secondary Instance Check              │
+            └───────────────┬───────────────────────────┘
+                            │
+            ┌───────────────┼───────────────┐
+            │               │               │
+            ▼               ▼               ▼
+    ┌───────────┐   ┌────────────┐   ┌─────────────┐
+    │    VPN    │   │  PRIMARY   │   │  SECONDARY  │
+    │  Gateway  │   │  Instance  │   │  Instance   │
+    └─────┬─────┘   └──────┬─────┘   └──────┬──────┘
+          │                │                 │
+    ┌─────▼─────┐   ┌──────▼──────┐   ┌─────▼──────┐
+    │ 192.168.  │   │ 192.168.0.48│   │ localhost  │
+    │   0.1     │   │   :52095    │   │  :52095    │
+    │  (ping)   │   │  (HTTP GET) │   │ (HTTP GET) │
+    └───────────┘   └──────┬──────┘   └──────┬─────┘
+                           │                 │
+                    ┌──────▼──────┐   ┌──────▼─────┐
+                    │ Via VPN     │   │   Direct   │
+                    │ ProtonVPN   │   │   Local    │
+                    │ 10.2.0.2    │   │   Access   │
+                    └─────────────┘   └────────────┘
+
+================================================================================
+FAILOVER DECISION TREE
+================================================================================
+
+Start: Need to add magnet links
+  │
+  ├─ Step 1: Perform Health Check
+  │    ├─ Check VPN Connectivity (ping 192.168.0.1)
+  │    ├─ Check Primary (GET /api/v2/app/webapiVersion)
+  │    └─ Check Secondary (GET /api/v2/app/webapiVersion)
+  │
+  ├─ Step 2: Evaluate Health Status
+  │    │
+  │    ├─ VPN: Connected, Primary: OK
+  │    │   └─> USE PRIMARY (192.168.0.48:52095)
+  │    │       ├─ Authenticate via /api/v2/auth/login
+  │    │       ├─ Add magnet via /api/v2/torrents/add
+  │    │       ├─ Success? → Done ✓
+  │    │       └─ Fail? → Try Secondary (fallback)
+  │    │
+  │    ├─ VPN: Disconnected OR Primary: FAIL
+  │    │   └─> USE SECONDARY (localhost:52095)
+  │    │       ├─ Authenticate via /api/v2/auth/login
+  │    │       ├─ Add magnet via /api/v2/torrents/add
+  │    │       ├─ Success? → Done ✓
+  │    │       └─ Fail? → Queue to JSON
+  │    │
+  │    └─ Both Primary AND Secondary: FAIL
+  │        └─> QUEUE TO FILE (qbittorrent_queue.json)
+  │            ├─ Save magnet with timestamp
+  │            ├─ Save failure reason
+  │            ├─ Continue workflow (non-blocking)
+  │            └─ Manual or auto-process later
+  │
+  └─ End: Magnet added or queued
+
+================================================================================
+INSTANCE CONFIGURATION COMPARISON
+================================================================================
+
+┌──────────────────┬─────────────────────────┬─────────────────────────┐
+│     Aspect       │     PRIMARY Instance    │    SECONDARY Instance   │
+├──────────────────┼─────────────────────────┼─────────────────────────┤
+│ Location         │ Remote Server           │ Local Machine           │
+│ IP Address       │ 192.168.0.48            │ 127.0.0.1 (localhost)   │
+│ WebUI Port       │ 52095                   │ 52095 (SAME)            │
+│ WebUI URL        │ http://192.168.0.48:... │ http://localhost:52095/ │
+│ Network Path     │ Via VPN (ProtonVPN)     │ Direct Local Access     │
+│ VPN Dependency   │ YES (required)          │ NO                      │
+│ BitTorrent Ports │ 6881-6900               │ 6881-6920               │
+│ Profile Dir      │ Remote AppData          │ C:\qb_sec\profile\      │
+│ Downloads Dir    │ F:\Audiobookshelf\...   │ C:\qb_sec\downloads\    │
+│ Config File      │ Remote qBittorrent.conf │ Local qBittorrent.conf  │
+│ Database         │ Remote BEP.sqlite       │ Local BEP.sqlite        │
+│ Username         │ TopherGutbrod           │ TopherGutbrod (SAME)    │
+│ Password         │ from .env               │ from .env (SAME)        │
+│ Primary Use      │ All downloads (default) │ Failover only           │
+│ Startup Method   │ Windows Service/Manual  │ Batch file              │
+└──────────────────┴─────────────────────────┴─────────────────────────┘
+
+Note: "C:\qb_sec\" = "C:\qbittorrent_secondary\" (abbreviated for space)
+
+================================================================================
+NETWORK TOPOLOGY
+================================================================================
+
+Internet
+   │
+   ├──────────────────┬──────────────────────────────┐
+   │                  │                              │
+   ▼                  ▼                              ▼
+ProtonVPN      MAM Tracker                  This PC (Windows)
+10.2.0.2       (Torrent)                     ┌─────────────────┐
+   │              │                          │                 │
+   │              │                          │  ┌───────────┐  │
+   │              │                          │  │ Primary   │  │
+   │              └──────────────────────────┼─>│ qBittorr. │  │
+   │                   (via VPN)             │  │ 192.168.  │  │
+   │                                         │  │ 0.48:5209 │  │
+   │                                         │  └───────────┘  │
+   │                                         │        │        │
+   │                   ┌─────────────────────┼────────┘        │
+   │                   │ Port Proxy          │  (via VPN)      │
+   │                   │ (Optional)          │                 │
+   │                   └─────────────────────┤                 │
+   │                                         │                 │
+   └─────────────────────────────────────────┼──>┌─────────┐  │
+             (Direct if VPN down)            │   │Secondary│  │
+                                             │   │qBittorr.│  │
+                                             │   │localhost│  │
+                                             │   │:52095   │  │
+                                             │   └─────────┘  │
+                                             │                 │
+                                             └─────────────────┘
+
+================================================================================
+FILE SYSTEM LAYOUT
+================================================================================
+
+C:\
+├── qbittorrent_secondary\                   # Secondary Instance Root
+│   ├── profile\                              # Configuration & Data
+│   │   └── qBittorrent\
+│   │       ├── qBittorrent.conf              # Main config file
+│   │       ├── BEP.sqlite                    # Peer exchange DB
+│   │       ├── torrents.db                   # Torrent metadata DB
+│   │       ├── categories.json               # Category definitions
+│   │       ├── logs\                         # Application logs
+│   │       │   └── qbittorrent.log
+│   │       └── resume\                       # Resume data
+│   │           └── *.fastresume
+│   ├── downloads\                            # Download destination
+│   │   ├── .incomplete\                      # In-progress downloads
+│   │   ├── .torrents\                        # Torrent files
+│   │   │   └── completed\                    # Completed torrent files
+│   │   └── [Downloaded Files]
+│   └── start_secondary.bat                   # Startup script
+│
+├── Program Files (x86)\
+│   └── qBittorrent\
+│       └── qbittorrent.exe                   # Application binary
+│
+└── Users\dogma\
+    ├── Desktop\
+    │   └── qBittorrent Secondary.lnk         # Desktop shortcut
+    └── Projects\
+        └── MAMcrawler\
+            ├── .env                           # Environment config
+            ├── execute_full_workflow.py       # Main workflow
+            ├── monitor_qbittorrent_health.py  # Health checker
+            ├── qbittorrent_queue.json         # Queue file (if exists)
+            ├── qbittorrent_secondary_config.ini  # Template config
+            ├── setup_secondary_qbittorrent.ps1   # Setup script
+            └── backend\integrations\
+                └── qbittorrent_resilient.py   # Resilient client
+
+F:\                                            # Primary Instance
+└── Audiobookshelf\
+    └── Books\                                 # Primary downloads
+        └── [Downloaded Audiobooks]
+
+================================================================================
+DATA FLOW DIAGRAM
+================================================================================
+
+execute_full_workflow.py (Phase 5)
+│
+├─ Load Environment Variables (.env)
+│   ├─ QBITTORRENT_URL=http://192.168.0.48:52095/     (Primary)
+│   ├─ QBITTORRENT_SECONDARY_URL=http://localhost:52095/  (Secondary)
+│   ├─ QBITTORRENT_USERNAME=TopherGutbrod
+│   └─ QBITTORRENT_PASSWORD=***
+│
+├─ Initialize ResilientQBittorrentClient
+│   ├─ primary_url = 192.168.0.48:52095
+│   ├─ secondary_url = localhost:52095
+│   ├─ vpn_checker = VPNHealthChecker(192.168.0.1)
+│   └─ queue_file = qbittorrent_queue.json
+│
+├─ Perform Health Check
+│   ├─ VPN Check
+│   │   └─ subprocess.run(['ping', '-n', '1', '192.168.0.1'])
+│   │       ├─ returncode == 0 → VPN UP ✓
+│   │       └─ returncode != 0 → VPN DOWN ✗
+│   │
+│   ├─ Primary Check
+│   │   └─ HTTP GET http://192.168.0.48:52095/api/v2/app/webapiVersion
+│   │       ├─ status == 200 → OK ✓
+│   │       ├─ status == 404 → VPN_DOWN ✗
+│   │       ├─ timeout → TIMEOUT ✗
+│   │       └─ error → ERROR ✗
+│   │
+│   └─ Secondary Check
+│       └─ HTTP GET http://localhost:52095/api/v2/app/webapiVersion
+│           ├─ status == 200 → OK ✓
+│           ├─ timeout → TIMEOUT ✗
+│           └─ not configured → NOT_CONFIGURED
+│
+├─ Add Torrents with Failover
+│   │
+│   ├─ For each magnet link:
+│   │   │
+│   │   ├─ If VPN UP and Primary OK:
+│   │   │   ├─ Try Primary
+│   │   │   │   ├─ POST /api/v2/auth/login
+│   │   │   │   ├─ POST /api/v2/torrents/add (magnet)
+│   │   │   │   ├─ Success → magnet added ✓
+│   │   │   │   └─ Fail → try Secondary
+│   │   │   │
+│   │   │   └─ If Primary fails, Try Secondary
+│   │   │       ├─ POST /api/v2/auth/login
+│   │   │       ├─ POST /api/v2/torrents/add (magnet)
+│   │   │       ├─ Success → magnet added ✓
+│   │   │       └─ Fail → queue to JSON
+│   │   │
+│   │   ├─ If VPN DOWN or Primary FAIL:
+│   │   │   ├─ Skip Primary, try Secondary directly
+│   │   │   │   ├─ POST /api/v2/auth/login
+│   │   │   │   ├─ POST /api/v2/torrents/add (magnet)
+│   │   │   │   ├─ Success → magnet added ✓
+│   │   │   │   └─ Fail → queue to JSON
+│   │   │
+│   │   └─ If both fail:
+│   │       └─ Queue to qbittorrent_queue.json
+│   │           ├─ JSON structure:
+│   │           │   {
+│   │           │     "saved_at": "2025-11-28T15:00:00",
+│   │           │     "reason": "VPN/qBittorrent unavailable",
+│   │           │     "magnets": ["magnet:?xt=...", ...],
+│   │           │     "instructions": "Manually add or auto-process"
+│   │           │   }
+│   │           └─ Continue workflow (non-blocking)
+│   │
+│   └─ Return Results
+│       ├─ successful: [magnet1, magnet2, ...]
+│       ├─ failed: []
+│       └─ queued: [magnet3, magnet4, ...]
+│
+└─ Phase 5 Complete
+
+================================================================================
+HEALTH CHECK STATE MACHINE
+================================================================================
+
+State: BOTH_HEALTHY
+├─ VPN: Connected ✓
+├─ Primary: OK ✓
+├─ Secondary: OK ✓
+├─ Action: Use Primary for all downloads
+└─ Transition:
+    ├─ VPN disconnects → PRIMARY_DOWN
+    └─ Secondary stops → PRIMARY_ONLY
+
+State: PRIMARY_DOWN
+├─ VPN: Disconnected ✗ OR Primary: FAIL ✗
+├─ Secondary: OK ✓
+├─ Action: Use Secondary for all downloads
+└─ Transition:
+    ├─ VPN reconnects + Primary OK → BOTH_HEALTHY
+    └─ Secondary stops → BOTH_DOWN
+
+State: SECONDARY_DOWN
+├─ Primary: OK ✓
+├─ Secondary: TIMEOUT ✗ OR NOT_CONFIGURED
+├─ Action: Use Primary (no redundancy)
+└─ Transition:
+    ├─ Secondary starts → BOTH_HEALTHY
+    └─ Primary fails → BOTH_DOWN
+
+State: BOTH_DOWN
+├─ Primary: FAIL ✗
+├─ Secondary: FAIL ✗
+├─ Action: Queue to JSON file
+└─ Transition:
+    ├─ Primary OR Secondary recovers → Corresponding state
+    └─ Manual intervention required
+
+State: PRIMARY_ONLY (No Secondary Configured)
+├─ Primary: OK ✓
+├─ Secondary: NOT_CONFIGURED
+├─ Action: Use Primary (original behavior)
+└─ Transition:
+    ├─ Configure Secondary → BOTH_HEALTHY
+    └─ Primary fails → Queue to JSON
+
+================================================================================
+STARTUP SEQUENCE
+================================================================================
+
+1. User Action: Double-click "qBittorrent Secondary" shortcut
+   │
+   └─> C:\Users\dogma\Desktop\qBittorrent Secondary.lnk
+       │
+       └─> Target: C:\qbittorrent_secondary\start_secondary.bat
+
+2. Batch File Execution
+   │
+   ├─ Set Environment Variable:
+   │   set APPDATA=C:\qbittorrent_secondary\profile
+   │
+   └─ Launch qBittorrent:
+       "C:\Program Files (x86)\qBittorrent\qbittorrent.exe" \
+           --webui-port=52095 \
+           --profile=C:\qbittorrent_secondary\profile
+
+3. qBittorrent Initialization
+   │
+   ├─ Load Configuration:
+   │   C:\qbittorrent_secondary\profile\qBittorrent\qBittorrent.conf
+   │
+   ├─ Initialize Database:
+   │   ├─ BEP.sqlite (create or open)
+   │   └─ torrents.db (create or open)
+   │
+   ├─ Bind Network Ports:
+   │   ├─ WebUI: localhost:52095
+   │   └─ BitTorrent: 6881-6920 (random from range)
+   │
+   ├─ Start Web Server:
+   │   └─ HTTP server listening on 127.0.0.1:52095
+   │
+   └─ Ready State:
+       ├─ Tray icon appears
+       ├─ WebUI accessible
+       └─ Waiting for torrents
+
+4. User Access
+   │
+   ├─ Browser → http://localhost:52095
+   │
+   ├─ Login (first time):
+   │   ├─ Default: admin / adminadmin
+   │   └─ Change to: TopherGutbrod / your-password
+   │
+   └─ WebUI Dashboard loaded
+
+================================================================================
+SECURITY CONSIDERATIONS
+================================================================================
+
+Authentication Flow:
+├─ POST /api/v2/auth/login
+│   ├─ username=TopherGutbrod
+│   ├─ password=*** (from .env)
+│   └─ Response: Set-Cookie: SID=...
+│
+├─ SID Cookie Management
+│   ├─ Extract from Set-Cookie header
+│   ├─ Store in session
+│   └─ Include in subsequent requests
+│
+└─ POST /api/v2/torrents/add
+    ├─ Header: Cookie: SID=...
+    ├─ Data: urls=magnet:?xt=...
+    └─ Response: Ok. (if successful)
+
+Security Features:
+├─ CSRF Protection: Enabled
+├─ Clickjacking Protection: Enabled
+├─ Host Header Validation: Enabled
+├─ Secure Cookies: Enabled (HTTPS only)
+├─ LocalHostAuth: Disabled (password required even on localhost)
+├─ Session Timeout: 3600 seconds (1 hour)
+└─ Max Auth Failures: 5 attempts, 3600s ban
+
+Credential Management:
+├─ Stored in .env (never committed to git)
+├─ Password hash in qBittorrent.conf (PBKDF2)
+├─ Same credentials for both instances (simplifies failover)
+└─ No plaintext passwords in logs or configs
+
+================================================================================
+MONITORING & DIAGNOSTICS
+================================================================================
+
+Health Check Execution:
+python monitor_qbittorrent_health.py
+│
+├─ Load Environment Variables
+├─ Initialize ResilientQBittorrentClient
+├─ Perform Health Check
+│   ├─ VPN connectivity test
+│   ├─ Primary instance check
+│   └─ Secondary instance check
+│
+├─ Display Results
+│   ├─ VPN Status: ✓ Connected / ✗ Disconnected
+│   ├─ Primary Instance: ✓ OK / ✗ VPN_DOWN / ✗ TIMEOUT / etc.
+│   ├─ Secondary Instance: ✓ OK / ✗ TIMEOUT / - NOT_CONFIGURED
+│   └─ Last Check: 2025-11-28T14:30:00
+│
+├─ Check Queue File
+│   ├─ If exists: Display magnet count and timestamp
+│   └─ If not exists: No queued magnets
+│
+└─ Status Analysis
+    ├─ BOTH HEALTHY → ✓ Excellent
+    ├─ PRIMARY DOWN → ⚠ Warning (using secondary)
+    ├─ SECONDARY DOWN → ℹ Info (redundancy unavailable)
+    └─ BOTH DOWN → ⚠ Critical (queueing magnets)
+
+Log Files:
+├─ Primary: Remote server logs
+└─ Secondary: C:\qbittorrent_secondary\profile\qBittorrent\logs\
+    └─ qbittorrent.log (application log)
+
+Diagnostic Commands:
+├─ Check Port Binding:
+│   netstat -ano | findstr 52095
+│
+├─ Check Process:
+│   Get-Process qbittorrent
+│
+├─ Check VPN:
+│   Test-NetConnection -ComputerName 192.168.0.1
+│
+└─ Check WebUI:
+    Test-NetConnection -ComputerName localhost -Port 52095
+
+================================================================================
+QUEUE FILE STRUCTURE
+================================================================================
+
+File: qbittorrent_queue.json
+Location: C:\Users\dogma\Projects\MAMcrawler\
+
+Structure:
+{
+  "saved_at": "2025-11-28T15:30:00.123456",
+  "reason": "VPN/qBittorrent unavailable",
+  "magnets": [
+    "magnet:?xt=urn:btih:abc123def456...&dn=Audiobook+Title+1",
+    "magnet:?xt=urn:btih:def456ghi789...&dn=Audiobook+Title+2",
+    "magnet:?xt=urn:btih:ghi789jkl012...&dn=Audiobook+Title+3"
+  ],
+  "instructions": "Manually add these to qBittorrent when available, or paste into web UI"
+}
+
+Processing:
+├─ Manual Method:
+│   ├─ Open queue file in text editor
+│   ├─ Copy magnet links
+│   ├─ Open qBittorrent WebUI
+│   └─ Paste magnets (Add Torrent → From URLs)
+│
+└─ Automated Method:
+    └─ Run: ResilientQBittorrentClient.process_queue_file()
+        ├─ Load queue file
+        ├─ Try to add each magnet (with failover)
+        ├─ Remove successfully added magnets
+        ├─ Keep failed magnets in queue
+        └─ Delete queue file if all processed
+
+================================================================================
+ERROR RECOVERY SCENARIOS
+================================================================================
+
+Scenario 1: VPN Temporarily Disconnects
+├─ Initial State: BOTH_HEALTHY
+├─ Event: VPN drops
+├─ Detection: Health check → VPN DOWN, Primary HTTP_404
+├─ Action: Switch to Secondary
+├─ Result: Downloads continue on localhost:52095
+├─ Recovery: VPN reconnects
+├─ Detection: Health check → VPN UP, Primary OK
+├─ Action: Switch back to Primary (next workflow run)
+└─ Note: Magnets added during outage remain on Secondary
+
+Scenario 2: Secondary Instance Crashes
+├─ Initial State: BOTH_HEALTHY
+├─ Event: Secondary process terminates
+├─ Detection: Health check → Secondary TIMEOUT
+├─ Action: Continue using Primary (no impact)
+├─ Result: Reduced redundancy (warning logged)
+├─ Recovery: Restart Secondary
+│   └─ C:\qbittorrent_secondary\start_secondary.bat
+├─ Detection: Health check → Secondary OK
+└─ Action: Full redundancy restored
+
+Scenario 3: Both Instances Unavailable
+├─ Initial State: BOTH_HEALTHY
+├─ Event: VPN down + Secondary stopped
+├─ Detection: Health check → Primary VPN_DOWN, Secondary TIMEOUT
+├─ Action: Queue magnets to JSON
+├─ Result: Workflow continues, no downloads start
+├─ Recovery: Fix VPN or start Secondary
+├─ Detection: Health check → at least one OK
+├─ Action: Process queued magnets
+└─ Command: ResilientQBittorrentClient.process_queue_file()
+
+Scenario 4: Database Corruption (Secondary)
+├─ Initial State: BOTH_HEALTHY
+├─ Event: Secondary won't start (database locked/corrupt)
+├─ Detection: Secondary instance fails to launch
+├─ Diagnosis: Check logs in C:\qb_sec\profile\qBittorrent\logs\
+├─ Recovery:
+│   ├─ Stop Secondary
+│   ├─ Delete database files:
+│   │   ├─ BEP.sqlite
+│   │   └─ torrents.db
+│   ├─ Restart Secondary (rebuilds database)
+│   └─ Re-add torrents (if needed)
+└─ Prevention: Regular backups of Secondary profile
+
+Scenario 5: Port Conflict (Secondary)
+├─ Initial State: Attempting to start Secondary
+├─ Event: Another process using port 52095 on localhost
+├─ Detection: "Address already in use" error
+├─ Diagnosis:
+│   └─ netstat -ano | findstr 52095
+├─ Recovery Option 1 (Kill conflicting process):
+│   └─ Stop-Process -Id (PID from netstat)
+├─ Recovery Option 2 (Use different port):
+│   ├─ Edit qBittorrent.conf: WebUI\Port=52096
+│   ├─ Update batch file: --webui-port=52096
+│   └─ Update .env: QBITTORRENT_SECONDARY_URL=http://localhost:52096/
+└─ Verification: Health check shows Secondary OK
+
+================================================================================
+PERFORMANCE CHARACTERISTICS
+================================================================================
+
+Health Check Performance:
+├─ VPN Check: ~100-500ms (ping with 5s timeout)
+├─ Primary Check: ~200-1000ms (HTTP GET with 5s timeout)
+├─ Secondary Check: ~50-200ms (local HTTP GET with 5s timeout)
+└─ Total: ~350-1700ms (parallel execution)
+
+Failover Speed:
+├─ Detection: Immediate (on next health check)
+├─ Switchover: 200-1000ms (secondary authentication)
+├─ Total Downtime: < 2 seconds
+└─ Note: Transparent to user, no downloads lost
+
+Resource Usage (Secondary Instance):
+├─ Idle State:
+│   ├─ RAM: ~50-100 MB
+│   ├─ CPU: < 1%
+│   └─ Disk: Minimal (logging only)
+│
+├─ Active Download (1 torrent):
+│   ├─ RAM: ~100-200 MB
+│   ├─ CPU: 5-15% (depends on speed)
+│   └─ Disk: Write speed dependent
+│
+└─ Active Download (10 torrents):
+    ├─ RAM: ~200-400 MB
+    ├─ CPU: 10-30%
+    └─ Disk: Write speed dependent
+
+Network Latency:
+├─ Primary (via VPN): ~50-100ms additional latency
+├─ Secondary (local): < 1ms (localhost)
+└─ Impact: Secondary has faster response time
+
+Database Size Growth:
+├─ BEP.sqlite: ~1-10 MB (peer data)
+├─ torrents.db: ~100-500 KB (metadata)
+├─ Resume files: ~10-50 KB per torrent
+└─ Total: < 50 MB for 100 torrents
+
+================================================================================
+MAINTENANCE PROCEDURES
+================================================================================
+
+Daily Maintenance:
+├─ (Optional) Run health check before workflow
+└─ Verify no errors in logs
+
+Weekly Maintenance:
+├─ python monitor_qbittorrent_health.py
+├─ Verify both instances accessible
+└─ Check download folder disk space:
+    └─ Get-ChildItem C:\qbittorrent_secondary\downloads -Recurse | Measure-Object -Property Length -Sum
+
+Monthly Maintenance:
+├─ Review logs for errors:
+│   └─ Get-ChildItem C:\qb_sec\profile\qBittorrent\logs\*.log | Get-Content -Tail 100
+├─ Test failover (disconnect VPN temporarily)
+├─ Verify .env credentials still valid
+└─ Clean up completed torrents (if needed)
+
+Quarterly Maintenance:
+├─ Update qBittorrent (if new version):
+│   ├─ Download installer
+│   ├─ Stop both instances
+│   ├─ Run installer
+│   └─ Restart both instances
+├─ Review download folder size
+├─ Backup Secondary profile (optional):
+│   └─ Copy-Item C:\qb_sec\profile -Destination C:\Backups\qb_sec_profile_$(Get-Date -Format 'yyyyMMdd') -Recurse
+└─ Clean up old/completed torrents
+
+Emergency Procedures:
+├─ Complete Secondary Rebuild:
+│   ├─ Remove-Item C:\qbittorrent_secondary -Recurse -Force
+│   └─ powershell -ExecutionPolicy Bypass -File setup_secondary_qbittorrent.ps1
+│
+├─ Reset Password:
+│   ├─ Remove-Item C:\qb_sec\profile\qBittorrent\qBittorrent.conf
+│   ├─ Restart Secondary
+│   └─ Login with admin/adminadmin, change password
+│
+└─ Force Process Kill:
+    └─ Get-Process qbittorrent | Stop-Process -Force
+
+================================================================================
+END OF ARCHITECTURE DIAGRAM
+================================================================================

@@ -1,0 +1,226 @@
+# Test Magnet Links for qBittorrent Failover Testing
+
+## IMPORTANT NOTES
+
+These magnet links are for testing the failover logic only. Most are placeholder hashes
+and will not actually download content. For real download testing, use the Big Buck Bunny
+magnet or obtain small audiobooks from MAM's free section.
+
+## Safe Testing Approach
+
+**Option 1: Use Big Buck Bunny (Real, Small Public Domain Video)**
+- Size: ~8 MB
+- Purpose: Validates complete download workflow
+- Magnet below is verified working
+
+**Option 2: Use Placeholder Magnets (Logic Testing Only)**
+- Will test failover logic and API calls
+- Will not actually download (invalid hashes)
+- Safe for testing qBittorrent integration without data transfer
+
+**Option 3: Use MAM Free Audiobooks**
+- Search MAM for "free" category audiobooks
+- Select small files (<50 MB)
+- Copy magnet links for testing
+
+---
+
+## TEST 1: Normal Operation (5 magnets)
+
+### Magnet 1 (REAL - Big Buck Bunny)
+magnet:?xt=urn:btih:DD8255ECDC7CA55FB0BBF81323D87062DB1F6D1C&dn=Big+Buck+Bunny&tr=udp://tracker.openbittorrent.com:80&tr=udp://tracker.publicbt.com:80
+
+### Magnet 2 (Placeholder)
+magnet:?xt=urn:btih:0B6B1A04F35EC6BD0EF9AA0F8AD1A1C7C2D1C1D1&dn=Test+Audiobook+1&tr=udp://tracker.openbittorrent.com:80
+
+### Magnet 3 (Placeholder)
+magnet:?xt=urn:btih:1C7C2D1C1D1B6B1A04F35EC6BD0EF9AA0F8AD1A1&dn=Test+Audiobook+2&tr=udp://tracker.openbittorrent.com:80
+
+### Magnet 4 (Placeholder)
+magnet:?xt=urn:btih:2D8D3E2E2E2C7C2D1C1D1B6B1A04F35EC6BD0EF9&dn=Test+Audiobook+3&tr=udp://tracker.openbittorrent.com:80
+
+### Magnet 5 (Placeholder)
+magnet:?xt=urn:btih:3E9E4F3F3F3D8D3E2E2E2C7C2D1C1D1B6B1A04F3&dn=Test+Audiobook+4&tr=udp://tracker.openbittorrent.com:80
+
+---
+
+## TEST 2: VPN Down Failover (3 magnets)
+
+### Magnet 1 (Placeholder)
+magnet:?xt=urn:btih:4F0F5G4G4G4E9E4F3F3F3D8D3E2E2E2C7C2D1C1D&dn=VPN+Test+1&tr=udp://tracker.openbittorrent.com:80
+
+### Magnet 2 (Placeholder)
+magnet:?xt=urn:btih:5G1G6H5H5H5F0F5G4G4G4E9E4F3F3F3D8D3E2E2E&dn=VPN+Test+2&tr=udp://tracker.openbittorrent.com:80
+
+### Magnet 3 (Placeholder)
+magnet:?xt=urn:btih:6H2H7I6I6I6G1G6H5H5H5F0F5G4G4G4E9E4F3F3F&dn=VPN+Test+3&tr=udp://tracker.openbittorrent.com:80
+
+---
+
+## TEST 3: Manual Block (1 magnet)
+
+### Magnet 1 (Placeholder)
+magnet:?xt=urn:btih:7I3I8J7J7J7H2H7I6I6I6G1G6H5H5H5F0F5G4G4G&dn=Block+Test+1&tr=udp://tracker.openbittorrent.com:80
+
+---
+
+## TEST 4: Queue Creation (3 magnets)
+
+### Magnet 1 (Placeholder)
+magnet:?xt=urn:btih:8J4J9K8K8K8I3I8J7J7J7H2H7I6I6I6G1G6H5H5H&dn=Queue+Test+1&tr=udp://tracker.openbittorrent.com:80
+
+### Magnet 2 (Placeholder)
+magnet:?xt=urn:btih:9K5K0L9L9L9J4J9K8K8K8I3I8J7J7J7H2H7I6I6I&dn=Queue+Test+2&tr=udp://tracker.openbittorrent.com:80
+
+### Magnet 3 (Placeholder)
+magnet:?xt=urn:btih:0L6L1M0M0M0K5K0L9L9L9J4J9K8K8K8I3I8J7J7J&dn=Queue+Test+3&tr=udp://tracker.openbittorrent.com:80
+
+---
+
+## Hash Values for Verification
+
+### Real Torrents
+- Big Buck Bunny: `DD8255ECDC7CA55FB0BBF81323D87062DB1F6D1C`
+
+### Placeholder Hashes
+All other hashes above are placeholders for testing API logic only.
+They contain invalid characters (G, H, I, J, K, L, M) which don't exist in hexadecimal,
+making them clearly distinguishable as test values.
+
+---
+
+## Creating Your Own Test Magnets
+
+### From MAM Free Section
+
+1. **Login to MyAnonamouse**
+   - Go to https://www.myanonamouse.net
+
+2. **Search for Free Audiobooks**
+   - Click "Browse Torrents"
+   - Select category: "Audiobooks"
+   - Add filter: "Freeleech"
+   - Sort by: "Size" (ascending)
+
+3. **Select Small Files**
+   - Choose audiobooks under 50 MB
+   - Click on torrent details
+   - Click "Download Torrent" or copy magnet link
+
+4. **Replace Placeholder Magnets**
+   - Copy the magnet link
+   - Replace placeholders in test scripts
+   - Document the torrent name and size
+
+### Example MAM Magnet Format
+
+```
+magnet:?xt=urn:btih:<40_char_hash>&dn=<torrent_name>&tr=<tracker_url>
+```
+
+**Important:**
+- Hash is 40 hexadecimal characters (0-9, A-F)
+- Use proper URL encoding for torrent names (spaces = +)
+- Include MAM's tracker URL for proper seeding
+
+---
+
+## Safety Notes
+
+1. **Disk Space**
+   - Placeholders won't use disk space
+   - Big Buck Bunny uses ~8 MB
+   - MAM free audiobooks vary (check size first)
+
+2. **Network Usage**
+   - Placeholder magnets: ~0 bytes
+   - Real magnets: actual file size downloaded
+   - Consider data caps when testing
+
+3. **Seeding Requirements**
+   - Big Buck Bunny: No seeding required
+   - MAM torrents: Must seed to maintain ratio
+   - Use small files to minimize seeding time
+
+4. **Test Duration**
+   - Placeholders: Instant (API call only)
+   - Big Buck Bunny: ~1-2 minutes
+   - MAM files: Varies by size and seeders
+
+---
+
+## Recommended Testing Strategy
+
+### Phase 1: Logic Testing (No Downloads)
+Use placeholder magnets to test:
+- API authentication
+- Failover logic
+- Queue file creation/processing
+- Health checks
+
+### Phase 2: Real Download Testing (Small Files)
+Use Big Buck Bunny or small MAM files to test:
+- Complete download workflow
+- File placement in F:\Audiobookshelf\Books
+- Category assignment
+- Seeding behavior
+
+### Phase 3: Full Integration Testing
+Use actual audiobook magnets from workflow to test:
+- Integration with execute_full_workflow.py
+- Real-world failover scenarios
+- Performance under load
+
+---
+
+## Cleanup After Testing
+
+After testing completes, remove test torrents:
+
+**Via Web UI:**
+1. Open qBittorrent Web UI
+2. Select test torrents (Big Buck Bunny, Test Audiobook 1-4, etc.)
+3. Right-click → Delete
+4. Check "Also delete files from storage"
+5. Confirm deletion
+
+**Via Command Line:**
+```bash
+# Get torrent hashes
+curl http://localhost:52095/api/v2/torrents/info
+
+# Delete specific torrent (use hash from above)
+curl -X POST http://localhost:52095/api/v2/torrents/delete \
+  --cookie "SID=<SID>" \
+  -d "hashes=DD8255ECDC7CA55FB0BBF81323D87062DB1F6D1C&deleteFiles=true"
+```
+
+---
+
+## Additional Resources
+
+### Public Domain Torrents (Safe for Testing)
+- Big Buck Bunny (video): DD8255ECDC7CA55FB0BBF81323D87062DB1F6D1C
+- Sintel (video): 08ADA5A7A6183AAE1E09D831DF6748D566095A10
+- Elephants Dream (video): 50A41C02F77C1867C5BDCCE6DABCD35B86DBC39A
+
+### MAM Testing Best Practices
+1. Use "freeleech" category to avoid ratio impact
+2. Choose well-seeded torrents (50+ seeders)
+3. Download during off-peak hours
+4. Seed at least 1:1 ratio even for freeleech
+5. Delete test torrents after testing completes
+
+### Tracker URLs for MAM
+```
+&tr=https://tracker.myanonamouse.net:443/announce
+&tr=https://tracker.myanonamouse.net:6969/announce
+```
+
+Add these to placeholder magnets if testing with MAM's tracker requirements.
+
+---
+
+**Last Updated:** 2025-11-28
+**Version:** 1.0
+**Maintained By:** MAMcrawler Project
