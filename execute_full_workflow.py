@@ -33,6 +33,10 @@ from typing import Dict, List, Set, Optional, Tuple
 from dotenv import load_dotenv
 import logging
 
+# Import resilient qBittorrent client
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend', 'integrations'))
+from qbittorrent_resilient import ResilientQBittorrentClient
+
 # Setup logging
 load_dotenv()
 
@@ -47,6 +51,7 @@ class RealExecutionWorkflow:
         self.prowlarr_url = os.getenv('PROWLARR_URL', 'http://localhost:9696')
         self.prowlarr_key = os.getenv('PROWLARR_API_KEY')
         self.qb_url = os.getenv('QBITTORRENT_URL', 'http://192.168.0.48:52095/')
+        self.qb_secondary_url = os.getenv('QBITTORRENT_SECONDARY_URL', None)  # Local fallback
         self.qb_user = os.getenv('QBITTORRENT_USERNAME')
         self.qb_pass = os.getenv('QBITTORRENT_PASSWORD')
         self.download_path = Path(os.getenv('DOWNLOAD_PATH', 'F:/Audiobookshelf/Books'))
@@ -363,143 +368,105 @@ class RealExecutionWorkflow:
         return magnet_links
 
     async def add_to_qbittorrent(self, magnet_links: List[str], max_downloads: int = 10) -> List[str]:
-        """Add books to qBittorrent queue with proper session persistence and SID cookie handling"""
-        self.log(f"Adding {min(len(magnet_links), max_downloads)} books to qBittorrent...", "DOWNLOAD")
+        """
+        Add books to qBittorrent queue using VPN-resilient client
 
-        added = []
+        Features:
+        - VPN connectivity monitoring
+        - Automatic failover to secondary (local) instance if VPN down
+        - Queues magnets to JSON file if all services unavailable
+        - Preserves SID cookie handling from previous implementation
+        """
+        self.log(f"Adding {min(len(magnet_links), max_downloads)} books to qBittorrent...", "DOWNLOAD")
+        self.log("Using VPN-resilient qBittorrent client with fallback support", "INFO")
 
         try:
-            # Create persistent session for all operations
-            connector = aiohttp.TCPConnector(ssl=False)
-            timeout = aiohttp.ClientTimeout(total=30, connect=10, sock_read=20)
+            # Initialize resilient client
+            async with ResilientQBittorrentClient(
+                primary_url=self.qb_url,
+                secondary_url=self.qb_secondary_url,
+                username=self.qb_user,
+                password=self.qb_pass,
+                queue_file="qbittorrent_queue.json",
+                savepath=str(self.download_path)
+            ) as client:
 
-            async with aiohttp.ClientSession(connector=connector, timeout=timeout) as session:
-                # Login first - with proper error checking
-                login_url = f'{self.qb_url}api/v2/auth/login'
-                login_data = aiohttp.FormData()
-                login_data.add_field('username', self.qb_user)
-                login_data.add_field('password', self.qb_pass)
+                # Perform health check
+                self.log("Checking qBittorrent instance health...", "HEALTH")
+                health = await client.perform_health_check()
 
-                auth_success = False
-                sid = None  # Store SID for manual cookie handling
-                try:
-                    async with session.post(login_url, data=login_data, ssl=False) as resp:
-                        auth_text = await resp.text()
-                        self.log(f"qBittorrent login response: HTTP {resp.status} - {auth_text[:100]}", "DEBUG")
+                # Log health status
+                vpn_status = "CONNECTED" if health['vpn_connected'] else "DOWN"
+                self.log(f"  VPN Status: {vpn_status}", "HEALTH")
+                self.log(f"  Primary Instance ({self.qb_url}): {health['primary']}", "HEALTH")
 
-                        if resp.status == 200 and auth_text.strip() == 'Ok.':
-                            auth_success = True
-                            # Extract SID from Set-Cookie header for SameSite=Strict handling
-                            for header_name in resp.headers:
-                                if header_name.lower() == 'set-cookie':
-                                    cookie_val = resp.headers[header_name]
-                                    match = re.search(r'SID=([^;]+)', cookie_val)
-                                    if match:
-                                        sid = match.group(1)
-                                        self.log(f"Extracted SID for manual cookie handling", "DEBUG")
-                                        break
-                        else:
-                            self.log(f"qBittorrent login failed: HTTP {resp.status} - {auth_text}", "FAIL")
-                except Exception as e:
-                    self.log(f"qBittorrent login error: {e}", "FAIL")
+                if self.qb_secondary_url:
+                    self.log(f"  Secondary Instance ({self.qb_secondary_url}): {health['secondary']}", "HEALTH")
+                else:
+                    self.log(f"  Secondary Instance: NOT_CONFIGURED", "HEALTH")
 
-                if not auth_success:
-                    return []
+                # Add torrents with automatic fallback
+                successful, failed, queued = await client.add_torrents_with_fallback(
+                    magnet_links[:max_downloads]
+                )
 
-                # Add each magnet (limit to max_downloads)
-                # IMPORTANT: Use the same session to preserve authentication
-                for i, magnet in enumerate(magnet_links[:max_downloads]):
-                    try:
-                        add_url = f'{self.qb_url}api/v2/torrents/add'
-                        add_data = aiohttp.FormData()
-                        add_data.add_field('urls', magnet)
-                        add_data.add_field('savepath', str(self.download_path))
-                        add_data.add_field('paused', 'false')
-                        add_data.add_field('category', 'audiobooks')
+                # Log results
+                self.log("", "RESULT")
+                self.log(f"qBittorrent Add Results:", "RESULT")
+                self.log(f"  Successfully Added: {len(successful)}", "RESULT")
+                self.log(f"  Failed: {len(failed)}", "RESULT")
+                self.log(f"  Queued for Later: {len(queued)}", "RESULT")
 
-                        # Prepare headers with SID cookie if available
-                        headers = {}
-                        if sid:
-                            headers['Cookie'] = f'SID={sid}'
-
-                        async with session.post(add_url, data=add_data, headers=headers, ssl=False) as resp:
-                            response_text = await resp.text()
-
-                            # qBittorrent returns "Ok." on success
-                            if resp.status == 200 and response_text.strip() == 'Ok.':
-                                added.append(magnet)
-                                self.log(f"  Added to qBittorrent: {magnet[:50]}...", "OK")
-                            elif resp.status == 403:
-                                # 403 means auth expired or invalid - re-authenticate and retry once
-                                self.log(f"  Got 403 - re-authenticating...", "WARN")
-
-                                # Re-authenticate
-                                async with session.post(login_url, data=login_data, ssl=False) as auth_resp:
-                                    auth_text = await auth_resp.text()
-                                    if auth_resp.status == 200 and auth_text.strip() == 'Ok.':
-                                        # Extract new SID
-                                        for header_name in auth_resp.headers:
-                                            if header_name.lower() == 'set-cookie':
-                                                cookie_val = auth_resp.headers[header_name]
-                                                match = re.search(r'SID=([^;]+)', cookie_val)
-                                                if match:
-                                                    sid = match.group(1)
-                                                    break
-                                        # Retry the add with new SID
-                                        headers = {}
-                                        if sid:
-                                            headers['Cookie'] = f'SID={sid}'
-                                        async with session.post(add_url, data=add_data, headers=headers, ssl=False) as retry_resp:
-                                            retry_text = await retry_resp.text()
-                                            if retry_resp.status == 200 and retry_text.strip() == 'Ok.':
-                                                added.append(magnet)
-                                                self.log(f"  Added to qBittorrent (after re-auth): {magnet[:50]}...", "OK")
-                                            else:
-                                                self.log(f"  Failed to add after re-auth: HTTP {retry_resp.status} - {retry_text}", "FAIL")
-                                    else:
-                                        self.log(f"  Re-auth failed: {auth_text}", "FAIL")
-                            else:
-                                self.log(f"  Failed to add: HTTP {resp.status} - {response_text}", "FAIL")
-
-                    except Exception as e:
-                        self.log(f"  Error adding magnet: {e}", "FAIL")
-                        continue
-
-                    # Small delay between additions
-                    await asyncio.sleep(2)
-
-                self.log(f"Added {len(added)} torrents to qBittorrent", "OK")
-
-                # FALLBACK: If no torrents added due to 403 (API permission issue),
-                # document the magnets and continue workflow
-                if len(added) == 0 and len(magnet_links) > 0:
+                # Handle queued magnets
+                if queued:
                     self.log("", "WARN")
                     self.log("=" * 80, "WARN")
-                    self.log("NOTE: qBittorrent API returning 403 (Forbidden)", "WARN")
-                    self.log("This indicates an IP restriction or permission issue on the", "WARN")
-                    self.log("remote qBittorrent instance (192.168.0.48:52095)", "WARN")
+                    self.log("ATTENTION: Some magnets could not be added immediately", "WARN")
                     self.log("", "WARN")
-                    self.log("SOLUTION:", "WARN")
-                    self.log("1. Check qBittorrent Web UI settings (Tools > Options > Web UI)", "WARN")
-                    self.log("2. Verify IP whitelisting allows this connection", "WARN")
-                    self.log("3. Check user 'TopherGutbrod' has API access permissions", "WARN")
+                    self.log("Reason: All qBittorrent instances unavailable", "WARN")
+                    self.log(f"  - Primary: {health['primary']}", "WARN")
+                    if self.qb_secondary_url:
+                        self.log(f"  - Secondary: {health['secondary']}", "WARN")
+                    self.log(f"  - VPN: {vpn_status}", "WARN")
                     self.log("", "WARN")
-                    self.log("MAGNETS PREPARED FOR DOWNLOAD:", "WARN")
-                    for i, magnet in enumerate(magnet_links[:max_downloads], 1):
+                    self.log(f"QUEUED MAGNETS (saved to qbittorrent_queue.json):", "WARN")
+                    for i, magnet in enumerate(queued, 1):
                         self.log(f"  {i}. {magnet[:80]}...", "WARN")
                     self.log("", "WARN")
-                    self.log("These can be added manually to qBittorrent via Web UI or CLI", "WARN")
-                    self.log("Continuing workflow to demonstrate full end-to-end process", "WARN")
+                    self.log("These will be processed automatically when services are available", "WARN")
+                    self.log("Or add manually via qBittorrent Web UI", "WARN")
                     self.log("=" * 80, "WARN")
 
-                    # Return magnets anyway so workflow can continue
-                    return magnet_links
+                # Return successful magnets (or queued ones for workflow continuity)
+                result = successful if successful else queued
 
-                return added
+                if result:
+                    self.log(f"Workflow continuing with {len(result)} magnets", "OK")
+
+                return result
 
         except Exception as e:
-            self.log(f"qBittorrent error: {e}", "FAIL")
-            return []
+            self.log(f"VPN-resilient qBittorrent client error: {e}", "FAIL")
+            self.log("Attempting to save magnets to queue file...", "FALLBACK")
+
+            # Fallback: Save to queue file manually
+            try:
+                queue_data = {
+                    'saved_at': datetime.now().isoformat(),
+                    'reason': f'Client initialization failed: {str(e)}',
+                    'magnets': magnet_links[:max_downloads],
+                    'instructions': 'Manually add these to qBittorrent when available'
+                }
+
+                queue_file = Path("qbittorrent_queue.json")
+                queue_file.write_text(json.dumps(queue_data, indent=2))
+                self.log(f"Magnets saved to {queue_file}", "OK")
+
+                return magnet_links[:max_downloads]  # Return for workflow continuity
+
+            except Exception as save_error:
+                self.log(f"Failed to save queue file: {save_error}", "FAIL")
+                return []
 
     async def monitor_downloads(self, check_interval: int = 300) -> Dict:
         """Monitor downloads every N seconds (5 min default)"""
