@@ -148,8 +148,33 @@ class ResilientQBittorrentClient:
     async def _check_endpoint(self, url: str) -> str:
         """Check if endpoint is reachable and responding"""
         try:
+            # First, try to login to get SID
+            login_url = urljoin(url, "/api/v2/auth/login")
+            login_data = aiohttp.FormData()
+            login_data.add_field('username', self.username)
+            login_data.add_field('password', self.password)
+
+            sid = None
+            async with self.session.post(login_url, data=login_data, ssl=False, timeout=5) as resp:
+                if resp.status == 200:
+                    auth_text = await resp.text()
+                    if auth_text.strip() == 'Ok.':
+                        # Extract SID
+                        for header_name in resp.headers:
+                            if header_name.lower() == 'set-cookie':
+                                cookie_val = resp.headers[header_name]
+                                match = re.search(r'SID=([^;]+)', cookie_val)
+                                if match:
+                                    sid = match.group(1)
+                                    break
+
+            if not sid:
+                return "AUTH_FAILED"
+
+            # Now check the API with authentication
             check_url = urljoin(url, "/api/v2/app/webapiVersion")
-            async with self.session.get(check_url, ssl=False, timeout=5) as resp:
+            headers = {'Cookie': f'SID={sid}'}
+            async with self.session.get(check_url, headers=headers, ssl=False, timeout=5) as resp:
                 if resp.status == 200:
                     return "OK"
                 elif resp.status == 404:
