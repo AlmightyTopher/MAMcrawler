@@ -1,8 +1,142 @@
-# AudiobookShelf Best Practices Workflow - Complete Flowchart with All Scenarios
+# MAMcrawler Complete Workflow - All Scenarios & Edge Cases
 
-**Document**: Complete Scenario Flowcharts
-**Status**: All 14 Phases with Decision Points
-**Scope**: Audiobooks Only
+**Document**: Comprehensive Workflow Flowchart
+**Status**: 16 Phases + VPN Resilience + Error Recovery + Metadata Enrichment
+**Scope**: Audiobooks Acquisition & Management Ecosystem
+**Last Updated**: 2025-11-29
+**Architecture**: Docker + FastAPI + Async Python + Comprehensive Error Handling + Metadata Enrichment Pipeline
+**Project Maturity**: Production-Ready with Enterprise-Grade Resilience
+
+---
+
+## 🚀 LATEST UPDATE: VPN-RESILIENT qBITTORRENT (2025-11-29)
+
+### New Resilience Features
+
+**Phase 5 Enhanced with 3-Tier Failover**:
+- ✅ **Tier 1**: Primary qBittorrent (192.168.0.48:52095 via VPN)
+- ✅ **Tier 2**: Secondary qBittorrent (localhost:52095 local fallback)
+- ✅ **Tier 3**: Queue File (qbittorrent_queue.json emergency storage)
+
+### New Scenarios
+
+**SCENARIO 5**: VPN-Resilient Download with Automatic Failover
+- VPN disconnect detected automatically (1-2 seconds)
+- Seamless failover to secondary instance
+- Downloads continue without interruption
+- VPN reconnect causes automatic primary recovery
+- Result: Zero downtime, transparent to user
+
+**SCENARIO 6**: Complete VPN Failure with Queue Fallback
+- Both instances unavailable → Magnets queued to JSON file
+- Queue file preserves all magnets for later recovery
+- Workflow continues with metadata operations
+- Auto-processing available via `process_qbittorrent_queue.py`
+- Result: Zero data loss, graceful degradation
+
+### Implementation Details
+
+**Code**:
+- `backend/integrations/qbittorrent_resilient.py` - VPN health checks + failover logic
+- `execute_full_workflow.py` Phase 5 - Integrated seamlessly
+
+**Automation**:
+- `setup_secondary_qbittorrent.ps1` - Automated deployment (5 min)
+- `test_failover.py` - Comprehensive test suite (5 scenarios)
+- `monitor_qbittorrent_health.py` - Daily health monitoring
+- `process_qbittorrent_queue.py` - Queue recovery utility
+
+**Configuration**:
+- `qbittorrent_secondary_config.ini` - Secondary instance config template
+- QBITTORRENT_SECONDARY_URL environment variable
+
+### Benefits
+
+- ✅ **Zero Downtime**: Downloads continue during VPN outages
+- ✅ **Automatic Failover**: No manual intervention required
+- ✅ **Zero Data Loss**: Queue file backup preserves all magnets
+- ✅ **Transparent Operation**: Workflow unaware of failover
+- ✅ **Intelligent Recovery**: Auto-processes queue when services restore
+
+### Documentation
+
+See new guides:
+- `VPN_RESILIENT_DEPLOYMENT_GUIDE.md` - Master deployment guide
+- `SECONDARY_QBITTORRENT_SETUP.md` - Manual setup alternative
+- `START_HERE.md` - Quick deployment paths (5/30/45 min)
+- `PRODUCTION_DEPLOYMENT_CHECKLIST.md` - Step-by-step verification
+
+---
+
+## 0. SYSTEM ARCHITECTURE & REQUIREMENTS
+
+### Core Architecture Components
+
+**🐳 Containerization & Orchestration**
+- Docker Compose with multi-service architecture
+- VPN SOCKS proxy (host network for VPN access)
+- MAM downloader container (isolated execution)
+- Volume persistence for state and logs
+
+**🚀 Backend Framework**
+- FastAPI asynchronous web framework
+- RESTful API endpoints for all operations
+- Background task processing
+- Comprehensive API documentation
+
+**🔧 Core Technologies**
+- Python 3.8+ with async/await patterns
+- Comprehensive exception handling framework (MAMException hierarchy)
+- Metadata enrichment pipeline (absToolbox)
+- Stealth web crawling with Crawl4AI
+- VPN-resilient qBittorrent client with automatic failover
+
+**📊 Data Management**
+- PostgreSQL database with Alembic migrations
+- Pydantic configuration management
+- JSON state persistence
+- Comprehensive logging and audit trails
+
+### System Requirements
+
+**🔐 Security & Environment**
+- Virtual environment (venv) mandatory
+- Environment variable configuration (.env)
+- API key management (Anthropic, Google Books, etc.)
+- VPN connectivity for MAM access
+
+**🌐 Network Services**
+- Audiobookshelf server (local/remote)
+- qBittorrent instances (primary + secondary)
+- Prowlarr indexer management
+- Google Books API integration
+
+**💾 Storage Requirements**
+- Download directory (configurable path)
+- Database storage (PostgreSQL)
+- Log file persistence
+- Backup storage with rotation
+
+### Error Handling Framework
+
+**Exception Hierarchy**
+```
+MAMException (Base)
+├── SecurityException
+├── ConfigurationException
+├── NetworkException
+├── AuthenticationException
+├── AudioProcessingException
+├── CrawlingException
+├── ValidationException
+└── MAM-specific exceptions
+```
+
+**Error Recovery Patterns**
+- Retry with exponential backoff
+- Circuit breaker for failing services
+- Graceful degradation
+- Comprehensive logging with context
 
 ---
 
@@ -12,108 +146,129 @@
 START
   ↓
 ┌─────────────────────────────────────┐
+│ PHASE 0: SYSTEM HEALTH CHECK        │
+│ - Verify VPN connection             │
+│ - Check qBittorrent instances        │
+│ - Validate API endpoints            │
+│ - Confirm virtual environment       │
+└─────────────────────────────────────┘
+  ↓
+   System healthy? ──NO──→ EXIT (FAIL: System not ready)
+   ↓ YES
+┌─────────────────────────────────────┐
 │ PHASE 1: LIBRARY SCAN               │
 │ - Get library data from ABS         │
-│ - Count existing books              │
-│ - Identify gaps                     │
+│ - Count existing books (dedup)      │
+│ - Identify gaps & duplicates        │
 └─────────────────────────────────────┘
   ↓
-  Library found? ──NO──→ EXIT (FAIL: No library access)
-  ↓ YES
+   Library accessible? ──NO──→ EXIT (FAIL: ABS unavailable)
+   ↓ YES
 ┌─────────────────────────────────────┐
 │ PHASE 2: SCIENCE FICTION SEARCH     │
-│ - Query Google Books API            │
-│ - Get 10 sci-fi audiobooks          │
+│ - Query Prowlarr indexer network    │
+│ - Get top 10 sci-fi audiobooks      │
+│ - Filter by seeders/ratio           │
 └─────────────────────────────────────┘
   ↓
-  Books found? ──NO──→ Continue (search failed)
-  ↓ YES
+   Books found? ──NO──→ Continue (search failed)
+   ↓ YES
 ┌─────────────────────────────────────┐
 │ PHASE 3: FANTASY SEARCH             │
-│ - Query Google Books API            │
-│ - Get 10 fantasy audiobooks         │
+│ - Query Prowlarr indexer network    │
+│ - Get top 10 fantasy audiobooks     │
+│ - Filter by seeders/ratio           │
 └─────────────────────────────────────┘
   ↓
-  Books found? ──NO──→ Continue (search failed)
-  ↓ YES
+   Books found? ──NO──→ Continue (search failed)
+   ↓ YES
 ┌─────────────────────────────────────┐
 │ PHASE 4: QUEUE FOR DOWNLOAD         │
 │ - Combine sci-fi + fantasy lists    │
-│ - Query MAM for torrents            │
-│ - Get magnet links                  │
+│ - Query MAM stealth crawler         │
+│ - Extract magnet links & metadata   │
 └─────────────────────────────────────┘
   ↓
-  Magnets found? ──NO──→ EXIT (FAIL: No torrents available)
-  ↓ YES
+   Magnets found? ──NO──→ EXIT (FAIL: No torrents available)
+   ↓ YES
 ┌─────────────────────────────────────┐
-│ PHASE 5: QBITTORRENT DOWNLOAD       │
-│ - Add magnets to qBittorrent        │
-│ - Queue downloads (max 10)          │
+│ PHASE 5: VPN-RESILIENT DOWNLOAD     │
+│ - Primary: VPN qBittorrent          │
+│ - Fallback: Local qBittorrent       │
+│ - Emergency: Queue file storage     │
+│ - Auto-recovery on service restore  │
 └─────────────────────────────────────┘
   ↓
-  Torrents added? ──NO──→ Continue (qBit unavailable)
-  ↓ YES
+   Downloads queued? ──NO──→ Continue (all services down)
+   ↓ YES
 ┌─────────────────────────────────────┐
 │ PHASE 6: MONITOR DOWNLOADS          │
-│ - Wait for completion               │
-│ - Check status periodically         │
-│ - Timeout: 24 hours max             │
+│ - Check every 5 min (24h max)       │
+│ - Handle VPN disconnects            │
+│ - Auto-failover between instances   │
+│ - Progress tracking & alerts        │
 └─────────────────────────────────────┘
   ↓
-  Downloads complete? ──NO──→ Continue (timeout)
-  ↓ YES
+   Downloads complete? ──NO──→ Continue (timeout/partial)
+   ↓ YES
 ┌─────────────────────────────────────┐
 │ PHASE 7: SYNC TO AUDIOBOOKSHELF     │
 │ - Trigger library scan              │
-│ - Import new files                  │
+│ - Import new files (auto-detect)    │
 │ - Create book records               │
+│ - Handle duplicates intelligently   │
 └─────────────────────────────────────┘
   ↓
-  Sync complete? ──NO──→ Continue (API timeout)
-  ↓ YES
+   Sync successful? ──NO──→ Continue (API issues)
+   ↓ YES
 ┌─────────────────────────────────────┐
 │ PHASE 7+: WRITE ID3 METADATA        │
-│ (Enhancement 2A)                    │
-│ - Extract metadata from folders     │
-│ - Write ID3 tags to MP3 files       │
-│ - Support multiple formats          │
+│ - Extract metadata from paths       │
+│ - Write ID3/MP4 tags to files       │
+│ - Support MP3/M4A/M4B/FLAC          │
+│ - Handle narrator extraction        │
 └─────────────────────────────────────┘
   ↓
-  Tags written? ──NO──→ Continue (no audio files found)
-  ↓ YES
+   Tags written? ──NO──→ Continue (no audio files)
+   ↓ YES
 ┌─────────────────────────────────────┐
 │ PHASE 8: SYNC METADATA              │
-│ - Fetch metadata from ABS API       │
+│ - Fetch from ABS API                │
 │ - Update book records               │
-│ - Refresh cache                     │
+│ - Refresh metadata cache            │
+│ - Handle partial failures           │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
 │ PHASE 8B: QUALITY VALIDATION        │
-│ - Check author coverage             │
-│ - Check narrator coverage           │
+│ - Check author/narrator coverage    │
+│ - Validate metadata completeness    │
 │ - Generate baseline metrics         │
+│ - Detect format issues              │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
 │ PHASE 8C: STANDARDIZATION           │
-│ - Format titles                     │
-│ - Clean author names                │
-│ - Normalize genres                  │
+│ - Format titles consistently        │
+│ - Clean author names (Last,First)   │
+│ - Normalize narrator formats        │
+│ - Standardize series naming         │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
 │ PHASE 8D: NARRATOR DETECTION        │
 │ - Pattern match existing metadata   │
-│ - Extract from folder names         │
-│ - Parse from book titles            │
+│ - Extract from folder structures    │
+│ - Parse from book titles/descriptions│
+│ - Cross-reference with known data   │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
 │ PHASE 8E: NARRATOR POPULATION       │
 │ - Query Google Books API            │
-│ - 6-pattern matching for narrators  │
+│ - 6-pattern matching algorithm      │
 │ - Update missing narrators          │
+│ - Rate limiting & error handling    │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
@@ -121,160 +276,225 @@ START
 │ - Post-population metrics           │
 │ - Compare with baseline             │
 │ - Generate improvement report       │
+│ - Track metadata quality trends     │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
 │ PHASE 9: BUILD AUTHOR HISTORY       │
-│ - Aggregate author books            │
+│ - Aggregate books by author         │
 │ - Count per-author totals           │
-│ - Identify top authors              │
+│ - Identify top authors by volume    │
+│ - Analyze series completeness       │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
 │ PHASE 10: CREATE MISSING QUEUE      │
-│ - Analyze author complete series    │
-│ - Find missing books                │
+│ - Analyze complete series patterns  │
+│ - Find missing books in series      │
 │ - Rank by author popularity         │
+│ - Prioritize high-value gaps        │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
 │ PHASE 11: GENERATE FINAL REPORT     │
-│ (Enhancement 2C)                    │
-│ - Library statistics                │
-│ - Estimated value                   │
+│ - Library statistics & value        │
 │ - Top authors analysis              │
 │ - Per-user progress metrics         │
 │ - Missing books queue               │
+│ - Workflow performance metrics      │
 └─────────────────────────────────────┘
   ↓
 ┌─────────────────────────────────────┐
 │ PHASE 12: AUTOMATED BACKUP          │
-│ (Enhancement 2B)                    │
-│ - Trigger backup API                │
-│ - Validate backup success           │
-│ - Rotate old backups                │
+│ - Trigger ABS backup API            │
+│ - Validate backup integrity         │
+│ - Rotate old backups (7 daily/4 wk)│
+│ - Handle backup failures gracefully │
 └─────────────────────────────────────┘
   ↓
-SUCCESS: Workflow Complete
-  ↓
-END
+ SUCCESS: Complete workflow finished
+   ↓
+ END
 ```
 
 ---
 
 ## 2. DETAILED SCENARIO FLOWCHARTS
 
-### SCENARIO 1: Successful Full Workflow Execution
+### SCENARIO 0: System Health Check Failure (Pre-Workflow)
 
 ```
 START
   ↓
-PHASE 1: LIBRARY SCAN
-  ├─ Connect to ABS API ────→ SUCCESS
-  ├─ Fetch library data ─────→ Books: 500
-  ├─ Identify current state ─→ Gaps found
-  └─ Return library stats ───→ Continue
+ PHASE 0: SYSTEM HEALTH CHECK
+   ├─ Check virtual environment ─→ venv/ NOT FOUND
+   │                           (Python virtual environment missing)
+   ├─ Check VPN connection ────→ DISCONNECTED
+   ├─ Check qBittorrent primary ─→ UNREACHABLE
+   ├─ Check qBittorrent secondary → NOT CONFIGURED
+   ├─ Validate API keys ───────→ ANTHROPIC_API_KEY missing
+   ├─ Check ABS connectivity ──→ TIMEOUT
+   └─ Overall status ──────────→ SYSTEM NOT READY
+   ↓
+ DECISION: Continue workflow?
+   ├─ NO ─→ EXIT (CRITICAL: System requirements not met)
+   │        "System health check failed - fix issues before running workflow"
+   │
+   └─ YES ─→ Continue with warnings (not recommended)
+             Limited functionality, high failure risk
+   ↓
+ IF CONTINUE (WARNING MODE):
+   ├─ Skip VPN-dependent phases
+   ├─ Use local qBittorrent only
+   ├─ Limited metadata operations
+   └─ Report will show warnings
+   ↓
+ USER ACTION REQUIRED:
+   1. Create virtual environment: python -m venv venv
+   2. Activate venv: venv\Scripts\activate (Windows)
+   3. Install dependencies: pip install -r requirements.txt
+   4. Configure .env with required API keys
+   5. Start VPN connection
+   6. Start qBittorrent instances
+   7. Re-run workflow
+   ↓
+ END (SYSTEM NOT READY)
+```
+
+### SCENARIO 1: Successful Full Workflow Execution (VPN-Resilient)
+
+```
+START
   ↓
-PHASE 2: SCI-FI SEARCH
-  ├─ Query Google Books ─────→ Results: 15
-  ├─ Filter audiobooks ──────→ Valid: 10
-  └─ Build list ─────────────→ Continue
-  ↓
-PHASE 3: FANTASY SEARCH
-  ├─ Query Google Books ─────→ Results: 12
-  ├─ Filter audiobooks ──────→ Valid: 10
-  └─ Build list ─────────────→ Continue
-  ↓
-PHASE 4: QUEUE FOR DOWNLOAD
-  ├─ Combine lists ──────────→ Total: 20 books
-  ├─ Search MAM for each ────→ Found: 18 torrents
-  └─ Extract magnets ────────→ Ready: 18
-  ↓
-PHASE 5: QBITTORRENT DOWNLOAD
-  ├─ Connect to qBit ────────→ SUCCESS
-  ├─ Add magnets (max 10) ───→ Added: 10
-  ├─ Check status ───────────→ Queued
-  └─ Start download ─────────→ 0% → Download
-  ↓
-PHASE 6: MONITOR DOWNLOADS
-  ├─ Check every 5 min ──────→ Progress: 10%
-  ├─ Update status ──────────→ Progress: 50%
-  ├─ Wait for completion ────→ Progress: 100%
-  └─ Verify files ───────────→ All complete
-  ↓
-PHASE 7: SYNC TO AUDIOBOOKSHELF
-  ├─ Trigger library scan ───→ Scanning...
-  ├─ Import 10 new files ────→ Success
-  ├─ Create book records ────→ 10 created
-  └─ Get book objects ───────→ Continue
-  ↓
-PHASE 7+: WRITE ID3 METADATA
-  ├─ Locate audio files ─────→ Found: 10
-  ├─ Read folder structure ──→ Extracting...
-  ├─ Parse narrators ────────→ Found: 8
-  └─ Write ID3 tags ─────────→ Written: 10
-  ↓
-PHASE 8: SYNC METADATA
-  ├─ Fetch from ABS API ─────→ 10 books
-  ├─ Update records ─────────→ Complete
-  └─ Refresh cache ──────────→ Done
-  ↓
-PHASE 8B: QUALITY VALIDATION
-  ├─ Check authors ──────────→ 100% coverage
-  ├─ Check narrators ────────→ 80% coverage
-  └─ Generate metrics ───────→ Report created
-  ↓
-PHASE 8C: STANDARDIZATION
-  ├─ Format titles ──────────→ Complete
-  ├─ Clean authors ──────────→ Complete
-  └─ Normalize genres ───────→ Complete
-  ↓
-PHASE 8D: NARRATOR DETECTION
-  ├─ Pattern match ──────────→ Found: 2 narrators
-  ├─ Folder parsing ─────────→ Found: 6 narrators
-  └─ Total detected ─────────→ 8 narrators
-  ↓
-PHASE 8E: NARRATOR POPULATION
-  ├─ Query Google Books ─────→ 2 missing narrators
-  ├─ API calls (6 patterns) ─→ Found: 2
-  └─ Update records ─────────→ 100% populated
-  ↓
-PHASE 8F: QUALITY RECHECK
-  ├─ Post-population check ──→ 100% author coverage
-  ├─ Compare baseline ───────→ +20% narrator coverage
-  └─ Generate report ────────→ Improvement: +2 narrators
-  ↓
-PHASE 9: BUILD AUTHOR HISTORY
-  ├─ Aggregate books ────────→ 500 authors
-  ├─ Count per author ───────→ 1-15 books/author
-  └─ Identify top 5 ─────────→ Top authors found
-  ↓
-PHASE 10: CREATE MISSING QUEUE
-  ├─ Find complete series ───→ 50 series complete
-  ├─ Identify missing books ─→ 25 missing books
-  └─ Rank by popularity ─────→ Queue created
-  ↓
-PHASE 11: GENERATE FINAL REPORT
-  ├─ Library stats ──────────→ 510 books, 500 authors
-  ├─ Estimated value ────────→ $14,025
-  ├─ Top authors analysis ───→ 5 authors listed
-  ├─ User progress (2C) ─────→ 2 users with metrics
-  ├─ Missing books queue ────→ 25 candidates
-  └─ Save report ────────────→ JSON file created
-  ↓
-PHASE 12: AUTOMATED BACKUP
-  ├─ Trigger backup ─────────→ API called
-  ├─ Wait for completion ────→ Backup created
-  ├─ Validate backup ────────→ Size: 500MB ✓
-  ├─ Rotation check ─────────→ Keep: 11, Delete: 0
-  └─ Complete ───────────────→ Backup verified
-  ↓
-SUCCESS: All phases complete
-  ↓
-Report: workflow_final_report.json
-Backup: backup_2025-11-27_220000.tar.gz
-  ↓
-END
+ PHASE 0: SYSTEM HEALTH CHECK
+   ├─ Virtual environment ────→ ✓ venv/ detected
+   ├─ VPN connection ─────────→ ✓ CONNECTED
+   ├─ qBittorrent primary ────→ ✓ AVAILABLE (192.168.0.48:52095)
+   ├─ qBittorrent secondary ──→ ✓ AVAILABLE (localhost:52095)
+   ├─ API keys validation ────→ ✓ All present
+   ├─ ABS connectivity ───────→ ✓ RESPONDING
+   └─ Overall status ─────────→ ✓ SYSTEM READY
+   ↓
+ PHASE 1: LIBRARY SCAN
+   ├─ Connect to ABS API ────→ SUCCESS
+   ├─ Fetch library data ─────→ Books: 500 (deduplicated)
+   ├─ Identify current state ─→ Gaps found
+   └─ Return library stats ───→ Continue
+   ↓
+ PHASE 2: SCI-FI SEARCH
+   ├─ Query Prowlarr network ─→ Results: 25
+   ├─ Filter audiobooks ──────→ Valid: 15
+   ├─ Sort by seeders ────────→ Top 10 selected
+   └─ Build list ─────────────→ Continue
+   ↓
+ PHASE 3: FANTASY SEARCH
+   ├─ Query Prowlarr network ─→ Results: 20
+   ├─ Filter audiobooks ──────→ Valid: 12
+   ├─ Sort by seeders ────────→ Top 10 selected
+   └─ Build list ─────────────→ Continue
+   ↓
+ PHASE 4: QUEUE FOR DOWNLOAD
+   ├─ Combine lists ──────────→ Total: 20 books
+   ├─ Search MAM stealth ─────→ Found: 18 torrents
+   ├─ Extract magnets ────────→ Ready: 18
+   └─ Validate magnet links ──→ All valid
+   ↓
+ PHASE 5: VPN-RESILIENT DOWNLOAD
+   ├─ Health check ───────────→ VPN: ✓, Primary: ✓, Secondary: ✓
+   ├─ Add to primary qBit ────→ SUCCESS (10 magnets)
+   ├─ Check status ───────────→ Queued & downloading
+   └─ Start download ─────────→ 0% → Active
+   ↓
+ PHASE 6: MONITOR DOWNLOADS
+   ├─ Check every 5 min ──────→ Progress: 15%
+   ├─ VPN status ─────────────→ Still connected
+   ├─ Update status ──────────→ Progress: 75%
+   ├─ Wait for completion ────→ Progress: 100%
+   └─ Verify files ───────────→ All complete (10 files)
+   ↓
+ PHASE 7: SYNC TO AUDIOBOOKSHELF
+   ├─ Trigger library scan ───→ Scanning...
+   ├─ Import 10 new files ────→ Success
+   ├─ Create book records ────→ 10 created
+   ├─ Handle duplicates ──────→ None found
+   └─ Get book objects ───────→ Continue
+   ↓
+ PHASE 7+: WRITE ID3 METADATA
+   ├─ Locate audio files ─────→ Found: 10 (MP3/M4A/M4B)
+   ├─ Read folder structure ──→ Extracting metadata...
+   ├─ Parse narrators ────────→ Found: 7 from paths
+   └─ Write ID3/MP4 tags ─────→ Written: 10 files
+   ↓
+ PHASE 8: SYNC METADATA
+   ├─ Fetch from ABS API ─────→ 10 books retrieved
+   ├─ Update records ─────────→ Complete
+   └─ Refresh cache ──────────→ Done
+   ↓
+ PHASE 8B: QUALITY VALIDATION
+   ├─ Check authors ──────────→ 100% coverage
+   ├─ Check narrators ────────→ 70% coverage
+   ├─ Validate completeness ──→ All required fields present
+   └─ Generate metrics ───────→ Baseline created
+   ↓
+ PHASE 8C: STANDARDIZATION
+   ├─ Format titles ──────────→ Standardized
+   ├─ Clean authors ──────────→ "Last, First" format
+   ├─ Normalize series ───────→ Consistent naming
+   └─ Update records ─────────→ Complete
+   ↓
+ PHASE 8D: NARRATOR DETECTION
+   ├─ Pattern match metadata ─→ Found: 1 narrator
+   ├─ Folder parsing ─────────→ Found: 7 narrators
+   ├─ Title parsing ──────────→ Found: 2 narrators
+   └─ Total detected ─────────→ 8 narrators (80%)
+   ↓
+ PHASE 8E: NARRATOR POPULATION
+   ├─ Query Google Books ─────→ 2 missing narrators
+   ├─ Pattern 1-6 matching ──→ Found: 2 narrators
+   ├─ Rate limit handling ────→ No issues
+   └─ Update records ─────────→ 100% populated
+   ↓
+ PHASE 8F: QUALITY RECHECK
+   ├─ Post-population check ──→ 100% author coverage
+   ├─ Narrator coverage ──────→ 100% (+30% improvement)
+   ├─ Compare baseline ───────→ Significant improvement
+   └─ Generate report ────────→ Quality metrics updated
+   ↓
+ PHASE 9: BUILD AUTHOR HISTORY
+   ├─ Aggregate by author ────→ 500 authors processed
+   ├─ Count per author ───────→ 1-15 books/author
+   ├─ Series analysis ────────→ 45 complete series
+   └─ Identify top 5 ─────────→ Top authors ranked
+   ↓
+ PHASE 10: CREATE MISSING QUEUE
+   ├─ Analyze series patterns ─→ 45 series analyzed
+   ├─ Find missing books ─────→ 28 gaps identified
+   ├─ Rank by popularity ─────→ Priority queue created
+   └─ Save to file ───────────→ missing_books_queue.json
+   ↓
+ PHASE 11: GENERATE FINAL REPORT
+   ├─ Library stats ──────────→ 510 books, 500 authors
+   ├─ Estimated value ────────→ $14,025
+   ├─ Top authors analysis ───→ 5 authors with metrics
+   ├─ User progress metrics ──→ 2 users tracked
+   ├─ Missing books queue ────→ 28 candidates prioritized
+   ├─ Workflow performance ───→ 2.5 hours total time
+   └─ Save report ────────────→ workflow_final_report.json
+   ↓
+ PHASE 12: AUTOMATED BACKUP
+   ├─ Trigger ABS backup ─────→ API called
+   ├─ Wait for completion ────→ Backup created (500MB)
+   ├─ Validate integrity ─────→ Size check passed
+   ├─ Rotation policy ────────→ Keep: 11, Delete: 0
+   └─ Complete ───────────────→ Backup verified
+   ↓
+ SUCCESS: Complete workflow finished
+   ↓
+ Report: workflow_final_report.json
+ Backup: backup_2025-11-29_012400.tar.gz
+ Queue: missing_books_queue.json
+   ↓
+ END
 ```
 
 ---
@@ -396,46 +616,92 @@ END (FAILURE - No new content)
 
 ---
 
-### SCENARIO 5: qBittorrent Unavailable (Phase 5 Failure)
+### SCENARIO 5: VPN-Resilient Download with Failover (Phase 5 Success)
 
 ```
 START
   ↓
-PHASE 1-4: SCAN, SEARCH, QUEUE ──→ SUCCESS
-  │ Magnets ready: 10
+ PHASE 1-4: SCAN, SEARCH, QUEUE ──→ SUCCESS
+   │ Magnets ready: 10
+   ↓
+ PHASE 5: VPN-RESILIENT DOWNLOAD
+   ├─ Health check ───────────→ VPN: ✓, Primary: ✓, Secondary: ✓
+   ├─ Add to primary qBit ────→ SUCCESS (10 magnets added)
+   ├─ Start downloading ──────→ Progress: 5%
+   ├─ VPN disconnects ────────→ DETECTED (after 30 min)
+   │                           (VPN drops, primary becomes unreachable)
+   ├─ Auto-failover ──────────→ Switching to secondary qBit
+   ├─ Resume downloads ───────→ Secondary takes over seamlessly
+   ├─ Continue monitoring ────→ Progress: 40%
+   ├─ VPN reconnects ─────────→ DETECTED (after 15 min)
+   ├─ Primary recovers ───────→ Downloads continue on primary
+   └─ Complete successfully ──→ Progress: 100%
+   ↓
+ RESULT: Zero downtime, automatic recovery
+   - VPN disconnect handled transparently
+   - Downloads completed without interruption
+   - User unaware of failover event
+   ↓
+ LOG OUTPUT:
+   - "VPN disconnect detected - switching to secondary"
+   - "Secondary qBittorrent active"
+   - "VPN reconnected - primary resumed"
+   - "All downloads completed successfully"
+   ↓
+ END (SUCCESS - Resilient)
+```
+
+### SCENARIO 6: Complete VPN Failure with Queue Fallback (Phase 5 Failure)
+
+```
+START
   ↓
-PHASE 5: QBITTORRENT DOWNLOAD
-  ├─ Connect to qBit ────────→ CONNECTION REFUSED
-  │                           (qBit not running or port wrong)
-  ├─ Retry connection ───────→ Still failing
-  └─ Log error ──────────────→ "Cannot connect to qBittorrent"
-  ↓
-DECISION: Continue workflow?
-  ├─ NO ─→ EXIT immediately
-  │        Cannot proceed without downloads
-  │
-  └─ YES ─→ Continue (but skip download phases)
-  ↓
-IF CONTINUE:
-  ├─ Document magnet links ──→ Log to file
-  ├─ Skip Phase 5 ───────────→ No downloads added
-  ├─ Skip Phase 6 ───────────→ No downloads to monitor
-  ├─ Skip Phase 7 ───────────→ No new files to sync
-  ├─ Phase 8+ still run ─────→ Metadata operations proceed
-  │
-  └─ Result: Workflow continues with metadata only
-  ↓
-REPORT OUTPUT:
-  - Books targeted: 10
-  - Torrents added: 0
-  - Note: "qBittorrent unavailable - magnets documented for manual addition"
-  - Magnet file: magnets_2025-11-27.txt
-  ↓
-RECOMMENDATION:
-  - User should manually add magnets to qBit
-  - Re-run Phase 5-7 after qBit is running
-  ↓
-END (PARTIAL - qBit Error)
+ PHASE 1-4: SCAN, SEARCH, QUEUE ──→ SUCCESS
+   │ Magnets ready: 10
+   ↓
+ PHASE 5: VPN-RESILIENT DOWNLOAD
+   ├─ Health check ───────────→ VPN: ✗ DOWN, Primary: ✗ UNREACHABLE
+   ├─ Check secondary ────────→ Secondary: ✗ NOT RUNNING
+   │                           (Both qBittorrent instances unavailable)
+   ├─ Emergency fallback ─────→ Queue magnets to file
+   ├─ Save to qbittorrent_queue.json
+   └─ Log comprehensive status
+   ↓
+ DECISION: Continue workflow?
+   ├─ NO ─→ EXIT
+   │        "All download services unavailable"
+   │
+   └─ YES ─→ Continue with metadata operations only
+   ↓
+ IF CONTINUE:
+   ├─ Skip Phase 6 ───────────→ No downloads to monitor
+   ├─ Skip Phase 7 ───────────→ No new files to sync
+   ├─ Phase 7+ ID3 tags ──────→ Skip (no new files)
+   ├─ Phase 8+ metadata ──────→ Run on existing library
+   │
+   └─ Result: Metadata maintenance only
+   ↓
+ REPORT OUTPUT:
+   - Books targeted: 10
+   - Torrents added: 0
+   - Status: "All qBittorrent instances unavailable"
+   - Queue file: qbittorrent_queue.json (10 magnets saved)
+   - Recommendation: "Start qBittorrent and run process_qbittorrent_queue.py"
+   ↓
+ QUEUE FILE CONTENTS:
+   {
+     "saved_at": "2025-11-29T01:24:00Z",
+     "reason": "All qBittorrent instances unavailable",
+     "magnets": ["magnet:?xt=...", ...],
+     "instructions": "Run process_qbittorrent_queue.py when services available"
+   }
+   ↓
+ RECOVERY OPTIONS:
+   1. Start secondary qBittorrent: C:\qbittorrent_secondary\start_secondary.bat
+   2. Run queue processor: python process_qbittorrent_queue.py
+   3. Re-run workflow from Phase 5
+   ↓
+ END (FAILURE - Queued for later)
 ```
 
 ---
@@ -756,49 +1022,149 @@ END (PARTIAL - No backup)
 ```
 START
   ↓
-PHASE 1-11: All successful
+ PHASE 1-11: All successful
+   ↓
+ PHASE 12: AUTOMATED BACKUP
+   ├─ Trigger backup API ─────→ SUCCESS
+   ├─ Backup file created ────→ backup_2025-11-29.tar.gz
+   ├─ Check file size ────────→ 512 KB (TOO SMALL!)
+   │                           Threshold: 1 MB
+   │
+   ├─ Decision:
+   │ ├─ Size < 1 MB = Failed validation
+   │ └─ Log error: "Backup too small - possible incomplete backup"
+   │
+   └─ Status: BACKUP FAILED
+   ↓
+ DECISION:
+   ├─ NO ─→ EXIT with error
+   │        "Backup validation failed"
+   │
+   └─ YES ─→ Continue (accept risk)
+             Log warning, complete workflow
+   ↓
+ IF CONTINUE:
+   ├─ Skip rotation ──────────→ Don't process invalid backup
+   ├─ Keep problematic backup ─→ For manual review
+   │
+   └─ Report:
+      └─ Note: "Backup validation failed - 512 KB (min: 1 MB)"
+         "Backup may be incomplete"
+   ↓
+ RESULT: Workflow completes, backup questionable
+   - Workflow finished
+   - Backup file exists but may be invalid
+   - Rotation skipped (don't trust backup)
+   - NO VALID BACKUP PROTECTION
+   ↓
+ USER ACTION REQUIRED:
+   - Investigate why backup is so small
+   - Check AudiobookShelf logs
+   - Verify database size vs backup size
+   - Perform manual backup if needed
+   - Troubleshoot backup process
+   ↓
+ END (FAILURE - Invalid backup)
+```
+
+### SCENARIO 13: Google Books API Rate Limiting (Phase 8E Failure)
+
+```
+START
   ↓
-PHASE 12: AUTOMATED BACKUP
-  ├─ Trigger backup API ─────→ SUCCESS
-  ├─ Backup file created ────→ backup_2025-11-27.tar.gz
-  ├─ Check file size ────────→ 512 KB (TOO SMALL!)
-  │                           Threshold: 1 MB
-  │
-  ├─ Decision:
-  │ ├─ Size < 1 MB = Failed validation
-  │ └─ Log error: "Backup too small - possible incomplete backup"
-  │
-  └─ Status: BACKUP FAILED
+ PHASE 1-8D: All successful
+   │ Missing narrators: 8/10
+   ↓
+ PHASE 8E: NARRATOR POPULATION
+   ├─ Query Google Books ─────→ Rate limit exceeded
+   │                           (Too many requests per minute)
+   ├─ Retry with backoff ─────→ Still rate limited
+   ├─ Pattern 1: Title match ─→ BLOCKED
+   ├─ Pattern 2: Author+Book ─→ BLOCKED
+   ├─ All patterns blocked ───→ 0/8 narrators found
+   │
+   ├─ Decision:
+   │ ├─ Wait and retry? ─────→ YES (respectful backoff)
+   │ ├─ Skip entirely? ──────→ NO (try to complete)
+   │ └─ Continue with partial ─→ YES
+   │
+   └─ Result: 0 additional narrators found
+   ↓
+ PHASE 8F: QUALITY RECHECK
+   ├─ Baseline: 2/10 narrators (20%)
+   ├─ Post-population: 2/10 (20%)
+   ├─ Improvement: 0% ────────→ No progress
+   ├─ Report: "Google Books API rate limited - narrator population skipped"
+   └─ Continue to Phase 9-12
+   ↓
+ RESULT: Workflow completes with low narrator coverage
+   - API rate limiting prevented narrator population
+   - Existing metadata preserved
+   - Manual narrator entry recommended
+   ↓
+ USER ACTION RECOMMENDED:
+   - Wait 24 hours for API quota reset
+   - Re-run Phase 8E individually later
+   - Manually add narrators in ABS UI
+   - Consider upgrading Google Books API quota
+   ↓
+ END (SUCCESS - API Limited)
+```
+
+### SCENARIO 14: Metadata Sync Corruption (Phase 8 Failure)
+
+```
+START
   ↓
-DECISION:
-  ├─ NO ─→ EXIT with error
-  │        "Backup validation failed"
-  │
-  └─ YES ─→ Continue (accept risk)
-            Log warning, complete workflow
-  ↓
-IF CONTINUE:
-  ├─ Skip rotation ──────────→ Don't process invalid backup
-  ├─ Keep problematic backup ─→ For manual review
-  │
-  └─ Report:
-     └─ Note: "Backup validation failed - 512 KB (min: 1 MB)"
-        "Backup may be incomplete"
-  ↓
-RESULT: Workflow completes, backup questionable
-  - Workflow finished
-  - Backup file exists but may be invalid
-  - Rotation skipped (don't trust backup)
-  - NO VALID BACKUP PROTECTION
-  ↓
-USER ACTION REQUIRED:
-  - Investigate why backup is so small
-  - Check AudiobookShelf logs
-  - Verify database size vs backup size
-  - Perform manual backup if needed
-  - Troubleshoot backup process
-  ↓
-END (FAILURE - Invalid backup)
+ PHASE 1-7: All successful
+   │ Books synced: 10
+   ↓
+ PHASE 8: SYNC METADATA
+   ├─ Fetch from ABS API ─────→ CORRUPTED RESPONSE
+   │                           (Invalid JSON or truncated data)
+   ├─ Retry request ──────────→ Same corruption
+   ├─ Parse error ────────────→ JSON decode failure
+   │
+   ├─ Decision:
+   │ ├─ Abort sync? ──────────→ NO (try partial recovery)
+   │ ├─ Use cached data? ─────→ YES (if available)
+   │ └─ Skip problematic books → YES
+   │
+   └─ Result: Partial sync (6/10 books updated)
+   ↓
+ PHASE 8B: QUALITY VALIDATION
+   ├─ Check 6 complete books ─→ 100% coverage
+   ├─ Check 4 incomplete ─────→ Data unavailable
+   ├─ Generate partial metrics
+   └─ Report corruption issue
+   ↓
+ PHASE 8C-8D: STANDARDIZATION & DETECTION
+   ├─ Process available data ──→ 6 books standardized
+   ├─ Skip incomplete books ───→ Logged as errors
+   └─ Continue with available
+   ↓
+ PHASE 8E: NARRATOR POPULATION
+   ├─ Query for 6 books ──────→ 4 narrators found
+   ├─ Update available records ─→ Success
+   └─ Skip incomplete books ───→ Cannot process
+   ↓
+ PHASE 8F: QUALITY RECHECK
+   ├─ Partial improvement ─────→ +67% narrator coverage (on processed books)
+   ├─ Report: "Metadata sync partially corrupted - 4/10 books affected"
+   └─ Continue workflow
+   ↓
+ RESULT: Workflow completes with partial metadata
+   - 6 books fully processed
+   - 4 books have incomplete metadata
+   - Report includes corruption details
+   ↓
+ USER ACTION REQUIRED:
+   - Check ABS API logs for corruption source
+   - Verify network stability
+   - Re-run Phase 8 for affected books
+   - Consider manual metadata updates
+   ↓
+ END (PARTIAL SUCCESS - Corruption)
 ```
 
 ---
