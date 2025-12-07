@@ -21,6 +21,9 @@ from tenacity import (
     retry_if_exception_type,
 )
 
+from backend.integrations.qbittorrent_bandwidth_manager import QBittorrentBandwidthManager
+from backend.integrations.qbittorrent_rss_manager import QBittorrentRSSManager
+
 logger = logging.getLogger(__name__)
 
 
@@ -67,6 +70,10 @@ class QBittorrentClient:
         self.session: Optional[aiohttp.ClientSession] = None
         self._authenticated = False
         self._sid: Optional[str] = None  # Manual SID cookie handling
+
+        # Initialize managers for domain-specific operations
+        self.bandwidth = QBittorrentBandwidthManager(self)
+        self.rss = QBittorrentRSSManager(self)
 
         logger.info(f"Initialized QBittorrentClient for {self.base_url}")
 

@@ -497,22 +497,56 @@ class RatioEmergencyService:
 
     async def get_emergency_metrics(self) -> Dict[str, Any]:
         """
-        Get metrics about emergency status.
+        Get comprehensive metrics about emergency status.
+
+        Includes real-time bandwidth stats from qBittorrent and database metrics.
 
         Returns:
             Dict with:
                 - current_ratio: float
                 - emergency_active: bool
-                - upload_rate_mbps: float
-                - download_rate_mbps: float
+                - upload_rate_mbps: float (current)
+                - download_rate_mbps: float (current)
                 - active_uploads: int
+                - active_downloads: int
                 - frozen_downloads: int
                 - time_in_emergency_hours: float
                 - estimated_recovery_time_hours: float (or None)
+                - timestamp: datetime
         """
         try:
+            from backend.integrations.qbittorrent_client import QBittorrentClient
+
+            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            qb_user = os.getenv('QBITTORRENT_USER', 'admin')
+            qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
+
             with get_db_context() as db:
-                # Count frozen downloads
+                # Get real-time metrics from qBittorrent
+                upload_rate_mbps = 0.0
+                download_rate_mbps = 0.0
+                active_uploads = 0
+                active_downloads = 0
+
+                async with QBittorrentClient(qb_url, qb_user, qb_pass) as qb:
+                    # Get server state for bandwidth info
+                    server_state = await qb.get_server_state()
+                    upload_speed_bytes = server_state.get('up_info_speed', 0)
+                    download_speed_bytes = server_state.get('dl_info_speed', 0)
+
+                    # Convert to MB/s
+                    upload_rate_mbps = upload_speed_bytes / (1024 * 1024)
+                    download_rate_mbps = download_speed_bytes / (1024 * 1024)
+
+                    # Count active torrents by state
+                    uploading = await qb.get_all_torrents(filter_state="uploading")
+                    downloading = await qb.get_all_torrents(filter_state="downloading")
+                    seeding = await qb.get_all_torrents(filter_state="seeding")
+
+                    active_uploads = len(uploading) + len(seeding)
+                    active_downloads = len(downloading)
+
+                # Count frozen downloads from database
                 frozen_downloads = db.query(Download).filter(
                     Download.emergency_blocked == 1
                 ).count()
@@ -523,26 +557,30 @@ class RatioEmergencyService:
                     duration = datetime.utcnow() - self.emergency_triggered_at
                     time_in_emergency_hours = duration.total_seconds() / 3600.0
 
-                # Placeholder for qBittorrent stats
-                # TODO: Integrate with actual qBittorrent API
-                upload_rate_mbps = 0.0
-                download_rate_mbps = 0.0
-                active_uploads = 0
-
                 # Calculate recovery time estimate
                 estimated_recovery_time_hours = await self.calculate_recovery_time()
 
                 metrics = {
                     "current_ratio": self.last_ratio,
                     "emergency_active": self.emergency_active,
-                    "upload_rate_mbps": upload_rate_mbps,
-                    "download_rate_mbps": download_rate_mbps,
+                    "upload_rate_mbps": round(upload_rate_mbps, 2),
+                    "download_rate_mbps": round(download_rate_mbps, 2),
                     "active_uploads": active_uploads,
+                    "active_downloads": active_downloads,
                     "frozen_downloads": frozen_downloads,
-                    "time_in_emergency_hours": time_in_emergency_hours,
-                    "estimated_recovery_time_hours": estimated_recovery_time_hours,
+                    "time_in_emergency_hours": round(time_in_emergency_hours, 2),
+                    "estimated_recovery_time_hours": round(estimated_recovery_time_hours, 2) if estimated_recovery_time_hours else None,
                     "timestamp": datetime.utcnow()
                 }
+
+                logger.info(
+                    f"SECTION 2: Emergency metrics - Ratio: {self.last_ratio:.3f}, "
+                    f"Active: {self.emergency_active}, "
+                    f"Upload: {upload_rate_mbps:.2f} MB/s, "
+                    f"Download: {download_rate_mbps:.2f} MB/s, "
+                    f"Frozen: {frozen_downloads}, "
+                    f"Recovery: {estimated_recovery_time_hours:.1f}h" if estimated_recovery_time_hours else "None"
+                )
 
                 return metrics
 
@@ -551,17 +589,22 @@ class RatioEmergencyService:
             return {
                 "current_ratio": self.last_ratio,
                 "emergency_active": self.emergency_active,
-                "error": str(e)
+                "error": str(e),
+                "timestamp": datetime.utcnow()
             }
 
     async def calculate_recovery_time(self) -> Optional[float]:
         """
         Estimate hours until ratio recovers above 1.05.
 
-        Based on current:
-        - Upload rate
-        - Download rate
-        - Total data transferred
+        Uses actual qBittorrent upload/download rates to calculate recovery time:
+        - Gets current upload and download speeds from qBittorrent
+        - Calculates net ratio improvement per hour
+        - Estimates hours needed to reach recovery threshold
+
+        Formula:
+        - Net ratio improvement = (upload_rate - download_rate) / total_uploaded
+        - Hours to recovery = ratio_gap / (net improvement per hour)
 
         Returns:
             float: Estimated hours to recovery, or None if cannot calculate
@@ -570,26 +613,92 @@ class RatioEmergencyService:
             if not self.emergency_active:
                 return None
 
-            # Placeholder calculation
-            # TODO: Integrate with actual qBittorrent stats
+            from backend.integrations.qbittorrent_client import QBittorrentClient
 
-            # Simple model: assume upload rate continues
-            # Need to reach ratio of 1.05 from current ratio
+            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            qb_user = os.getenv('QBITTORRENT_USER', 'admin')
+            qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
+
             ratio_gap = self.RATIO_RECOVERY - self.last_ratio
 
             if ratio_gap <= 0:
                 return 0.0  # Already recovered
 
-            # Estimate based on typical upload rate (placeholder)
-            # Assume 1 MB/s upload = 0.01 ratio improvement per hour
-            estimated_hours = ratio_gap * 100  # Very rough estimate
+            logger.info(f"SECTION 2: Calculating recovery time (ratio gap: {ratio_gap:.3f})")
 
-            logger.info(
-                f"SECTION 2: Recovery time estimate: {estimated_hours:.1f} hours "
-                f"(ratio gap: {ratio_gap:.3f})"
-            )
+            async with QBittorrentClient(qb_url, qb_user, qb_pass) as qb:
+                # Get server state with current speeds
+                server_state = await qb.get_server_state()
 
-            return estimated_hours
+                # Extract speeds (in bytes/s)
+                upload_speed = server_state.get('up_info_speed', 0)  # bytes/sec
+                download_speed = server_state.get('dl_info_speed', 0)  # bytes/sec
+
+                # Convert to MB/s for logging
+                upload_mbps = upload_speed / (1024 * 1024)
+                download_mbps = download_speed / (1024 * 1024)
+
+                logger.info(
+                    f"SECTION 2: Current speeds - Upload: {upload_mbps:.2f} MB/s, "
+                    f"Download: {download_mbps:.2f} MB/s"
+                )
+
+                # If no upload rate, recovery is unlikely
+                if upload_speed <= 0:
+                    logger.warning("SECTION 2: No upload speed detected, cannot estimate recovery")
+                    return None
+
+                # Get total seeding torrents to estimate total uploaded so far
+                seeding = await qb.get_all_torrents(filter_state="seeding")
+                total_uploaded = 0
+
+                for torrent in seeding:
+                    # Get torrent completion size
+                    total_size = torrent.get('total_size', 0)
+                    if total_size > 0:
+                        total_uploaded += total_size
+
+                logger.debug(f"SECTION 2: Total uploaded data: {total_uploaded / (1024**3):.2f} GB")
+
+                # Calculate net ratio improvement per second
+                # Ratio change = (uploaded - downloaded) / downloaded
+                # If we have some seeding data, estimate based on upload surplus
+                if total_uploaded > 0:
+                    # Assume we need to upload enough to improve ratio
+                    # Simple calculation: for each MB uploaded, ratio improves by MB / total_downloaded
+                    # Since we don't have total_downloaded, assume it's inversely proportional to current ratio
+                    estimated_download_data = total_uploaded / max(self.last_ratio, 0.1)
+
+                    # Bytes needed to upload to reach recovery threshold
+                    bytes_per_ratio_point = estimated_download_data * 0.01  # Per 0.01 ratio increase
+                    bytes_needed = bytes_per_ratio_point * ratio_gap
+
+                    if upload_speed > 0:
+                        seconds_needed = bytes_needed / upload_speed
+                        estimated_hours = seconds_needed / 3600.0
+                    else:
+                        return None
+                else:
+                    # Fallback: use conservative estimate based on upload speed alone
+                    # Assume 1 TB uploaded improves ratio by 0.01
+                    bytes_per_ratio_point = 1024 * 1024 * 1024 * 1024 * 0.01  # 1TB per 0.01 ratio
+                    bytes_needed = bytes_per_ratio_point * ratio_gap
+
+                    if upload_speed > 0:
+                        seconds_needed = bytes_needed / upload_speed
+                        estimated_hours = seconds_needed / 3600.0
+                    else:
+                        return None
+
+                # Cap estimate at reasonable maximum (60 days)
+                estimated_hours = min(estimated_hours, 60 * 24)
+
+                logger.info(
+                    f"SECTION 2: Recovery time estimate: {estimated_hours:.1f} hours "
+                    f"(ratio gap: {ratio_gap:.3f}, upload: {upload_mbps:.2f} MB/s)"
+                )
+
+                return estimated_hours
 
         except Exception as e:
             logger.error(f"SECTION 2: Error calculating recovery time: {e}", exc_info=True)
@@ -600,11 +709,15 @@ class RatioEmergencyService:
         Track points generated vs spent for optimization.
 
         Process:
-        1. Read upload/download stats from qBittorrent
-        2. Calculate points earned (upload_bytes * rate)
-        3. Track points spent (downloads)
+        1. Get total uploaded bytes from qBittorrent
+        2. Estimate points earned (MAM awards points based on upload)
+        3. Count points spent on paid downloads from database
         4. Calculate ROI (points_earned / points_spent)
         5. Recommend adjustments if ROI < 1.0
+
+        MAM Point System (approximate):
+        - Earn: ~1 point per GB uploaded (varies by content type)
+        - Spend: Varies by release (typically 5-50 points per paid download)
 
         Returns:
             Dict with:
@@ -612,40 +725,79 @@ class RatioEmergencyService:
                 - points_spent: int
                 - roi: float
                 - recommendation: str
+                - upload_gb: float (for reference)
+                - paid_downloads_count: int
                 - timestamp: datetime
         """
         try:
-            # Placeholder implementation
-            # TODO: Integrate with actual MAM points API and qBittorrent stats
+            from backend.integrations.qbittorrent_client import QBittorrentClient
 
-            points_earned = 0
-            points_spent = 0
-            roi = 0.0
-            recommendation = "monitoring"
+            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            qb_user = os.getenv('QBITTORRENT_USER', 'admin')
+            qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
+
+            logger.info("SECTION 2: Tracking point generation vs spending")
 
             with get_db_context() as db:
-                # Count paid downloads (points spent)
+                # Get qBittorrent upload statistics
+                total_uploaded_bytes = 0
+                async with QBittorrentClient(qb_url, qb_user, qb_pass) as qb:
+                    # Get server state for total upload info
+                    server_state = await qb.get_server_state()
+                    total_uploaded_bytes = server_state.get('total_uploaded', 0)
+
+                    # Also sum up all seeding torrents' upload amounts
+                    seeding = await qb.get_all_torrents(filter_state="seeding")
+                    for torrent in seeding:
+                        uploaded = torrent.get('uploaded', 0)
+                        if uploaded > total_uploaded_bytes:
+                            total_uploaded_bytes = uploaded
+
+                # Convert to GB
+                total_uploaded_gb = total_uploaded_bytes / (1024 ** 3)
+
+                # Estimate points earned
+                # Conservative estimate: 1 point per GB uploaded (MAM typically gives more)
+                points_earned = max(int(total_uploaded_gb), 0)
+
+                # Count paid downloads and estimate points spent
                 paid_downloads = db.query(Download).filter(
                     Download.release_edition == "Paid",
-                    Download.status.in_(["completed", "seeding"])
-                ).count()
+                    Download.status.in_(["queued", "downloading", "completed", "seeding"])
+                ).all()
 
-                # Estimate points spent (10 points per paid download estimate)
-                points_spent = paid_downloads * 10
+                # Estimate points spent per download
+                # This is approximate - actual values vary by release
+                points_spent = 0
+                for download in paid_downloads:
+                    # Try to get actual points from metadata if available
+                    if hasattr(download, 'points_cost') and download.points_cost:
+                        points_spent += download.points_cost
+                    else:
+                        # Default estimate: 15 points per paid download
+                        points_spent += 15
 
-                # Placeholder for points earned calculation
-                points_earned = 0
+                paid_downloads_count = len(paid_downloads)
 
+                # Calculate ROI
                 if points_spent > 0:
                     roi = points_earned / points_spent
                 else:
-                    roi = 0.0
+                    roi = 0.0 if points_earned == 0 else float('inf')
 
-                # Recommendation logic
-                if roi < 1.0:
+                # Generate recommendation
+                if points_spent == 0:
+                    recommendation = "no_paid_downloads"
+                elif roi < 0.5:
+                    recommendation = "critically_reduce_paid_downloads"
+                elif roi < 1.0:
                     recommendation = "reduce_paid_downloads"
+                elif roi >= 3.0:
+                    recommendation = "can_significantly_increase_paid_downloads"
                 elif roi >= 2.0:
                     recommendation = "can_increase_paid_downloads"
+                elif roi >= 1.5:
+                    recommendation = "can_moderately_increase_paid_downloads"
                 else:
                     recommendation = "maintain_current_rate"
 
@@ -654,13 +806,16 @@ class RatioEmergencyService:
                     "points_spent": points_spent,
                     "roi": roi,
                     "recommendation": recommendation,
-                    "paid_downloads_count": paid_downloads,
+                    "upload_gb": round(total_uploaded_gb, 2),
+                    "paid_downloads_count": paid_downloads_count,
                     "timestamp": datetime.utcnow()
                 }
 
                 logger.info(
                     f"SECTION 2: Point tracking - Earned: {points_earned}, "
                     f"Spent: {points_spent}, ROI: {roi:.2f}, "
+                    f"Upload: {total_uploaded_gb:.2f} GB, "
+                    f"Paid Downloads: {paid_downloads_count}, "
                     f"Recommendation: {recommendation}"
                 )
 
@@ -677,24 +832,41 @@ class RatioEmergencyService:
         """
         Pause all downloading torrents to conserve ratio.
 
+        Pauses only downloading torrents while leaving seeding torrents alone.
+
         Returns:
             int: Number of torrents paused
         """
         try:
-            # Placeholder implementation
-            # TODO: Integrate with actual qBittorrent client
+            from backend.integrations.qbittorrent_client import QBittorrentClient
+
+            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            qb_user = os.getenv('QBITTORRENT_USER', 'admin')
+            qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
 
             logger.info("SECTION 2: Pausing non-seeding torrents")
 
-            # Would use QBittorrentClient here
-            # from backend.integrations.qbittorrent_client import QBittorrentClient
-            # async with QBittorrentClient(...) as qb:
-            #     downloading = await qb.get_all_torrents(filter_state="downloading")
-            #     for torrent in downloading:
-            #         await qb.pause_torrent(torrent['hash'])
-
             paused_count = 0
-            logger.info(f"SECTION 2: Paused {paused_count} non-seeding torrents")
+            async with QBittorrentClient(qb_url, qb_user, qb_pass) as qb:
+                # Get all downloading torrents
+                downloading = await qb.get_all_torrents(filter_state="downloading")
+                logger.info(f"SECTION 2: Found {len(downloading)} downloading torrents to pause")
+
+                for torrent in downloading:
+                    try:
+                        torrent_hash = torrent.get('hash')
+                        torrent_name = torrent.get('name', 'Unknown')
+
+                        await qb.pause_torrent(torrent_hash)
+                        logger.info(f"SECTION 2: Paused downloading torrent: {torrent_name}")
+                        paused_count += 1
+
+                    except Exception as e:
+                        logger.warning(f"SECTION 2: Failed to pause torrent: {e}")
+                        # Continue with next torrent even if one fails
+                        continue
+
+            logger.info(f"SECTION 2: Successfully paused {paused_count} non-seeding torrents")
             return paused_count
 
         except Exception as e:
@@ -703,27 +875,49 @@ class RatioEmergencyService:
 
     async def _unpause_all_seeding(self) -> int:
         """
-        Unpause all seeding torrents to maximize upload.
+        Unpause all paused seeding torrents to maximize upload.
+
+        Only resumes torrents that are fully downloaded (progress >= 1.0).
+        This maximizes upload rate during ratio emergency.
 
         Returns:
             int: Number of torrents unpaused
         """
         try:
-            # Placeholder implementation
-            # TODO: Integrate with actual qBittorrent client
+            from backend.integrations.qbittorrent_client import QBittorrentClient
+
+            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            qb_user = os.getenv('QBITTORRENT_USER', 'admin')
+            qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
 
             logger.info("SECTION 2: Unpausing all seeding torrents")
 
-            # Would use QBittorrentClient here
-            # from backend.integrations.qbittorrent_client import QBittorrentClient
-            # async with QBittorrentClient(...) as qb:
-            #     paused = await qb.get_all_torrents(filter_state="paused")
-            #     for torrent in paused:
-            #         if torrent['progress'] >= 1.0:  # Completed = can seed
-            #             await qb.resume_torrent(torrent['hash'])
-
             unpaused_count = 0
-            logger.info(f"SECTION 2: Unpaused {unpaused_count} seeding torrents")
+            async with QBittorrentClient(qb_url, qb_user, qb_pass) as qb:
+                # Get all paused torrents
+                paused = await qb.get_all_torrents(filter_state="paused")
+                logger.info(f"SECTION 2: Found {len(paused)} paused torrents")
+
+                for torrent in paused:
+                    try:
+                        torrent_hash = torrent.get('hash')
+                        torrent_name = torrent.get('name', 'Unknown')
+                        progress = torrent.get('progress', 0)
+
+                        # Only resume torrents that are fully downloaded (can seed)
+                        if progress >= 1.0:
+                            await qb.resume_torrent(torrent_hash)
+                            logger.info(f"SECTION 2: Resumed seeding torrent: {torrent_name}")
+                            unpaused_count += 1
+                        else:
+                            logger.debug(f"SECTION 2: Skipping incomplete torrent: {torrent_name} ({progress*100:.1f}%)")
+
+                    except Exception as e:
+                        logger.warning(f"SECTION 2: Failed to resume torrent: {e}")
+                        # Continue with next torrent even if one fails
+                        continue
+
+            logger.info(f"SECTION 2: Successfully unpaused {unpaused_count} seeding torrents")
             return unpaused_count
 
         except Exception as e:

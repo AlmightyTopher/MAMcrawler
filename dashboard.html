@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAM Crawler // Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            /* Slate 900 */
+            color: #e2e8f0;
+            /* Slate 200 */
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            /* Slate 800 with opacity */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+            }
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Cursor Blink */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 14px;
+            background-color: #10b981;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mam: {
+                            500: '#10b981', /* Emerald 500 */
+                            600: '#059669',
+                            glow: '#34d399'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+// Log Logic
+const displayedLogs = ref([]);
+const currentTypingLine = ref('');
+const logQueue = [];
+let isTyping = false;
+let processedLogKeys = new Set();
+
+// Translation Layer
+const translations = [
+{ regex: /Login attempt (\d+)\/(\d+)/, text: "Logging into MyAnonamouse (Attempt $1 of $2)..." },
+{ regex: /Navigating to (.*)/, text: "Browsing to: $1" },
+{ regex: /User Stats: Ratio=([\d\.]+), BP=(.*)/, text: "Stats Updated: Ratio $1 | Bonus Points $2" },
+{ regex: /Searching for: (.*)/, text: "Searching library for book: '$1'..." },
+{ regex: /Selected best candidate: (.*) \(Score: (.*)\)/, text: "Found match: '$1' (Quality Score: $2)" },
+{ regex: /QUEUED TO QBITTORRENT/, text: "✓ Sent to downloader successfully" },
+{ regex: /Checking event-aware pacing/, text: "Safety Check: Verifying download ratio..." },
+{ regex: /MAM Stats: Ratio=([\d\.]+)/, text: "MAM Ratio verified: $1" },
+{ regex: /Step 1: Detecting missing/, text: "Scanning library for missing content..." },
+{ regex: /Selenium crawler initialized/, text: "Browser engine started" },
+{ regex: /Saved (\d+) cookies/, text: "Session saved ($1 cookies)" },
+{ regex: /Loaded (\d+) saved cookies/, text: "Session restored ($1 cookies)" },
+{ regex: /No torrent links found/, text: "✗ No matching books found" },
+{ regex: /Rate limiting: sleeping ([\d\.]+)s/, text: "Pacing: Waiting $1s to avoid detection..." },
+{ regex: /Found magnet for torrent (.*):/, text: "Magnet link extracted. Queuing..." },
+{ regex: /ServiceManager/, text: "System Service Manager" },
+{ regex: /WebAPI login success/, text: "qBittorrent: API Connection established" },
+{ regex: /Torrent download finished. Torrent: "(.*)"/, text: "Success: '$1' has finished downloading" },
+{ regex: /Successfully listening on IP.*Port: "(.*)"/, text: "Network: Listening on port $1" },
+{ regex: /Detected external IP. IP: "(.*)"/, text: "Network: External IP detected ($1)" },
+{ regex: /Healer applied fixes/, text: "Self-Healing: Successfully repaired qBittorrent connection" },
+{ regex: /Running automated diagnosis/, text: "Self-Healing: Detecting connection issues..." },
+{ regex: /Analyzing author: (.*) \((\d+) books found\)/, text: "Library Scan: Found $2 books by $1" },
+{ regex: /Top 10 search failed: (.*)/, text: "Search Error: $1" },
+{ regex: /Operation failed: (.*)/, text: "System Error: $1" }
+];
+
+const translateLog = (msg) => {
+if (!msg) return "";
+for (const t of translations) {
+const match = msg.match(t.regex);
+if (match) {
+let result = t.text;
+for (let i = 1; i < match.length; i++) { result=result.replace('$' + i, match[i]); } return result; } } return msg; };
+    // Typing Animation const typeWriter=async (text, callback)=> {
+    isTyping = true;
+    currentTypingLine.value = '';
+
+    const chars = text.split('');
+    for (let i = 0; i < chars.length; i++) { currentTypingLine.value +=chars[i]; // Scroll to bottom if
+        (logContainer.value) { logContainer.value.scrollTop=logContainer.value.scrollHeight; } // Humanize timing let
+        delay=Math.random() * 30 + 20; // Base 20-50ms // Stutter on punctuation if (['.', ',' , ':' , '/'
+        ].includes(chars[i])) { delay +=100; } // Occasional "thinking" pause if (Math.random() < 0.05) { delay +=150; }
+        await new Promise(r=> setTimeout(r, delay));
+        }
+
+        // Finished line
+        await new Promise(r => setTimeout(r, 200)); // Pause at end of line
+        callback();
+        currentTypingLine.value = '';
+        isTyping = false;
+        processLogQueue();
+        };
+
+        const processLogQueue = () => {
+        if (isTyping || logQueue.length === 0) return;
+
+        const nextLog = logQueue.shift();
+        const translatedMsg = translateLog(nextLog.message);
+
+        typeWriter(translatedMsg, () => {
+        displayedLogs.value.push({
+        time: nextLog.time,
+        level: nextLog.level,
+        message: translatedMsg
+        });
+        });
+        };
+
+        const addLog = (level, message, time) => {
+        // Unique key for deduplication
+        const key = `${time}-${message}`;
+        if (processedLogKeys.has(key)) return;
+        processedLogKeys.add(key);
+
+        // Keep set size manageable
+        if (processedLogKeys.size > 200) {
+        const it = processedLogKeys.values();
+        processedLogKeys.delete(it.next().value);
+        }
+
+        logQueue.push({ time, level, message });
+        processLogQueue();
+        };
+
+        // Helpers
+        const formatNumber = (num) => new Intl.NumberFormat().format(num);
+
+        const getRatioColor = (ratio) => {
+        if (ratio < 1.0) return 'text-red-500' ; if (ratio < 2.0) return 'text-yellow-500' ; return 'text-mam-500' ; };
+            const getStatusColor=(state)=> {
+            if (state.includes('downloading')) return 'text-mam-500';
+            if (state.includes('paused')) return 'text-yellow-500';
+            if (state.includes('error')) return 'text-red-500';
+            return 'text-blue-400';
+            };
+
+            const getLogColor = (level) => {
+            if (level === 'ERROR') return 'text-red-500 font-bold';
+            if (level === 'WARNING') return 'text-yellow-500';
+            if (level === 'INFO') return 'text-blue-400';
+            return 'text-slate-500';
+            };
+
+            // Actions
+            const triggerAction = async (action) => {
+            loading.value = true;
+            // Note: We don't manually add log here, we let the API polling pick it up from backend logs
+            try {
+            const res = await fetch(`/api/control/${action}`, { method: 'POST' });
+            const data = await res.json();
+            } catch (e) {
+            addLog('ERROR', `Failed to trigger action: ${e.message}`, new Date().toLocaleTimeString());
+            } finally {
+            loading.value = false;
+            }
+            };
+
+            // Polling
+            const fetchData = async () => {
+            try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+
+            stats.value = data.stats;
+            services.value = data.services;
+            queue.value = data.queue;
+            activeTask.value = data.active_task;
+
+            // Merge new logs
+            if (data.recent_logs && data.recent_logs.length > 0) {
+            data.recent_logs.forEach(log => addLog(log.level, log.message, log.time));
+            }
+
+            connected.value = true;
+            } catch (e) {
+            connected.value = false;
+            }
+            };
+
+            const copyShorthand = async () => {
+            if (stats.value.shorthand) {
+            try {
+            await navigator.clipboard.writeText(stats.value.shorthand);
+            } catch (e) {
+            console.error('Failed to copy', e);
+            }
+            }
+            };
+
+            onMounted(() => {
+            // Initialize Lucide icons
+            lucide.createIcons();
+
+            // Clock
+            setInterval(() => {
+            currentTime.value = new Date().toLocaleTimeString();
+            }, 1000);
+
+            // Data Polling
+            setInterval(fetchData, 2000);
+            fetchData(); // Initial call
+
+            // Initial Log
+            addLog('INFO', 'System initialized. Waiting for data...', new Date().toLocaleTimeString('en-US', { hour12:
+            false }));
+            });
+
+            return {
+            connected,
+            currentTime,
+            loading,
+            stats,
+            services,
+            activeTask,
+            queue,
+            displayedLogs,
+            currentTypingLine,
+            logContainer,
+            formatNumber,
+            getRatioColor,
+            getStatusColor,
+            getLogColor,
+            triggerAction,
+            copyShorthand
+            };
+            }
+            }).mount('#app');
+            </script>
+            </body>
+
+</html>

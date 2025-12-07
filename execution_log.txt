@@ -1,527 +1,292 @@
-[2025-11-27 01:52:35] [START] REAL AUDIOBOOK ACQUISITION WORKFLOW
-[2025-11-27 01:52:35] [INFO] Start time: 2025-11-27T01:52:35.935914
-[2025-11-27 01:52:35] [INFO] 
-[2025-11-27 01:52:35] [INFO] ================================================================================
-[2025-11-27 01:52:35] [INFO] SYSTEM CONNECTIVITY CHECK
-[2025-11-27 01:52:35] [INFO] ================================================================================
-[2025-11-27 01:52:35] [OK] AudiobookShelf OK: 1 libraries
-[2025-11-27 01:52:35] [OK] Prowlarr OK: http://localhost:9696
-[2025-11-27 01:52:36] [OK] qBittorrent OK: http://192.168.0.48:52095/
-[2025-11-27 01:52:36] [OK] MAM credentials configured
-[2025-11-27 01:52:36] [INFO] 
-[2025-11-27 01:52:36] [OK] ALL SYSTEMS READY
-[2025-11-27 01:52:36] [INFO] 
-[2025-11-27 01:52:36] [INFO] ================================================================================
-[2025-11-27 01:52:36] [INFO] CURRENT LIBRARY SCAN
-[2025-11-27 01:52:36] [INFO] ================================================================================
-[2025-11-27 01:52:36] [INFO] Scanning library: Library
-[2025-11-27 01:52:36] [INFO] Loaded 500 items
-[2025-11-27 01:52:36] [INFO] Loaded 1000 items
-[2025-11-27 01:52:36] [INFO] Loaded 1500 items
-[2025-11-27 01:52:37] [INFO] Loaded 2000 items
-[2025-11-27 01:52:37] [INFO] Loaded 2500 items
-[2025-11-27 01:52:37] [INFO] Loaded 3000 items
-[2025-11-27 01:52:37] [INFO] Loaded 3500 items
-[2025-11-27 01:52:38] [INFO] Loaded 4000 items
-[2025-11-27 01:52:38] [INFO] Loaded 4500 items
-[2025-11-27 01:52:38] [INFO] Loaded 5000 items
-[2025-11-27 01:52:38] [INFO] Loaded 5500 items
-[2025-11-27 01:52:39] [INFO] Loaded 6000 items
-[2025-11-27 01:52:39] [INFO] Loaded 6500 items
-[2025-11-27 01:52:39] [INFO] Loaded 7000 items
-[2025-11-27 01:52:39] [INFO] Loaded 7500 items
-[2025-11-27 01:52:40] [INFO] Loaded 8000 items
-[2025-11-27 01:52:40] [INFO] Loaded 8500 items
-[2025-11-27 01:52:40] [INFO] Loaded 9000 items
-[2025-11-27 01:52:40] [INFO] Loaded 9500 items
-[2025-11-27 01:52:40] [INFO] Loaded 10000 items
-[2025-11-27 01:52:41] [INFO] Loaded 10500 items
-[2025-11-27 01:52:41] [INFO] Loaded 11000 items
-[2025-11-27 01:52:41] [INFO] Loaded 11500 items
-[2025-11-27 01:52:42] [INFO] Loaded 12000 items
-[2025-11-27 01:52:42] [INFO] Loaded 12500 items
-[2025-11-27 01:52:42] [INFO] Loaded 13000 items
-[2025-11-27 01:52:42] [INFO] Loaded 13500 items
-[2025-11-27 01:52:42] [INFO] Loaded 14000 items
-[2025-11-27 01:52:43] [INFO] Loaded 14500 items
-[2025-11-27 01:52:43] [INFO] Loaded 15000 items
-[2025-11-27 01:52:43] [INFO] Loaded 15500 items
-[2025-11-27 01:52:43] [INFO] Loaded 16000 items
-[2025-11-27 01:52:44] [INFO] Loaded 16500 items
-[2025-11-27 01:52:44] [INFO] Loaded 17000 items
-[2025-11-27 01:52:44] [INFO] Loaded 17500 items
-[2025-11-27 01:52:44] [INFO] Loaded 18000 items
-[2025-11-27 01:52:45] [INFO] Loaded 18500 items
-[2025-11-27 01:52:45] [INFO] Loaded 19000 items
-[2025-11-27 01:52:45] [INFO] Loaded 19500 items
-[2025-11-27 01:52:45] [INFO] Loaded 20000 items
-[2025-11-27 01:52:46] [INFO] Loaded 20500 items
-[2025-11-27 01:52:46] [INFO] Loaded 21000 items
-[2025-11-27 01:52:46] [INFO] Loaded 21500 items
-[2025-11-27 01:52:46] [INFO] Loaded 22000 items
-[2025-11-27 01:52:47] [INFO] Loaded 22500 items
-[2025-11-27 01:52:47] [INFO] Loaded 23000 items
-[2025-11-27 01:52:47] [INFO] Loaded 23500 items
-[2025-11-27 01:52:48] [INFO] Loaded 24000 items
-[2025-11-27 01:52:48] [INFO] Loaded 24500 items
-[2025-11-27 01:52:48] [INFO] Loaded 25000 items
-[2025-11-27 01:52:48] [INFO] Loaded 25500 items
-[2025-11-27 01:52:49] [INFO] Loaded 26000 items
-[2025-11-27 01:52:49] [INFO] Loaded 26500 items
-[2025-11-27 01:52:49] [INFO] Loaded 27000 items
-[2025-11-27 01:52:49] [INFO] Loaded 27500 items
-[2025-11-27 01:52:50] [INFO] Loaded 28000 items
-[2025-11-27 01:52:50] [INFO] Loaded 28500 items
-[2025-11-27 01:52:50] [INFO] Loaded 29000 items
-[2025-11-27 01:52:50] [INFO] Loaded 29500 items
-[2025-11-27 01:52:50] [INFO] Loaded 30000 items
-[2025-11-27 01:52:51] [INFO] Loaded 30500 items
-[2025-11-27 01:52:51] [INFO] Loaded 31000 items
-[2025-11-27 01:52:51] [INFO] Loaded 31500 items
-[2025-11-27 01:52:52] [INFO] Loaded 32000 items
-[2025-11-27 01:52:52] [INFO] Loaded 32500 items
-[2025-11-27 01:52:52] [INFO] Loaded 33000 items
-[2025-11-27 01:52:52] [INFO] Loaded 33500 items
-[2025-11-27 01:52:53] [INFO] Loaded 34000 items
-[2025-11-27 01:52:53] [INFO] Loaded 34500 items
-[2025-11-27 01:52:53] [INFO] Loaded 35000 items
-[2025-11-27 01:52:53] [INFO] Loaded 35500 items
-[2025-11-27 01:52:53] [INFO] Loaded 36000 items
-[2025-11-27 01:52:54] [INFO] Loaded 36500 items
-[2025-11-27 01:52:54] [INFO] Loaded 37000 items
-[2025-11-27 01:52:54] [INFO] Loaded 37500 items
-[2025-11-27 01:52:54] [INFO] Loaded 38000 items
-[2025-11-27 01:52:54] [INFO] Loaded 38500 items
-[2025-11-27 01:52:55] [INFO] Loaded 39000 items
-[2025-11-27 01:52:55] [INFO] Loaded 39500 items
-[2025-11-27 01:52:55] [INFO] Loaded 40000 items
-[2025-11-27 01:52:55] [INFO] Loaded 40500 items
-[2025-11-27 01:52:56] [INFO] Loaded 41000 items
-[2025-11-27 01:52:56] [INFO] Loaded 41500 items
-[2025-11-27 01:52:56] [INFO] Loaded 42000 items
-[2025-11-27 01:52:56] [INFO] Loaded 42500 items
-[2025-11-27 01:52:56] [INFO] Loaded 43000 items
-[2025-11-27 01:52:57] [INFO] Loaded 43500 items
-[2025-11-27 01:52:57] [INFO] Loaded 44000 items
-[2025-11-27 01:52:57] [INFO] Loaded 44500 items
-[2025-11-27 01:52:57] [INFO] Loaded 45000 items
-[2025-11-27 01:52:58] [INFO] Loaded 45500 items
-[2025-11-27 01:52:58] [INFO] Loaded 46000 items
-[2025-11-27 01:52:58] [INFO] Loaded 46500 items
-[2025-11-27 01:52:58] [INFO] Loaded 47000 items
-[2025-11-27 01:52:58] [INFO] Loaded 47500 items
-[2025-11-27 01:52:59] [INFO] Loaded 48000 items
-[2025-11-27 01:52:59] [INFO] Loaded 48500 items
-[2025-11-27 01:52:59] [INFO] Loaded 49000 items
-[2025-11-27 01:52:59] [INFO] Loaded 49500 items
-[2025-11-27 01:53:00] [INFO] Loaded 50000 items
-[2025-11-27 01:53:00] [INFO] Loaded 50500 items
-[2025-11-27 01:53:00] [INFO] Loaded 51000 items
-[2025-11-27 01:53:00] [INFO] Loaded 51500 items
-[2025-11-27 01:53:00] [INFO] Loaded 52000 items
-[2025-11-27 01:53:01] [INFO] Loaded 52500 items
-[2025-11-27 01:53:01] [INFO] Loaded 53000 items
-[2025-11-27 01:53:01] [INFO] Loaded 53500 items
-[2025-11-27 01:53:01] [INFO] Loaded 54000 items
-[2025-11-27 01:53:02] [INFO] Loaded 54500 items
-[2025-11-27 01:53:02] [INFO] Loaded 55000 items
-[2025-11-27 01:53:02] [INFO] Loaded 55500 items
-[2025-11-27 01:53:03] [INFO] Loaded 56000 items
-[2025-11-27 01:53:03] [INFO] Loaded 56500 items
-[2025-11-27 01:53:03] [INFO] Loaded 57000 items
-[2025-11-27 01:53:03] [INFO] Loaded 57500 items
-[2025-11-27 01:53:03] [INFO] Loaded 58000 items
-[2025-11-27 01:53:04] [INFO] Loaded 58500 items
-[2025-11-27 01:53:04] [INFO] Loaded 59000 items
-[2025-11-27 01:53:04] [INFO] Loaded 59500 items
-[2025-11-27 01:53:04] [INFO] Loaded 60000 items
-[2025-11-27 01:53:05] [INFO] Loaded 60500 items
-[2025-11-27 01:53:05] [INFO] Loaded 61000 items
-[2025-11-27 01:53:05] [INFO] Loaded 61500 items
-[2025-11-27 01:53:05] [INFO] Loaded 62000 items
-[2025-11-27 01:53:05] [INFO] Loaded 62500 items
-[2025-11-27 01:53:06] [INFO] Loaded 63000 items
-[2025-11-27 01:53:06] [INFO] Loaded 63500 items
-[2025-11-27 01:53:06] [INFO] Loaded 64000 items
-[2025-11-27 01:53:06] [INFO] Loaded 64500 items
-[2025-11-27 01:53:07] [INFO] Loaded 65000 items
-[2025-11-27 01:53:07] [INFO] Loaded 65500 items
-[2025-11-27 01:53:07] [INFO] Loaded 66000 items
-[2025-11-27 01:53:07] [INFO] Loaded 66500 items
-[2025-11-27 01:53:08] [INFO] Loaded 67000 items
-[2025-11-27 01:53:08] [INFO] Loaded 67500 items
-[2025-11-27 01:53:08] [INFO] Loaded 68000 items
-[2025-11-27 01:53:08] [INFO] Loaded 68500 items
-[2025-11-27 01:53:08] [INFO] Loaded 69000 items
-[2025-11-27 01:53:09] [INFO] Loaded 69500 items
-[2025-11-27 01:53:09] [INFO] Loaded 70000 items
-[2025-11-27 01:53:09] [INFO] Loaded 70500 items
-[2025-11-27 01:53:09] [INFO] Loaded 71000 items
-[2025-11-27 01:53:09] [INFO] Loaded 71500 items
-[2025-11-27 01:53:10] [INFO] Loaded 72000 items
-[2025-11-27 01:53:10] [INFO] Loaded 72500 items
-[2025-11-27 01:53:10] [INFO] Loaded 73000 items
-[2025-11-27 01:53:10] [INFO] Loaded 73500 items
-[2025-11-27 01:53:10] [INFO] Loaded 74000 items
-[2025-11-27 01:53:11] [INFO] Loaded 74500 items
-[2025-11-27 01:53:11] [INFO] Loaded 75000 items
-[2025-11-27 01:53:11] [INFO] Loaded 75500 items
-[2025-11-27 01:53:11] [INFO] Loaded 76000 items
-[2025-11-27 01:53:12] [INFO] Loaded 76500 items
-[2025-11-27 01:53:12] [INFO] Loaded 77000 items
-[2025-11-27 01:53:12] [INFO] Loaded 77500 items
-[2025-11-27 01:53:12] [INFO] Loaded 78000 items
-[2025-11-27 01:53:13] [INFO] Loaded 78500 items
-[2025-11-27 01:53:13] [INFO] Loaded 79000 items
-[2025-11-27 01:53:13] [INFO] Loaded 79500 items
-[2025-11-27 01:53:13] [INFO] Loaded 80000 items
-[2025-11-27 01:53:14] [INFO] Loaded 80500 items
-[2025-11-27 01:53:14] [INFO] Loaded 81000 items
-[2025-11-27 01:53:14] [INFO] Loaded 81500 items
-[2025-11-27 01:53:14] [INFO] Loaded 82000 items
-[2025-11-27 01:53:14] [INFO] Loaded 82500 items
-[2025-11-27 01:53:15] [INFO] Loaded 83000 items
-[2025-11-27 01:53:15] [INFO] Loaded 83500 items
-[2025-11-27 01:53:15] [INFO] Loaded 84000 items
-[2025-11-27 01:53:15] [INFO] Loaded 84500 items
-[2025-11-27 01:53:16] [INFO] Loaded 85000 items
-[2025-11-27 01:53:16] [INFO] Loaded 85500 items
-[2025-11-27 01:53:16] [INFO] Loaded 86000 items
-[2025-11-27 01:53:16] [INFO] Loaded 86500 items
-[2025-11-27 01:53:17] [INFO] Loaded 87000 items
-[2025-11-27 01:53:17] [INFO] Loaded 87500 items
-[2025-11-27 01:53:17] [INFO] Loaded 88000 items
-[2025-11-27 01:53:18] [INFO] Loaded 88500 items
-[2025-11-27 01:53:18] [INFO] Loaded 89000 items
-[2025-11-27 01:53:18] [INFO] Loaded 89500 items
-[2025-11-27 01:53:18] [INFO] Loaded 90000 items
-[2025-11-27 01:53:19] [INFO] Loaded 90500 items
-[2025-11-27 01:53:19] [INFO] Loaded 91000 items
-[2025-11-27 01:53:19] [INFO] Loaded 91500 items
-[2025-11-27 01:53:19] [INFO] Loaded 92000 items
-[2025-11-27 01:53:19] [INFO] Loaded 92500 items
-[2025-11-27 01:53:20] [INFO] Loaded 93000 items
-[2025-11-27 01:53:20] [INFO] Loaded 93500 items
-[2025-11-27 01:53:20] [INFO] Loaded 94000 items
-[2025-11-27 01:53:20] [INFO] Loaded 94500 items
-[2025-11-27 01:53:20] [INFO] Loaded 95000 items
-[2025-11-27 01:53:21] [INFO] Loaded 95500 items
-[2025-11-27 01:53:21] [INFO] Loaded 96000 items
-[2025-11-27 01:53:21] [INFO] Loaded 96500 items
-[2025-11-27 01:53:21] [INFO] Loaded 97000 items
-[2025-11-27 01:53:21] [INFO] Loaded 97500 items
-[2025-11-27 01:53:22] [INFO] Loaded 98000 items
-[2025-11-27 01:53:22] [INFO] Loaded 98500 items
-[2025-11-27 01:53:22] [INFO] Loaded 99000 items
-[2025-11-27 01:53:22] [INFO] Loaded 99500 items
-[2025-11-27 01:53:22] [INFO] Loaded 100000 items
-[2025-11-27 01:53:23] [INFO] Loaded 100500 items
-[2025-11-27 01:53:23] [INFO] Loaded 101000 items
-[2025-11-27 01:53:23] [INFO] Loaded 101500 items
-[2025-11-27 01:53:23] [INFO] Loaded 102000 items
-[2025-11-27 01:53:24] [INFO] Loaded 102500 items
-[2025-11-27 01:53:24] [INFO] Loaded 103000 items
-[2025-11-27 01:53:24] [INFO] Loaded 103500 items
-[2025-11-27 01:53:24] [INFO] Loaded 104000 items
-[2025-11-27 01:53:25] [INFO] Loaded 104500 items
-[2025-11-27 01:53:25] [INFO] Loaded 105000 items
-[2025-11-27 01:53:25] [INFO] Loaded 105500 items
-[2025-11-27 01:53:25] [INFO] Loaded 106000 items
-[2025-11-27 01:53:26] [INFO] Loaded 106500 items
-[2025-11-27 01:53:26] [INFO] Loaded 107000 items
-[2025-11-27 01:53:26] [INFO] Loaded 107500 items
-[2025-11-27 01:53:26] [INFO] Loaded 108000 items
-[2025-11-27 01:53:27] [INFO] Loaded 108500 items
-[2025-11-27 01:53:27] [INFO] Loaded 109000 items
-[2025-11-27 01:53:27] [INFO] Loaded 109500 items
-[2025-11-27 01:53:27] [INFO] Loaded 110000 items
-[2025-11-27 01:53:27] [INFO] Loaded 110500 items
-[2025-11-27 01:53:28] [INFO] Loaded 111000 items
-[2025-11-27 01:53:28] [INFO] Loaded 111500 items
-[2025-11-27 01:53:28] [INFO] Loaded 112000 items
-[2025-11-27 01:53:28] [INFO] Loaded 112500 items
-[2025-11-27 01:53:28] [INFO] Loaded 113000 items
-[2025-11-27 01:53:29] [INFO] Loaded 113500 items
-[2025-11-27 01:53:29] [INFO] Loaded 114000 items
-[2025-11-27 01:53:29] [INFO] Loaded 114500 items
-[2025-11-27 01:53:29] [INFO] Loaded 115000 items
-[2025-11-27 01:53:29] [INFO] Loaded 115500 items
-[2025-11-27 01:53:30] [INFO] Loaded 116000 items
-[2025-11-27 01:53:30] [INFO] Loaded 116500 items
-[2025-11-27 01:53:30] [INFO] Loaded 117000 items
-[2025-11-27 01:53:30] [INFO] Loaded 117500 items
-[2025-11-27 01:53:31] [INFO] Loaded 118000 items
-[2025-11-27 01:53:31] [INFO] Loaded 118500 items
-[2025-11-27 01:53:31] [INFO] Loaded 119000 items
-[2025-11-27 01:53:31] [INFO] Loaded 119500 items
-[2025-11-27 01:53:32] [INFO] Loaded 120000 items
-[2025-11-27 01:53:32] [INFO] Loaded 120500 items
-[2025-11-27 01:53:32] [INFO] Loaded 121000 items
-[2025-11-27 01:53:33] [INFO] Loaded 121500 items
-[2025-11-27 01:53:33] [INFO] Loaded 122000 items
-[2025-11-27 01:53:33] [INFO] Loaded 122500 items
-[2025-11-27 01:53:33] [INFO] Loaded 123000 items
-[2025-11-27 01:53:33] [INFO] Loaded 123500 items
-[2025-11-27 01:53:33] [INFO] Loaded 124000 items
-[2025-11-27 01:53:34] [INFO] Loaded 124500 items
-[2025-11-27 01:53:34] [INFO] Loaded 125000 items
-[2025-11-27 01:53:34] [INFO] Loaded 125500 items
-[2025-11-27 01:53:34] [INFO] Loaded 126000 items
-[2025-11-27 01:53:35] [INFO] Loaded 126500 items
-[2025-11-27 01:53:35] [INFO] Loaded 127000 items
-[2025-11-27 01:53:35] [INFO] Loaded 127500 items
-[2025-11-27 01:53:35] [INFO] Loaded 128000 items
-[2025-11-27 01:53:35] [INFO] Loaded 128500 items
-[2025-11-27 01:53:36] [INFO] Loaded 129000 items
-[2025-11-27 01:53:36] [INFO] Loaded 129500 items
-[2025-11-27 01:53:36] [INFO] Loaded 130000 items
-[2025-11-27 01:53:36] [INFO] Loaded 130500 items
-[2025-11-27 01:53:37] [INFO] Loaded 131000 items
-[2025-11-27 01:53:37] [INFO] Loaded 131500 items
-[2025-11-27 01:53:37] [INFO] Loaded 132000 items
-[2025-11-27 01:53:37] [INFO] Loaded 132500 items
-[2025-11-27 01:53:38] [INFO] Loaded 133000 items
-[2025-11-27 01:53:38] [INFO] Loaded 133500 items
-[2025-11-27 01:53:38] [INFO] Loaded 134000 items
-[2025-11-27 01:53:38] [INFO] Loaded 134500 items
-[2025-11-27 01:53:38] [INFO] Loaded 135000 items
-[2025-11-27 01:53:39] [INFO] Loaded 135500 items
-[2025-11-27 01:53:39] [INFO] Loaded 136000 items
-[2025-11-27 01:53:39] [INFO] Loaded 136500 items
-[2025-11-27 01:53:39] [INFO] Loaded 137000 items
-[2025-11-27 01:53:40] [INFO] Loaded 137500 items
-[2025-11-27 01:53:40] [INFO] Loaded 138000 items
-[2025-11-27 01:53:40] [INFO] Loaded 138500 items
-[2025-11-27 01:53:40] [INFO] Loaded 139000 items
-[2025-11-27 01:53:40] [INFO] Loaded 139500 items
-[2025-11-27 01:53:41] [INFO] Loaded 140000 items
-[2025-11-27 01:53:41] [INFO] Loaded 140500 items
-[2025-11-27 01:53:41] [INFO] Loaded 141000 items
-[2025-11-27 01:53:41] [INFO] Loaded 141500 items
-[2025-11-27 01:53:42] [INFO] Loaded 142000 items
-[2025-11-27 01:53:42] [INFO] Loaded 142500 items
-[2025-11-27 01:53:42] [INFO] Loaded 143000 items
-[2025-11-27 01:53:42] [INFO] Loaded 143500 items
-[2025-11-27 01:53:42] [INFO] Loaded 144000 items
-[2025-11-27 01:53:43] [INFO] Loaded 144500 items
-[2025-11-27 01:53:43] [INFO] Loaded 145000 items
-[2025-11-27 01:53:43] [INFO] Loaded 145500 items
-[2025-11-27 01:53:43] [INFO] Loaded 146000 items
-[2025-11-27 01:53:43] [INFO] Loaded 146500 items
-[2025-11-27 01:53:44] [INFO] Loaded 147000 items
-[2025-11-27 01:53:44] [INFO] Loaded 147500 items
-[2025-11-27 01:53:44] [INFO] Loaded 148000 items
-[2025-11-27 01:53:44] [INFO] Loaded 148500 items
-[2025-11-27 01:53:45] [INFO] Loaded 149000 items
-[2025-11-27 01:53:45] [INFO] Loaded 149500 items
-[2025-11-27 01:53:45] [INFO] Loaded 150000 items
-[2025-11-27 01:53:45] [INFO] Loaded 150500 items
-[2025-11-27 01:53:46] [INFO] Loaded 151000 items
-[2025-11-27 01:53:46] [INFO] Loaded 151500 items
-[2025-11-27 01:53:46] [INFO] Loaded 152000 items
-[2025-11-27 01:53:46] [INFO] Loaded 152500 items
-[2025-11-27 01:53:47] [INFO] Loaded 153000 items
-[2025-11-27 01:53:47] [INFO] Loaded 153500 items
-[2025-11-27 01:53:47] [INFO] Loaded 154000 items
-[2025-11-27 01:53:48] [INFO] Loaded 154500 items
-[2025-11-27 01:53:48] [INFO] Loaded 155000 items
-[2025-11-27 01:53:48] [INFO] Loaded 155500 items
-[2025-11-27 01:53:48] [INFO] Loaded 156000 items
-[2025-11-27 01:53:49] [INFO] Loaded 156500 items
-[2025-11-27 01:53:49] [INFO] Loaded 157000 items
-[2025-11-27 01:53:49] [INFO] Loaded 157500 items
-[2025-11-27 01:53:49] [INFO] Loaded 158000 items
-[2025-11-27 01:53:49] [INFO] Loaded 158500 items
-[2025-11-27 01:53:50] [INFO] Loaded 159000 items
-[2025-11-27 01:53:50] [INFO] Loaded 159500 items
-[2025-11-27 01:53:50] [INFO] Loaded 160000 items
-[2025-11-27 01:53:50] [INFO] Loaded 160500 items
-[2025-11-27 01:53:50] [INFO] Loaded 161000 items
-[2025-11-27 01:53:51] [INFO] Loaded 161500 items
-[2025-11-27 01:53:51] [INFO] Loaded 162000 items
-[2025-11-27 01:53:51] [INFO] Loaded 162500 items
-[2025-11-27 01:53:51] [INFO] Loaded 163000 items
-[2025-11-27 01:53:51] [INFO] Loaded 163500 items
-[2025-11-27 01:53:52] [INFO] Loaded 164000 items
-[2025-11-27 01:53:52] [INFO] Loaded 164500 items
-[2025-11-27 01:53:52] [INFO] Loaded 165000 items
-[2025-11-27 01:53:52] [INFO] Loaded 165500 items
-[2025-11-27 01:53:52] [INFO] Loaded 166000 items
-[2025-11-27 01:53:53] [INFO] Loaded 166500 items
-[2025-11-27 01:53:53] [INFO] Loaded 167000 items
-[2025-11-27 01:53:53] [INFO] Loaded 167500 items
-[2025-11-27 01:53:53] [INFO] Loaded 168000 items
-[2025-11-27 01:53:53] [INFO] Loaded 168500 items
-[2025-11-27 01:53:54] [INFO] Loaded 169000 items
-[2025-11-27 01:53:54] [INFO] Loaded 169500 items
-[2025-11-27 01:53:54] [INFO] Loaded 170000 items
-[2025-11-27 01:53:54] [INFO] Loaded 170500 items
-[2025-11-27 01:53:55] [INFO] Loaded 171000 items
-[2025-11-27 01:53:55] [INFO] Loaded 171500 items
-[2025-11-27 01:53:55] [INFO] Loaded 172000 items
-[2025-11-27 01:53:56] [INFO] Loaded 172500 items
-[2025-11-27 01:53:56] [INFO] Loaded 173000 items
-[2025-11-27 01:53:56] [INFO] Loaded 173500 items
-[2025-11-27 01:53:56] [INFO] Loaded 174000 items
-[2025-11-27 01:53:56] [INFO] Loaded 174500 items
-[2025-11-27 01:53:56] [INFO] Loaded 175000 items
-[2025-11-27 01:53:57] [INFO] Loaded 175500 items
-[2025-11-27 01:53:57] [INFO] Loaded 176000 items
-[2025-11-27 01:53:57] [INFO] Loaded 176500 items
-[2025-11-27 01:53:57] [INFO] Loaded 177000 items
-[2025-11-27 01:53:58] [INFO] Loaded 177500 items
-[2025-11-27 01:53:58] [INFO] Loaded 178000 items
-[2025-11-27 01:53:58] [INFO] Loaded 178500 items
-[2025-11-27 01:53:58] [INFO] Loaded 179000 items
-[2025-11-27 01:53:59] [INFO] Loaded 179500 items
-[2025-11-27 01:53:59] [INFO] Loaded 180000 items
-[2025-11-27 01:53:59] [INFO] Loaded 180500 items
-[2025-11-27 01:53:59] [INFO] Loaded 181000 items
-[2025-11-27 01:54:00] [INFO] Loaded 181500 items
-[2025-11-27 01:54:00] [INFO] Loaded 182000 items
-[2025-11-27 01:54:00] [INFO] Loaded 182500 items
-[2025-11-27 01:54:00] [INFO] Loaded 183000 items
-[2025-11-27 01:54:01] [INFO] Loaded 183500 items
-[2025-11-27 01:54:01] [INFO] Loaded 184000 items
-[2025-11-27 01:54:01] [INFO] Loaded 184500 items
-[2025-11-27 01:54:02] [INFO] Loaded 185000 items
-[2025-11-27 01:54:02] [INFO] Loaded 185500 items
-[2025-11-27 01:54:02] [INFO] Loaded 186000 items
-[2025-11-27 01:54:03] [INFO] Loaded 186500 items
-[2025-11-27 01:54:03] [INFO] Loaded 187000 items
-[2025-11-27 01:54:03] [INFO] Loaded 187500 items
-[2025-11-27 01:54:03] [INFO] Loaded 188000 items
-[2025-11-27 01:54:04] [INFO] Loaded 188500 items
-[2025-11-27 01:54:04] [INFO] Loaded 189000 items
-[2025-11-27 01:54:04] [INFO] Loaded 189500 items
-[2025-11-27 01:54:04] [INFO] Loaded 190000 items
-[2025-11-27 01:54:05] [INFO] Loaded 190500 items
-[2025-11-27 01:54:05] [INFO] Loaded 191000 items
-[2025-11-27 01:54:05] [INFO] Loaded 191500 items
-[2025-11-27 01:54:05] [INFO] Loaded 192000 items
-[2025-11-27 01:54:06] [INFO] Loaded 192500 items
-[2025-11-27 01:54:06] [INFO] Loaded 193000 items
-[2025-11-27 01:54:06] [INFO] Loaded 193500 items
-[2025-11-27 01:54:06] [INFO] Loaded 194000 items
-[2025-11-27 01:54:07] [INFO] Loaded 194500 items
-[2025-11-27 01:54:07] [INFO] Loaded 195000 items
-[2025-11-27 01:54:07] [INFO] Loaded 195500 items
-[2025-11-27 01:54:07] [INFO] Loaded 196000 items
-[2025-11-27 01:54:08] [INFO] Loaded 196500 items
-[2025-11-27 01:54:08] [INFO] Loaded 197000 items
-[2025-11-27 01:54:08] [INFO] Loaded 197500 items
-[2025-11-27 01:54:08] [INFO] Loaded 198000 items
-[2025-11-27 01:54:09] [INFO] Loaded 198500 items
-[2025-11-27 01:54:09] [INFO] Loaded 199000 items
-[2025-11-27 01:54:09] [INFO] Loaded 199500 items
-[2025-11-27 01:54:09] [INFO] Loaded 200000 items
-[2025-11-27 01:54:10] [INFO] Loaded 200500 items
-[2025-11-27 01:54:10] [INFO] Loaded 201000 items
-[2025-11-27 01:54:10] [INFO] Loaded 201500 items
-[2025-11-27 01:54:10] [INFO] Loaded 202000 items
-[2025-11-27 01:54:11] [INFO] Loaded 202500 items
-[2025-11-27 01:54:11] [INFO] Loaded 203000 items
-[2025-11-27 01:54:11] [INFO] Loaded 203500 items
-[2025-11-27 01:54:11] [INFO] Loaded 204000 items
-[2025-11-27 01:54:11] [INFO] Loaded 204500 items
-[2025-11-27 01:54:12] [INFO] Loaded 205000 items
-[2025-11-27 01:54:12] [INFO] Loaded 205500 items
-[2025-11-27 01:54:12] [INFO] Loaded 206000 items
-[2025-11-27 01:54:13] [INFO] Loaded 206500 items
-[2025-11-27 01:54:13] [INFO] Loaded 207000 items
-[2025-11-27 01:54:13] [INFO] Loaded 207500 items
-[2025-11-27 01:54:13] [INFO] Loaded 208000 items
-[2025-11-27 01:54:13] [INFO] Loaded 208500 items
-[2025-11-27 01:54:14] [INFO] Loaded 209000 items
-[2025-11-27 01:54:14] [INFO] Loaded 209500 items
-[2025-11-27 01:54:14] [INFO] Loaded 210000 items
-[2025-11-27 01:54:14] [INFO] Loaded 210500 items
-[2025-11-27 01:54:15] [INFO] Loaded 211000 items
-[2025-11-27 01:54:15] [INFO] Loaded 211500 items
-[2025-11-27 01:54:15] [INFO] Loaded 212000 items
-[2025-11-27 01:54:15] [INFO] Loaded 212500 items
-[2025-11-27 01:54:16] [INFO] Loaded 213000 items
-[2025-11-27 01:54:16] [INFO] Loaded 213500 items
-[2025-11-27 01:54:16] [INFO] Loaded 214000 items
-[2025-11-27 01:54:16] [INFO] Loaded 214500 items
-[2025-11-27 01:54:17] [INFO] Loaded 215000 items
-[2025-11-27 01:54:17] [INFO] Loaded 215500 items
-[2025-11-27 01:54:17] [INFO] Loaded 216000 items
-[2025-11-27 01:54:17] [INFO] Loaded 216500 items
-[2025-11-27 01:54:18] [INFO] Loaded 217000 items
-[2025-11-27 01:54:18] [INFO] Loaded 217500 items
-[2025-11-27 01:54:18] [INFO] Loaded 218000 items
-[2025-11-27 01:54:19] [INFO] Loaded 218500 items
-[2025-11-27 01:54:19] [INFO] Loaded 219000 items
-[2025-11-27 01:54:19] [INFO] Loaded 219500 items
-[2025-11-27 01:54:19] [INFO] Loaded 220000 items
-[2025-11-27 01:54:19] [INFO] Loaded 220500 items
-[2025-11-27 01:54:20] [INFO] Loaded 221000 items
-[2025-11-27 01:54:20] [INFO] Loaded 221500 items
-[2025-11-27 01:54:20] [INFO] Loaded 222000 items
-[2025-11-27 01:54:20] [INFO] Loaded 222500 items
-[2025-11-27 01:54:20] [INFO] Loaded 223000 items
-[2025-11-27 01:54:21] [INFO] Loaded 223500 items
-[2025-11-27 01:54:21] [INFO] Loaded 224000 items
-[2025-11-27 01:54:21] [INFO] Loaded 224500 items
-[2025-11-27 01:54:21] [INFO] Loaded 225000 items
-[2025-11-27 01:54:22] [INFO] Loaded 225500 items
-[2025-11-27 01:54:22] [INFO] Loaded 226000 items
-[2025-11-27 01:54:22] [INFO] Loaded 226500 items
-[2025-11-27 01:54:22] [INFO] Loaded 227000 items
-[2025-11-27 01:54:23] [INFO] Loaded 227500 items
-[2025-11-27 01:54:23] [INFO] Loaded 228000 items
-[2025-11-27 01:54:23] [INFO] Loaded 228500 items
-[2025-11-27 01:54:23] [INFO] Loaded 229000 items
-[2025-11-27 01:54:23] [INFO] Loaded 229500 items
-[2025-11-27 01:54:24] [INFO] Loaded 230000 items
-[2025-11-27 01:54:24] [INFO] Loaded 230500 items
-[2025-11-27 01:54:24] [INFO] Loaded 231000 items
-[2025-11-27 01:54:24] [INFO] Loaded 231500 items
-[2025-11-27 01:54:25] [INFO] Loaded 232000 items
-[2025-11-27 01:54:25] [INFO] Loaded 232500 items
-[2025-11-27 01:54:25] [INFO] Loaded 233000 items
-[2025-11-27 01:54:25] [INFO] Loaded 233500 items
-[2025-11-27 01:54:25] [INFO] Loaded 234000 items
-[2025-11-27 01:54:26] [INFO] Loaded 234500 items
-[2025-11-27 01:54:26] [INFO] Loaded 235000 items
-[2025-11-27 01:54:26] [INFO] Loaded 235500 items
-[2025-11-27 01:54:26] [INFO] Loaded 236000 items
-[2025-11-27 01:54:26] [INFO] Loaded 236500 items
-[2025-11-27 01:54:27] [INFO] Loaded 237000 items
-[2025-11-27 01:54:27] [INFO] Loaded 237500 items
-[2025-11-27 01:54:27] [INFO] Loaded 238000 items
-[2025-11-27 01:54:27] [INFO] Loaded 238500 items
-[2025-11-27 01:54:27] [INFO] Loaded 239000 items
-[2025-11-27 01:54:28] [INFO] Loaded 239500 items
-[2025-11-27 01:54:28] [INFO] Loaded 240000 items
-[2025-11-27 01:54:28] [INFO] Loaded 240500 items
-[2025-11-27 01:54:28] [INFO] Loaded 241000 items
-[2025-11-27 01:54:28] [INFO] Loaded 241500 items
-[2025-11-27 01:54:29] [INFO] Loaded 242000 items
-[2025-11-27 01:54:29] [INFO] Loaded 242500 items
-[2025-11-27 01:54:29] [INFO] Loaded 243000 items
-[2025-11-27 01:54:29] [INFO] Loaded 243500 items
-[2025-11-27 01:54:30] [INFO] Loaded 244000 items
-[2025-11-27 01:54:30] [INFO] Loaded 244500 items
-[2025-11-27 01:54:30] [INFO] Loaded 245000 items
-[2025-11-27 01:54:30] [INFO] Loaded 245500 items
-[2025-11-27 01:54:31] [INFO] Loaded 246000 items
-[2025-11-27 01:54:31] [INFO] Loaded 246500 items
-[2025-11-27 01:54:31] [INFO] Loaded 247000 items
-[2025-11-27 01:54:31] [INFO] Loaded 247500 items
-[2025-11-27 01:54:32] [INFO] Loaded 248000 items
-[2025-11-27 01:54:32] [INFO] Loaded 248500 items
-[2025-11-27 01:54:32] [INFO] Loaded 249000 items
-[2025-11-27 01:54:33] [INFO] Loaded 249500 items
-[2025-11-27 01:54:33] [INFO] Loaded 250000 items
-[2025-11-27 01:54:33] [INFO] Loaded 250500 items
-[2025-11-27 01:54:33] [INFO] Loaded 251000 items
-[2025-11-27 01:54:33] [INFO] Loaded 251500 items
-[2025-11-27 01:54:34] [INFO] Loaded 252000 items
-[2025-11-27 01:54:34] [INFO] Loaded 252500 items
-[2025-11-27 01:54:34] [INFO] Loaded 253000 items
-[2025-11-27 01:54:34] [INFO] Loaded 253500 items
-[2025-11-27 01:54:35] [INFO] Loaded 254000 items
-[2025-11-27 01:54:35] [INFO] Loaded 254500 items
-[2025-11-27 01:54:35] [INFO] Loaded 255000 items
+[2025-12-03 01:45:07] [START] REAL AUDIOBOOK ACQUISITION WORKFLOW
+[2025-12-03 01:45:07] [INFO] Start time: 2025-12-03T01:45:07.152298
+[2025-12-03 01:45:07] [INFO] 
+[2025-12-03 01:45:07] [INFO] ================================================================================
+[2025-12-03 01:45:07] [INFO] SYSTEM CONNECTIVITY CHECK
+[2025-12-03 01:45:07] [INFO] ================================================================================
+[2025-12-03 01:45:07] [OK] AudiobookShelf OK: 1 libraries
+[2025-12-03 01:45:07] [OK] Prowlarr OK: http://localhost:9696
+[2025-12-03 01:45:07] [OK] qBittorrent OK: http://192.168.0.48:52095/
+[2025-12-03 01:45:07] [OK] MAM credentials configured
+[2025-12-03 01:45:07] [INFO] 
+[2025-12-03 01:45:07] [OK] CORE SYSTEMS READY (Prowlarr optional)
+[2025-12-03 01:45:07] [INFO] 
+[2025-12-03 01:45:07] [INFO] ================================================================================
+[2025-12-03 01:45:07] [INFO] CURRENT LIBRARY SCAN
+[2025-12-03 01:45:07] [INFO] ================================================================================
+[2025-12-03 01:45:07] [INFO] Scanning library: Library
+[2025-12-03 01:45:07] [INFO] Loaded 500 items
+[2025-12-03 01:45:07] [INFO] Loaded 1000 items
+[2025-12-03 01:45:07] [INFO] Limiting scan to 1000 items for testing
+[2025-12-03 01:45:07] [INFO] Existing books: 494
+[2025-12-03 01:45:07] [INFO] Existing authors: 0
+[2025-12-03 01:45:07] [INFO] Existing series: 297
+[2025-12-03 01:45:07] [OK] Library scan complete: 1000 items
+[2025-12-03 01:45:07] [INFO] 
+[2025-12-03 01:45:07] [INFO] ================================================================================
+[2025-12-03 01:45:07] [INFO] NEXT STEPS
+[2025-12-03 01:45:07] [INFO] ================================================================================
+[2025-12-03 01:45:07] [OK] System connectivity verified
+[2025-12-03 01:45:07] [OK] Current library cataloged
+[2025-12-03 01:45:07] [INFO] 
+[2025-12-03 01:45:07] [INFO] Ready to proceed with:
+[2025-12-03 01:45:07] [INFO] 1. Search for top 10 Science Fiction (last 10 days)
+[2025-12-03 01:45:07] [INFO] 2. Search for top 10 Fantasy (last 10 days)
+[2025-12-03 01:45:07] [INFO] 3. Skip existing books, fill gaps from ranked list
+[2025-12-03 01:45:07] [INFO] 4. Download via qBittorrent with VIP rules
+[2025-12-03 01:45:07] [INFO] 5. Add to AudiobookShelf
+[2025-12-03 01:45:07] [INFO] 6. Sync metadata
+[2025-12-03 01:45:07] [INFO] 7. Build author history
+[2025-12-03 01:45:07] [INFO] 
+[2025-12-03 01:45:07] [INFO] Saving scan results...
+[2025-12-03 01:45:08] [OK] Execution phase 1 complete. Ready for full workflow execution.
+[2025-12-03 01:45:08] [INFO] 
+[2025-12-03 01:45:08] [INFO] ================================================================================
+[2025-12-03 01:45:08] [INFO] PHASE 2: AUDIOBOOK DISCOVERY & ACQUISITION
+[2025-12-03 01:45:08] [INFO] ================================================================================
+[2025-12-03 01:45:08] [INFO] 
+[2025-12-03 01:45:08] [INFO] ================================================================================
+[2025-12-03 01:45:08] [INFO] AUDIOBOOK DISCOVERY
+[2025-12-03 01:45:08] [INFO] ================================================================================
+[2025-12-03 01:45:08] [INFO] Loaded 20 audiobooks from curated list
+[2025-12-03 01:45:08] [INFO] Selected 10 new audiobooks for discovery
+[2025-12-03 01:45:08] [OK] Discovery complete: 10 books to acquire
+[2025-12-03 01:45:08] [OK] Discovery complete: 10 audiobooks to acquire
+[2025-12-03 01:45:08] [INFO] 
+[2025-12-03 01:45:08] [INFO] ================================================================================
+[2025-12-03 01:45:08] [INFO] PHASE 3: MAM SEARCH & DOWNLOAD
+[2025-12-03 01:45:08] [INFO] ================================================================================
+[2025-12-03 01:45:08] [OK] Connected to qBittorrent: http://192.168.0.48:52095/
+[2025-12-03 01:45:26] [OK] MAM authentication successful, searching 5 books
+[2025-12-03 01:45:26] [INFO] [1/5] Searching MAM for: The Name of the Wind by Patrick Rothfuss
+[2025-12-03 01:45:41] [OK] Found on MAM: The Name of the Wind
+[2025-12-03 01:45:41] [INFO] Downloading from MAM authenticated URL: The Name of the Wind
+[2025-12-03 01:45:42] [OK] Downloaded: The Name of the Wind
+[2025-12-03 01:45:42] [OK] [QUEUED] Queued to qBittorrent: The Name of the Wind
+[2025-12-03 01:45:42] [INFO] [2/5] Searching MAM for: The Way of Kings by Brandon Sanderson
+[2025-12-03 01:46:27] [OK] Found on MAM: The Way of Kings
+[2025-12-03 01:46:27] [INFO] Downloading from MAM authenticated URL: The Way of Kings
+[2025-12-03 01:46:28] [OK] Downloaded: The Way of Kings
+[2025-12-03 01:46:28] [OK] [QUEUED] Queued to qBittorrent: The Way of Kings
+[2025-12-03 01:46:28] [INFO] [3/5] Searching MAM for: Mistborn: The Final Empire by Brandon Sanderson
+[2025-12-03 01:47:13] [OK] Found on MAM: Mistborn: The Final Empire
+[2025-12-03 01:47:13] [INFO] Downloading from MAM authenticated URL: Mistborn: The Final Empire
+[2025-12-03 01:47:13] [OK] Downloaded: Mistborn: The Final Empire
+[2025-12-03 01:47:14] [OK] [QUEUED] Queued to qBittorrent: Mistborn: The Final Empire
+[2025-12-03 01:47:14] [INFO] [4/5] Searching MAM for: The Lies of Locke Lamora by Scott Lynch
+[2025-12-03 01:47:58] [OK] Found on MAM: The Lies of Locke Lamora
+[2025-12-03 01:47:58] [INFO] Downloading from MAM authenticated URL: The Lies of Locke Lamora
+[2025-12-03 01:47:59] [OK] Downloaded: The Lies of Locke Lamora
+[2025-12-03 01:47:59] [OK] [QUEUED] Queued to qBittorrent: The Lies of Locke Lamora
+[2025-12-03 01:47:59] [INFO] [5/5] Searching MAM for: Assassin's Apprentice by Robin Hobb
+[2025-12-03 01:48:44] [OK] Found on MAM: Assassin's Apprentice
+[2025-12-03 01:48:44] [INFO] Downloading from MAM authenticated URL: Assassin's Apprentice
+[2025-12-03 01:48:45] [OK] Downloaded: Assassin's Apprentice
+[2025-12-03 01:48:45] [OK] [QUEUED] Queued to qBittorrent: Assassin's Apprentice
+[2025-12-03 01:48:45] [OK] Total queued: 5/5
+[2025-12-03 01:48:47] [INFO] MAM crawler closed
+[2025-12-03 01:48:47] [OK] Queued 5 downloads in qBittorrent
+[2025-12-03 01:48:47] [INFO] 
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] PHASE 4: AUDIOBOOK SHELF INTEGRATION
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] 
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] AUDIOBOOKSHELF INTEGRATION
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] Would add 'The Name of the Wind' to AudiobookShelf
+[2025-12-03 01:48:47] [INFO] Would add 'The Way of Kings' to AudiobookShelf
+[2025-12-03 01:48:47] [INFO] Would add 'Mistborn: The Final Empire' to AudiobookShelf
+[2025-12-03 01:48:47] [INFO] Would add 'The Lies of Locke Lamora' to AudiobookShelf
+[2025-12-03 01:48:47] [INFO] Would add 'Assassin's Apprentice' to AudiobookShelf
+[2025-12-03 01:48:47] [OK] AudiobookShelf integration complete: 5 books added
+[2025-12-03 01:48:47] [OK] Added 5 audiobooks to library
+[2025-12-03 01:48:47] [INFO] 
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] PHASE 5: METADATA SYNCHRONIZATION
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] 
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] METADATA SYNC
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] Would sync metadata for 'The Name of the Wind'
+[2025-12-03 01:48:47] [INFO] Would sync metadata for 'The Way of Kings'
+[2025-12-03 01:48:47] [INFO] Would sync metadata for 'Mistborn: The Final Empire'
+[2025-12-03 01:48:47] [INFO] Would sync metadata for 'The Lies of Locke Lamora'
+[2025-12-03 01:48:47] [INFO] Would sync metadata for 'Assassin's Apprentice'
+[2025-12-03 01:48:47] [OK] Metadata sync complete: 5 books synced
+[2025-12-03 01:48:47] [OK] Metadata sync complete: 5 books synced
+[2025-12-03 01:48:47] [INFO] 
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] PHASE 6: AUTHOR HISTORY SUMMARY
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [OK] Author history: 4 unique authors in downloaded books
+[2025-12-03 01:48:47] [INFO]   - Brandon Sanderson
+[2025-12-03 01:48:47] [INFO]   - Patrick Rothfuss
+[2025-12-03 01:48:47] [INFO]   - Robin Hobb
+[2025-12-03 01:48:47] [INFO]   - Scott Lynch
+[2025-12-03 01:48:47] [INFO] 
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] WORKFLOW COMPLETE
+[2025-12-03 01:48:47] [INFO] ================================================================================
+[2025-12-03 01:48:47] [INFO] End time: 2025-12-03T01:48:47.374221
+[2025-12-03 01:48:47] [OK] Full audiobook acquisition workflow executed successfully
+[2025-12-03 01:52:51] [START] REAL AUDIOBOOK ACQUISITION WORKFLOW
+[2025-12-03 01:52:51] [INFO] Start time: 2025-12-03T01:52:51.309430
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [INFO] SYSTEM CONNECTIVITY CHECK
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [OK] AudiobookShelf OK: 1 libraries
+[2025-12-03 01:52:51] [OK] Prowlarr OK: http://localhost:9696
+[2025-12-03 01:52:51] [OK] qBittorrent OK: http://192.168.0.48:52095/
+[2025-12-03 01:52:51] [OK] MAM credentials configured
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:51] [OK] CORE SYSTEMS READY (Prowlarr optional)
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [INFO] CURRENT LIBRARY SCAN
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [INFO] Scanning library: Library
+[2025-12-03 01:52:51] [INFO] Loaded 500 items
+[2025-12-03 01:52:51] [INFO] Loaded 1000 items
+[2025-12-03 01:52:51] [INFO] Limiting scan to 1000 items for testing
+[2025-12-03 01:52:51] [INFO] Existing books: 494
+[2025-12-03 01:52:51] [INFO] Existing authors: 0
+[2025-12-03 01:52:51] [INFO] Existing series: 297
+[2025-12-03 01:52:51] [OK] Library scan complete: 1000 items
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [INFO] NEXT STEPS
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [OK] System connectivity verified
+[2025-12-03 01:52:51] [OK] Current library cataloged
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:51] [INFO] Ready to proceed with:
+[2025-12-03 01:52:51] [INFO] 1. Search for top 10 Science Fiction (last 10 days)
+[2025-12-03 01:52:51] [INFO] 2. Search for top 10 Fantasy (last 10 days)
+[2025-12-03 01:52:51] [INFO] 3. Skip existing books, fill gaps from ranked list
+[2025-12-03 01:52:51] [INFO] 4. Download via qBittorrent with VIP rules
+[2025-12-03 01:52:51] [INFO] 5. Add to AudiobookShelf
+[2025-12-03 01:52:51] [INFO] 6. Sync metadata
+[2025-12-03 01:52:51] [INFO] 7. Build author history
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:51] [INFO] Saving scan results...
+[2025-12-03 01:52:51] [OK] Execution phase 1 complete. Ready for full workflow execution.
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [INFO] PHASE 2: AUDIOBOOK DISCOVERY & ACQUISITION
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [INFO] AUDIOBOOK DISCOVERY
+[2025-12-03 01:52:51] [INFO] ================================================================================
+[2025-12-03 01:52:51] [INFO] Loaded 20 audiobooks from curated list
+[2025-12-03 01:52:51] [INFO] Selected 10 new audiobooks for discovery
+[2025-12-03 01:52:51] [OK] Discovery complete: 10 books to acquire
+[2025-12-03 01:52:51] [OK] Discovery complete: 10 audiobooks to acquire
+[2025-12-03 01:52:51] [INFO] 
+[2025-12-03 01:52:52] [INFO] ================================================================================
+[2025-12-03 01:52:52] [INFO] PHASE 3: MAM SEARCH & DOWNLOAD
+[2025-12-03 01:52:52] [INFO] ================================================================================
+[2025-12-03 01:52:52] [OK] Connected to qBittorrent: http://192.168.0.48:52095/
+[2025-12-03 01:53:09] [OK] MAM authentication successful, searching 5 books
+[2025-12-03 01:53:09] [INFO] [1/5] Searching MAM for: The Name of the Wind by Patrick Rothfuss
+[2025-12-03 01:53:23] [OK] Found on MAM: The Name of the Wind
+[2025-12-03 01:53:23] [INFO] Downloading from MAM authenticated URL: The Name of the Wind
+[2025-12-03 01:53:25] [OK] Downloaded: The Name of the Wind
+[2025-12-03 01:53:25] [OK] [QUEUED] Queued to qBittorrent: The Name of the Wind
+[2025-12-03 01:53:25] [INFO] [2/5] Searching MAM for: The Way of Kings by Brandon Sanderson
+[2025-12-03 01:54:08] [OK] Found on MAM: The Way of Kings
+[2025-12-03 01:54:08] [INFO] Downloading from MAM authenticated URL: The Way of Kings
+[2025-12-03 01:54:09] [OK] Downloaded: The Way of Kings
+[2025-12-03 01:54:09] [OK] [QUEUED] Queued to qBittorrent: The Way of Kings
+[2025-12-03 01:54:09] [INFO] [3/5] Searching MAM for: Mistborn: The Final Empire by Brandon Sanderson
+[2025-12-03 01:54:54] [OK] Found on MAM: Mistborn: The Final Empire
+[2025-12-03 01:54:54] [INFO] Downloading from MAM authenticated URL: Mistborn: The Final Empire
+[2025-12-03 01:54:55] [OK] Downloaded: Mistborn: The Final Empire
+[2025-12-03 01:54:55] [OK] [QUEUED] Queued to qBittorrent: Mistborn: The Final Empire
+[2025-12-03 01:54:55] [INFO] [4/5] Searching MAM for: The Lies of Locke Lamora by Scott Lynch
+[2025-12-03 01:55:41] [OK] Found on MAM: The Lies of Locke Lamora
+[2025-12-03 01:55:41] [INFO] Downloading from MAM authenticated URL: The Lies of Locke Lamora
+[2025-12-03 01:55:42] [OK] Downloaded: The Lies of Locke Lamora
+[2025-12-03 01:55:42] [OK] [QUEUED] Queued to qBittorrent: The Lies of Locke Lamora
+[2025-12-03 01:55:42] [INFO] [5/5] Searching MAM for: Assassin's Apprentice by Robin Hobb
+[2025-12-03 01:56:28] [OK] Found on MAM: Assassin's Apprentice
+[2025-12-03 01:56:28] [INFO] Downloading from MAM authenticated URL: Assassin's Apprentice
+[2025-12-03 01:56:29] [OK] Downloaded: Assassin's Apprentice
+[2025-12-03 01:56:29] [OK] [QUEUED] Queued to qBittorrent: Assassin's Apprentice
+[2025-12-03 01:56:29] [OK] Total queued: 5/5
+[2025-12-03 01:56:31] [INFO] MAM crawler closed
+[2025-12-03 01:56:31] [OK] Queued 5 downloads in qBittorrent
+[2025-12-03 01:56:31] [INFO] 
+[2025-12-03 01:56:31] [INFO] ================================================================================
+[2025-12-03 01:56:31] [INFO] PHASE 4: AUDIOBOOK SHELF INTEGRATION
+[2025-12-03 01:56:31] [INFO] ================================================================================
+[2025-12-03 01:56:31] [INFO] 
+[2025-12-03 01:56:31] [INFO] ================================================================================
+[2025-12-03 01:56:31] [INFO] AUDIOBOOKSHELF INTEGRATION
+[2025-12-03 01:56:31] [INFO] ================================================================================
+[2025-12-03 01:56:31] [WARN] Downloaded files not yet organized for: The Name of the Wind
+[2025-12-03 01:56:31] [INFO] Download not yet ready for 'The Name of the Wind' - will be added on next scan
+[2025-12-03 01:56:31] [OK] Added 'The Name of the Wind' to AudiobookShelf
+[2025-12-03 01:56:31] [WARN] Downloaded files not yet organized for: The Way of Kings
+[2025-12-03 01:56:31] [INFO] Download not yet ready for 'The Way of Kings' - will be added on next scan
+[2025-12-03 01:56:31] [OK] Added 'The Way of Kings' to AudiobookShelf
+[2025-12-03 01:56:31] [WARN] Downloaded files not yet organized for: Mistborn: The Final Empire
+[2025-12-03 01:56:31] [INFO] Download not yet ready for 'Mistborn: The Final Empire' - will be added on next scan
+[2025-12-03 01:56:31] [OK] Added 'Mistborn: The Final Empire' to AudiobookShelf
+[2025-12-03 01:56:31] [WARN] Downloaded files not yet organized for: The Lies of Locke Lamora
+[2025-12-03 01:56:31] [INFO] Download not yet ready for 'The Lies of Locke Lamora' - will be added on next scan
+[2025-12-03 01:56:31] [OK] Added 'The Lies of Locke Lamora' to AudiobookShelf
+[2025-12-03 01:56:31] [WARN] Downloaded files not yet organized for: Assassin's Apprentice
+[2025-12-03 01:56:31] [INFO] Download not yet ready for 'Assassin's Apprentice' - will be added on next scan
+[2025-12-03 01:56:31] [OK] Added 'Assassin's Apprentice' to AudiobookShelf
+[2025-12-03 01:56:31] [OK] AudiobookShelf integration complete: 5 books processed
+[2025-12-03 01:56:31] [OK] Library scan triggered for library a5b2b968-59bf-46fc-baf8-a31fc7273c17
+[2025-12-03 01:56:31] [OK] Added 5 audiobooks to library
+[2025-12-03 01:56:31] [INFO] 
+[2025-12-03 01:56:31] [INFO] ================================================================================
+[2025-12-03 01:56:31] [INFO] PHASE 5: METADATA SYNCHRONIZATION
+[2025-12-03 01:56:31] [INFO] ================================================================================
+[2025-12-03 01:56:31] [INFO] 
+[2025-12-03 01:56:31] [INFO] ================================================================================
+[2025-12-03 01:56:31] [INFO] METADATA SYNCHRONIZATION
+[2025-12-03 01:56:31] [INFO] ================================================================================
+[2025-12-03 01:56:31] [INFO] Syncing metadata for 'The Name of the Wind' by Patrick Rothfuss
+[2025-12-03 01:56:32] [OK] Found metadata on Google Books for: The Name of the Wind
+[2025-12-03 01:56:32] [OK] Metadata synced for 'The Name of the Wind'
+[2025-12-03 01:56:32] [OK] Metadata sync complete: 'The Name of the Wind'
+[2025-12-03 01:56:32] [INFO] Syncing metadata for 'The Way of Kings' by Brandon Sanderson
+[2025-12-03 01:56:32] [OK] Found metadata on Google Books for: The Way of Kings
+[2025-12-03 01:56:32] [OK] Metadata synced for 'The Way of Kings'
+[2025-12-03 01:56:32] [OK] Metadata sync complete: 'The Way of Kings'
+[2025-12-03 01:56:32] [INFO] Syncing metadata for 'Mistborn: The Final Empire' by Brandon Sanderson
+[2025-12-03 01:56:33] [OK] Found metadata on Google Books for: Mistborn: The Final Empire
+[2025-12-03 01:56:33] [OK] Metadata synced for 'Mistborn: The Final Empire'
+[2025-12-03 01:56:33] [OK] Metadata sync complete: 'Mistborn: The Final Empire'
+[2025-12-03 01:56:33] [INFO] Syncing metadata for 'The Lies of Locke Lamora' by Scott Lynch
+[2025-12-03 01:56:33] [OK] Found metadata on Google Books for: The Lies of Locke Lamora
+[2025-12-03 01:56:33] [OK] Metadata synced for 'The Lies of Locke Lamora'
+[2025-12-03 01:56:33] [OK] Metadata sync complete: 'The Lies of Locke Lamora'
+[2025-12-03 01:56:33] [INFO] Syncing metadata for 'Assassin's Apprentice' by Robin Hobb
+[2025-12-03 01:56:34] [OK] Found metadata on Google Books for: Assassin's Apprentice
+[2025-12-03 01:56:34] [OK] Metadata synced for 'Assassin's Apprentice'
+[2025-12-03 01:56:34] [OK] Metadata sync complete: 'Assassin's Apprentice'
+[2025-12-03 01:56:34] [OK] Metadata synchronization complete: 5 books synced
+[2025-12-03 01:56:34] [OK] Metadata sync complete: 5 books synced
+[2025-12-03 01:56:34] [INFO] 
+[2025-12-03 01:56:34] [INFO] ================================================================================
+[2025-12-03 01:56:34] [INFO] PHASE 6: AUTHOR HISTORY SUMMARY
+[2025-12-03 01:56:34] [INFO] ================================================================================
+[2025-12-03 01:56:34] [OK] Author history: 4 unique authors in downloaded books
+[2025-12-03 01:56:34] [INFO]   - Brandon Sanderson
+[2025-12-03 01:56:34] [INFO]   - Patrick Rothfuss
+[2025-12-03 01:56:34] [INFO]   - Robin Hobb
+[2025-12-03 01:56:34] [INFO]   - Scott Lynch
+[2025-12-03 01:56:34] [INFO] 
+[2025-12-03 01:56:34] [INFO] ================================================================================
+[2025-12-03 01:56:34] [INFO] WORKFLOW COMPLETE
+[2025-12-03 01:56:34] [INFO] ================================================================================
+[2025-12-03 01:56:34] [INFO] End time: 2025-12-03T01:56:34.467474
+[2025-12-03 01:56:34] [OK] Full audiobook acquisition workflow executed successfully

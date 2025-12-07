@@ -1,0 +1,68 @@
+Hardcover
+
+Search
+CTRL K
+Discover
+Browse
+Subscribe
+Open user menu
+Your Avatar
+← Account
+
+API Access
+Our API is stil in the works, but you can experiment with it today. Here's a quick look at how.
+
+Our API is accessible using GraphQL. The API that you can use is exactly the same API used by the website, iOS and Android apps.
+
+To get stated, head over to the GraphQL console.
+
+Next, add a header just called "authorization" (no quotes) with the following value:
+
+Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIYXJkY292ZXIiLCJ2ZXJzaW9uIjoiOCIsImp0aSI6IjYyNGE3NGZlLTk5NzAtNDdmYi1hYjM3LTUyNzdkMTE0MGRmMCIsImFwcGxpY2F0aW9uSWQiOjIsInN1YiI6IjQ1OTA5IiwiYXVkIjoiMSIsImlkIjoiNDU5MDkiLCJsb2dnZWRJbiI6dHJ1ZSwiaWF0IjoxNzY0NDEwMDY3LCJleHAiOjE3OTU5NDYwNjcsImh0dHBzOi8vaGFzdXJhLmlvL2p3dC9jbGFpbXMiOnsieC1oYXN1cmEtYWxsb3dlZC1yb2xlcyI6WyJ1c2VyIl0sIngtaGFzdXJhLWRlZmF1bHQtcm9sZSI6InVzZXIiLCJ4LWhhc3VyYS1yb2xlIjoidXNlciIsIlgtaGFzdXJhLXVzZXItaWQiOiI0NTkwOSJ9LCJ1c2VyIjp7ImlkIjo0NTkwOX19.5k8tmy2uz0JVbcxEIpn3MGWun0M6ZWC6Tnhj8ekHNkI
+Tab out of the field, and you'll be able to see a list of all endpoints!
+
+To test that it's working, try the following GraphQL query
+
+query Test {
+    me {
+      username
+    }
+  }
+Click the play button and you should see your username!
+
+This token has a 1-year expiration time from the moment you loaded this page. Hopefully (🤞) we'll have a better API to use by then with more concrete instructions.
+
+A Few Notes
+This token will work for 1 year from today. After that, you'll need to regenerate it. The exact expiration date is 11/29/2026, 1:54:27 AM.
+The API is still heavily in flux right now. Anything you build using it could break in the future.
+We may reset tokens without notice while in beta.
+The same ownership rights exist for this as anything on the site. You own your data. This means you can't use the API to access and use someone elses data.
+This API is running the same as if you were using the browser. Any actions you take will be under your user.
+Don't share your token! Someone could delete your account with it.
+This should only be used from a code backend - never from a browser.
+Later on we'll get some better documentation, don't worry. 😉
+Footer links
+Community
+
+Readers & Supporters
+Join Our Discord
+How to link roles on Discord
+Copy referral link
+Follow Along
+
+Blog
+Hardcover Live
+About Hardcover
+Request a feature
+We're an Open Book
+
+Frequently Asked Questions
+Contact Support
+Roadmap
+Our Policies
+iOS
+Android
+Discord
+TikTok
+Mastodon
+Instagram

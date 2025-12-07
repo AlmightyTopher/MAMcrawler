@@ -1,27 +1,38 @@
 """
 Configuration and procedures for MyAnonamouse.net passive crawling.
 This file contains the specific crawling guidelines and procedures for MAM.
+Now uses the unified configuration system.
 """
 
 from typing import Dict, List, Any
 import json
 
+# Import from unified configuration system
+from config_system import ConfigSystem
+
+_config_system = ConfigSystem()
+
+
 class MAMCrawlingProcedures:
     """
     Contains the specific procedures and guidelines for crawling MyAnonamouse.net.
     This is designed to be dynamically updated based on new information.
+    Now uses the unified configuration system.
     """
 
     def __init__(self):
-        self.allowed_endpoints = {
+        # Load MAM crawler configuration from unified system
+        mam_config = _config_system.get_config('mam_crawler')
+
+        self.allowed_endpoints = mam_config.get('allowed_endpoints', {
             "homepage": "/",
             "browse": "/tor/browse.php",
             "search": "/tor/search.php",
             "torrent_details": "/t/",  # Public torrent pages only
             "category_browse": "/tor/browse.php?cat=",
-        }
+        })
 
-        self.forbidden_patterns = [
+        self.forbidden_patterns = mam_config.get('forbidden_patterns', [
             "/user/",  # User profiles
             "/account/",  # Account pages
             "/admin/",  # Admin areas
@@ -31,16 +42,16 @@ class MAMCrawlingProcedures:
             "/upload",  # Upload pages
             "/download",  # Direct download links
             "/api/",  # API endpoints
-        ]
+        ])
 
-        self.rate_limits = {
+        self.rate_limits = mam_config.get('rate_limits', {
             "min_delay": 3,  # seconds between requests
             "max_delay": 10,  # maximum delay
             "max_pages_per_session": 50,  # pages per crawling session
             "session_timeout": 3600,  # 1 hour session timeout
-        }
+        })
 
-        self.extraction_schemas = {
+        self.extraction_schemas = mam_config.get('extraction_schemas', {
             "torrent_list": {
                 "name": "TorrentList",
                 "fields": [
@@ -62,7 +73,7 @@ class MAMCrawlingProcedures:
                     {"name": "upload_date", "selector": ".upload_date", "type": "text"},
                 ]
             }
-        }
+        })
 
     def is_allowed_url(self, url: str) -> bool:
         """Check if a URL is allowed for passive crawling."""

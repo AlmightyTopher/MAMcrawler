@@ -1,0 +1,61 @@
+# API Endpoints Configuration
+# External API service endpoints and credentials
+
+# Audiobookshelf API
+audiobookshelf:
+  url: "http://localhost:13378"
+  token: null  # Loaded from secrets
+  timeout: 30
+  retry_attempts: 3
+  retry_delay: 1.0
+
+# MyAnonamouse API
+myanonamouse:
+  base_url: "https://www.myanonamouse.net"
+  username: null  # Loaded from secrets
+  password: null  # Loaded from secrets
+  session_timeout: 3600
+  rate_limit_delay: 3.0
+
+# qBittorrent API
+qbittorrent:
+  host: "localhost"
+  port: 8080
+  username: "admin"
+  password: null  # Loaded from secrets
+  timeout: 30
+  download_path: "downloads"
+
+# Goodreads API
+goodreads:
+  base_url: "https://www.goodreads.com"
+  api_key: null  # Loaded from secrets
+  timeout: 30
+
+# Google Books API
+google_books:
+  base_url: "https://www.googleapis.com/books/v1"
+  api_key: null  # Loaded from secrets
+  timeout: 30
+
+# Prowlarr API
+prowlarr:
+  url: "http://localhost:9696"
+  api_key: null  # Loaded from secrets
+  timeout: 30
+
+# Hardcover API
+hardcover:
+  base_url: "https://api.hardcover.app/v1"
+  token: null  # Loaded from secrets
+  timeout: 30
+
+# External services
+external:
+  # Rate limiting
+  requests_per_minute: 60
+  burst_limit: 10
+
+  # Common settings
+  user_agent: "MAMcrawler/2.0.0"
+  accept_language: "en-US,en;q=0.9"

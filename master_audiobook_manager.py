@@ -45,22 +45,25 @@ try:
 except ImportError:
     get_metadata = None
 
+# Import Core Logic Modules
 try:
-    from audiobookshelf_metadata_sync import AudiobookshelfMetadataSync
-except ImportError:
-    # Fallback stub for development
-    class AudiobookshelfMetadataSync:
-        async def run(self):
-            return {'stats': {'books_updated': 0}}
-
-try:
-    from audiobook_auto_batch import AutomatedAudiobookBatch
-except ImportError:
-    AutomatedAudiobookBatch = None
+    from mamcrawler.unified_config import config
+    from mamcrawler.mam_categories import MAMCategories
+    from mamcrawler.metadata_scanner import MetadataScanner
+    from mamcrawler.event_pacing import EventAwarePacing
+    from mamcrawler.author_series_completion import AuthorSeriesCompletion
+    from mamcrawler.quality import QualityFilter
+    from mamcrawler.metadata_maintenance import MetadataMaintenance
+    from mamcrawler.qbittorrent_monitor import QBittorrentMonitor
+    
+    CORE_MODULES_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"Core modules not available: {e}")
+    CORE_MODULES_AVAILABLE = False
 
 # Import Selenium integration (NEW)
 try:
-    from selenium_integration import run_selenium_top_search, SeleniumIntegrationConfig
+    from selenium_integration import run_selenium_top_search, SeleniumIntegrationConfig, get_mam_user_stats
     SELENIUM_AVAILABLE = True
 except ImportError as e:
     SELENIUM_AVAILABLE = False
@@ -78,6 +81,48 @@ class MasterAudiobookManager:
         self.setup_logging()
         self.setup_directories()
 
+        # Initialize Core Modules
+        if CORE_MODULES_AVAILABLE:
+            self.logger.info("Initializing core logic modules...")
+            
+            # Mocks/Stubs for dependencies not yet fully integrated in this file
+            # In a real scenario, we'd pass actual clients here.
+            # For now, we'll rely on the modules' internal default initializations 
+            # or pass None where they expect clients that we haven't instantiated here yet.
+            # Note: Some modules like MetadataScanner need clients. 
+            # We will instantiate them lazily or with what we have.
+            
+            # For this integration, we assume the modules can handle their own client creation 
+            # or we need to create them here.
+            # Let's create the shared clients first.
+            
+            # We need to instantiate clients if we want to pass them. 
+            # However, the current MasterAudiobookManager uses direct requests/selenium.
+            # The new modules use specific client classes (QBittorrentClient, AudiobookshelfClient).
+            # We should probably instantiate those if we want to use the new modules fully.
+            # But to keep it simple for this step, we will instantiate the logic modules.
+            
+            # Note: MetadataScanner needs qbt, abs, goodreads clients.
+            # We'll instantiate them with None for now and let them fail gracefully or use their internal logic if robust.
+            # Actually, looking at the code, they expect clients passed in.
+            # We should probably update the legacy code to use the new clients eventually.
+            # For now, let's initialize what we can.
+            
+            self.config = config
+            self.categories = MAMCategories()
+            self.pacing = EventAwarePacing()
+            self.quality = QualityFilter()
+            self.completion = AuthorSeriesCompletion()
+            
+            # These require clients, so we'll initialize them in setup_clients() or similar
+            self.scanner = None 
+            self.maintenance = None
+            self.monitor = None
+            
+            self.logger.info("✓ Core logic modules initialized")
+        else:
+            self.logger.warning("⚠ Core logic modules NOT available - using legacy fallback")
+
         # Check Selenium integration availability
         self.selenium_available = SELENIUM_AVAILABLE and (
             SeleniumIntegrationConfig.validate() if SELENIUM_AVAILABLE else False
@@ -86,6 +131,16 @@ class MasterAudiobookManager:
             self.logger.info("✓ Selenium integration AVAILABLE - will use for real searches")
         else:
             self.logger.warning("⚠ Selenium integration NOT available - searches will be limited")
+
+        # Initialize Service Manager and check dependencies
+        try:
+            from mamcrawler.service_manager import ServiceManager
+            self.service_manager = ServiceManager()
+            self.service_manager.ensure_all_services()
+        except ImportError:
+            self.logger.warning("ServiceManager not available, skipping service checks")
+        except Exception as e:
+            self.logger.error(f"Error checking services: {e}")
 
         self.stats = {
             'started_at': datetime.now().isoformat(),
@@ -125,6 +180,57 @@ class MasterAudiobookManager:
         for dir_path in self.output_dirs.values():
             dir_path.mkdir(exist_ok=True)
 
+    def setup_clients(self):
+        """Initialize API clients for core modules."""
+        if not CORE_MODULES_AVAILABLE:
+            return
+
+        try:
+            from backend.integrations.qbittorrent_client import QBittorrentClient
+            from backend.integrations.abs_client import AudiobookshelfClient
+            from backend.integrations.hardcover_client import HardcoverClient
+            
+            # Initialize clients
+            self.qbt_client = QBittorrentClient()
+            self.abs_client = AudiobookshelfClient()
+            
+            # Initialize Hardcover client
+            hardcover_token = os.getenv('HARDCOVER_TOKEN')
+            if hardcover_token:
+                self.hardcover_client = HardcoverClient(api_token=hardcover_token)
+                self.logger.info("✓ Hardcover client initialized")
+            else:
+                self.logger.warning("⚠ HARDCOVER_TOKEN not set - metadata resolution will be limited")
+                self.hardcover_client = None
+            
+            # Initialize dependent modules
+            # Note: MetadataScanner will be updated to accept 'metadata_provider' instead of 'goodreads_client'
+            # or we pass hardcover_client as the provider.
+            self.scanner = MetadataScanner(
+                qbt_client=self.qbt_client,
+                abs_client=self.abs_client,
+                goodreads_client=self.hardcover_client # Passing Hardcover as the metadata provider
+            )
+            
+            self.maintenance = MetadataMaintenance(
+                abs_client=self.abs_client,
+                scanner=self.scanner
+            )
+            
+            self.monitor = QBittorrentMonitor(
+                qbt_client=self.qbt_client
+            )
+            
+            self.logger.info("✓ API clients and dependent modules initialized")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to initialize clients: {e}")
+            self.stats['errors'].append({
+                'operation': 'setup_clients',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            })
+
     async def update_all_metadata(self) -> Dict[str, Any]:
         """
         Update all books with comprehensive metadata.
@@ -135,25 +241,35 @@ class MasterAudiobookManager:
         self.logger.info("=" * 70)
 
         try:
-            # Step 1: Sync with Audiobookshelf metadata
-            self.logger.info("Step 1: Syncing Audiobookshelf metadata...")
-            abs_sync = AudiobookshelfMetadataSync()
-            await abs_sync.run()
-            
-            self.stats['metadata_updates'] = abs_sync.stats['books_updated']
+            # Ensure clients are set up
+            if CORE_MODULES_AVAILABLE and self.maintenance is None:
+                self.setup_clients()
 
-            # Step 2: Analyze existing library for missing data
-            self.logger.info("Step 2: Analyzing library for metadata completeness...")
-            library_analysis = await self.analyze_library_metadata()
+            if CORE_MODULES_AVAILABLE and self.maintenance:
+                # Step 1: Run weekly maintenance scan
+                self.logger.info("Step 1: Running metadata maintenance scan...")
+                results = await self.maintenance.run_weekly_scan()
+                
+                self.stats['metadata_updates'] = results.get('updated_count', 0)
+                
+                # Step 2: Analyze library (using new completion module if possible, or legacy)
+                self.logger.info("Step 2: Analyzing library for metadata completeness...")
+                # We can use the legacy analysis for now as it provides specific stats we use in reports
+                # Or we can upgrade this too. Let's keep legacy analysis for reporting consistency for now.
+                library_analysis = await self.analyze_library_metadata()
 
-            # Step 3: Generate metadata report
-            await self.generate_metadata_report(library_analysis)
+                # Step 3: Generate metadata report
+                await self.generate_metadata_report(library_analysis)
 
-            return {
-                'success': True,
-                'books_updated': self.stats['metadata_updates'],
-                'library_analysis': library_analysis
-            }
+                return {
+                    'success': True,
+                    'books_updated': self.stats['metadata_updates'],
+                    'library_analysis': library_analysis,
+                    'maintenance_results': results
+                }
+            else:
+                self.logger.warning("Core modules not available, skipping metadata update")
+                return {'success': False, 'error': 'Core modules not available'}
 
         except Exception as e:
             self.logger.error(f"Metadata update failed: {e}")
@@ -298,54 +414,7 @@ class MasterAudiobookManager:
             self.logger.error(f"Library analysis failed: {e}")
             return {'error': str(e)}
 
-    async def detect_missing_books(self) -> Dict[str, Any]:
-        """
-        Detect missing books with prioritized approach:
-        1. Series priority - find missing books in series
-        2. Author priority - find missing books by author
-        """
-        self.logger.info("=" * 70)
-        self.logger.info("MISSING BOOK DETECTION")
-        self.logger.info("=" * 70)
 
-        try:
-            # Step 1: Get current library
-            library_data = await self.get_audiobookshelf_library()
-            if not library_data:
-                return {'success': False, 'error': 'Could not access Audiobookshelf library'}
-
-            # Step 2: Analyze series
-            self.logger.info("Step 1: Analyzing series for missing books...")
-            series_analysis = await self.analyze_series_missing_books(library_data)
-
-            # Step 3: Analyze author missing books
-            self.logger.info("Step 2: Analyzing author missing books...")
-            author_analysis = await self.analyze_author_missing_books(library_data)
-
-            # Step 4: Generate missing books report
-            missing_report = await self.generate_missing_books_report(
-                series_analysis, author_analysis
-            )
-
-            self.stats['missing_books_found'] = len(missing_report.get('missing_books', []))
-            self.stats['series_books_missing'] = len(series_analysis.get('missing_books', []))
-            self.stats['author_books_missing'] = len(author_analysis.get('missing_books', []))
-
-            return {
-                'success': True,
-                'series_analysis': series_analysis,
-                'author_analysis': author_analysis,
-                'missing_report': missing_report
-            }
-
-        except Exception as e:
-            self.logger.error(f"Missing book detection failed: {e}")
-            self.stats['errors'].append({
-                'operation': 'missing_book_detection',
-                'error': str(e),
-                'timestamp': datetime.now().isoformat()
-            })
-            return {'success': False, 'error': str(e)}
 
     async def get_audiobookshelf_library(self) -> Optional[List[Dict]]:
         """Get complete Audiobookshelf library data."""
@@ -505,6 +574,39 @@ class MasterAudiobookManager:
             'missing_books': authors_with_missing
         }
 
+    async def detect_missing_books(self) -> Dict[str, Any]:
+        """
+        Detect missing books in the library by analyzing series and authors.
+        Orchestrates the analysis process.
+        """
+        self.logger.info("Detecting missing books...")
+        
+        # 1. Get library data
+        library_data = await self.get_audiobookshelf_library()
+        if not library_data:
+            return {'success': False, 'error': 'Could not fetch library data'}
+            
+        # 2. Analyze series
+        self.logger.info("Analyzing series gaps...")
+        series_analysis = await self.analyze_series_missing_books(library_data)
+        
+        # 3. Analyze authors
+        self.logger.info("Analyzing author gaps...")
+        author_analysis = await self.analyze_author_missing_books(library_data)
+        
+        self.stats['missing_books_found'] = (
+            series_analysis.get('series_with_missing_books', 0) + 
+            author_analysis.get('authors_with_missing', 0)
+        )
+        self.stats['series_books_missing'] = series_analysis.get('series_with_missing_books', 0)
+        self.stats['author_books_missing'] = author_analysis.get('authors_with_missing', 0)
+        
+        return {
+            'success': True,
+            'series_analysis': series_analysis,
+            'author_analysis': author_analysis
+        }
+
     async def run_top_10_search(self) -> Dict[str, Any]:
         """
         Run top 10 audiobook search using Selenium crawler with real MAM searches.
@@ -525,6 +627,41 @@ class MasterAudiobookManager:
                     'found': 0,
                     'queued': 0
                 }
+
+            # Check Pacing if available
+            if CORE_MODULES_AVAILABLE and self.pacing:
+                self.logger.info("Checking event-aware pacing...")
+                try:
+                    # Fetch real stats from MAM
+                    user_stats = await get_mam_user_stats()
+                    
+                    if user_stats:
+                        current_ratio = user_stats.get('ratio', 0.0)
+                        bonus_points = user_stats.get('bonus_points', 0.0)
+                        self.logger.info(f"MAM Stats: Ratio={current_ratio}, BP={bonus_points}")
+                        
+                        if not self.pacing.should_download_now(current_ratio):
+                            self.logger.warning(f"⚠️ Pacing check failed (Ratio {current_ratio} too low). Aborting search.")
+                            return {
+                                'success': False,
+                                'error': 'Pacing check failed',
+                                'searched': 0,
+                                'found': 0,
+                                'queued': 0
+                            }
+                    else:
+                        self.logger.warning("Could not fetch user stats, using cautious default (1.0)")
+                        if not self.pacing.should_download_now(1.0):
+                            return {
+                                'success': False,
+                                'error': 'Pacing check failed (default)',
+                                'searched': 0,
+                                'found': 0,
+                                'queued': 0
+                            }
+                            
+                except Exception as e:
+                    self.logger.warning(f"Could not check pacing: {e}")
 
             # Step 1: Detect missing books to search for
             self.logger.info("Step 1: Detecting missing books in library...")

@@ -1,0 +1,37 @@
+[2025-11-30 09:20:12] [START] REAL AUDIOBOOK ACQUISITION WORKFLOW WITH REAL DATA - FIXED MAM LOGIN
+[2025-11-30 09:20:12] [INFO] Start time: 2025-11-30T09:20:12.310468
+[2025-11-30 09:20:12] [INFO] 
+[2025-11-30 09:20:12] [INFO] ================================================================================
+[2025-11-30 09:20:12] [INFO] SYSTEM CONNECTIVITY CHECK
+[2025-11-30 09:20:12] [INFO] ================================================================================
+[2025-11-30 09:20:12] [OK] AudiobookShelf OK: 1 libraries
+[2025-11-30 09:20:12] [OK] qBittorrent OK: http://192.168.0.48:52095/
+[2025-11-30 09:20:12] [OK] MAM credentials configured
+[2025-11-30 09:20:12] [INFO] 
+[2025-11-30 09:20:12] [OK] ALL CORE SYSTEMS READY FOR REAL DATA PROCESSING
+[2025-11-30 09:20:12] [INFO] 
+[2025-11-30 09:20:12] [INFO] ================================================================================
+[2025-11-30 09:20:12] [INFO] CURRENT LIBRARY SCAN
+[2025-11-30 09:20:12] [INFO] ================================================================================
+[2025-11-30 09:20:12] [INFO] Scanning library: Library
+[2025-11-30 09:20:12] [INFO] Loaded 500 items
+[2025-11-30 09:20:12] [INFO] Loaded 1000 items
+[2025-11-30 09:20:12] [INFO] Limiting scan to 1000 items for testing
+[2025-11-30 09:20:12] [INFO] Existing books: 494
+[2025-11-30 09:20:12] [INFO] Existing authors: 0
+[2025-11-30 09:20:12] [INFO] Existing series: 297
+[2025-11-30 09:20:12] [OK] Library scan complete: 1000 items
+[2025-11-30 09:20:12] [INFO] 
+[2025-11-30 09:20:12] [INFO] ================================================================================
+[2025-11-30 09:20:12] [INFO] AUDIOBOOK DISCOVERY
+[2025-11-30 09:20:12] [INFO] ================================================================================
+[2025-11-30 09:20:12] [INFO] Loaded 20 REAL audiobooks to download
+[2025-11-30 09:20:12] [INFO] Selected 18 new audiobooks for acquisition
+[2025-11-30 09:20:12] [OK] Discovery complete: 18 books to acquire
+[2025-11-30 09:20:12] [INFO] 
+[2025-11-30 09:20:12] [INFO] ================================================================================
+[2025-11-30 09:20:12] [INFO] MAM CRAWLING & DOWNLOADING
+[2025-11-30 09:20:12] [INFO] ================================================================================
+[2025-11-30 09:20:13] [INFO] Selenium WebDriver initialized
+[2025-11-30 09:20:13] [INFO] Navigating to MAM login page...
+[2025-11-30 09:20:13] [FAIL] MAM login error: 'NoneType' object has no attribute 'get'

@@ -1,0 +1,82 @@
+# MAM Crawler Configuration
+# Specific settings for MyAnonamouse.net crawling operations
+
+# Site configuration
+site:
+  base_url: "https://www.myanonamouse.net"
+  allowed_domains: ["myanonamouse.net"]
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+# Authentication
+auth:
+  username: null  # Loaded from secrets
+  password: null  # Loaded from secrets
+  session_timeout: 3600
+  auto_relogin: true
+
+# Crawling rules
+rules:
+  allowed_endpoints:
+    - "/"
+    - "/tor/browse.php"
+    - "/tor/search.php"
+    - "/t/"  # Public torrent pages
+    - "/tor/browse.php?cat="
+
+  forbidden_patterns:
+    - "/user/"
+    - "/account/"
+    - "/admin/"
+    - "/mod/"
+    - "/login"
+    - "/register"
+    - "/upload"
+    - "/download"
+
+  rate_limits:
+    min_delay: 3.0
+    max_delay: 10.0
+    max_pages_per_session: 50
+    session_timeout: 3600
+
+# Content extraction
+extraction:
+  torrent_list_fields:
+    - "title"
+    - "category"
+    - "size"
+    - "seeders"
+    - "leechers"
+    - "upload_date"
+
+  torrent_details_fields:
+    - "title"
+    - "description"
+    - "category"
+    - "size"
+    - "uploaded_by"
+    - "upload_date"
+
+# Search settings
+search:
+  default_category: "audiobooks"
+  min_seeders: 1
+  max_results: 100
+  sort_by: "seeders"
+  sort_order: "desc"
+
+# Download settings
+download:
+  preferred_formats: ["FLAC", "MP3", "M4B"]
+  min_bitrate: 128
+  max_file_size_gb: 15
+  auto_add_to_qbittorrent: true
+
+# Compliance settings (MAM rules)
+compliance:
+  user_class: "VIP"
+  min_global_ratio: 1.5
+  ratio_buffer: 1.65
+  min_seed_hours: 108
+  seed_deadline_days: 30
+  max_upload_size_gb: 15

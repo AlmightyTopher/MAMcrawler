@@ -1,0 +1,49 @@
+# Database Configuration
+# Database connection and performance settings
+
+# PostgreSQL settings
+postgresql:
+  host: "localhost"
+  port: 5432
+  database: "audiobooks"
+  user: "postgres"
+  password: null  # Loaded from secrets
+  ssl_mode: "prefer"
+  connection_timeout: 30
+
+# SQLite settings (for local development)
+sqlite:
+  path: "data/mamcrawler.db"
+  journal_mode: "WAL"
+  synchronous: "NORMAL"
+  cache_size: -64000  # 64MB cache
+
+# Connection pool settings
+pool:
+  min_connections: 1
+  max_connections: 20
+  max_idle_time: 300
+  max_lifetime: 3600
+
+# Performance settings
+performance:
+  query_timeout: 60
+  statement_cache_size: 100
+  prepared_statement_cache_size: 50
+
+# Migration settings
+migrations:
+  path: "migrations"
+  table: "alembic_version"
+
+# Backup settings
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: 30
+  path: "backups"
+
+# Monitoring
+monitoring:
+  slow_query_threshold: 5.0  # seconds
+  enable_query_logging: false

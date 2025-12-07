@@ -1,0 +1,59 @@
+# System Configuration
+# General system-wide settings and operational parameters
+
+# Application settings
+app:
+  name: "MAMcrawler"
+  version: "2.0.0"
+  description: "MyAnonamouse.net Audiobook Crawler and Downloader"
+  author: "Agent 8"
+
+# Environment settings
+environment:
+  timezone: "America/Los_Angeles"
+  locale: "en_US"
+  encoding: "utf-8"
+  debug: false
+
+# File system paths
+paths:
+  output_dir: "output"
+  temp_dir: "temp"
+  logs_dir: "logs"
+  data_dir: "data"
+  cache_dir: "cache"
+  config_dir: "config"
+  secrets_dir: "config_secrets"
+
+# Performance settings
+performance:
+  max_concurrent_requests: 10
+  request_timeout: 30
+  cpu_limit: 80  # percentage
+  memory_limit: 1024  # MB
+
+# Resource management
+resources:
+  max_file_size_mb: 2048
+  cleanup_temp_files: true
+  compression_enabled: true
+
+# Monitoring and health checks
+monitoring:
+  enabled: true
+  health_check_interval: 60
+  metrics_collection: true
+  alert_on_high_usage: true
+
+# Backup settings
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: 30
+  compress_backups: true
+
+# Update settings
+updates:
+  auto_check: true
+  update_channel: "stable"
+  allow_prerelease: false

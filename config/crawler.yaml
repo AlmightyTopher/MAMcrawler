@@ -1,0 +1,59 @@
+# Crawler Configuration
+# Web crawling and stealth operation settings
+
+# Browser settings
+browser:
+  headless: true
+  type: "chromium"
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  viewport_width: 1920
+  viewport_height: 1080
+  timeout: 30000
+
+# Request throttling
+rate_limiting:
+  min_delay: 1.0
+  max_delay: 3.0
+  requests_per_minute: 30
+  burst_limit: 5
+
+# Stealth settings
+stealth:
+  enabled: true
+  randomize_user_agent: true
+  randomize_viewport: false
+  disable_images: false
+  disable_javascript: false
+  use_proxy: false
+
+# Proxy settings (optional)
+proxy:
+  enabled: false
+  http_proxy: null
+  https_proxy: null
+  socks_proxy: null
+
+# VPN settings (optional)
+vpn:
+  enabled: false
+  wireguard_config: null
+  protonvpn_enabled: false
+
+# Session management
+session:
+  timeout: 3600  # 1 hour
+  max_pages_per_session: 50
+  cookie_persistence: true
+
+# Error handling
+error_handling:
+  max_retries: 3
+  retry_delay: 5.0
+  backoff_factor: 2.0
+  timeout: 30
+
+# Content extraction
+extraction:
+  wait_for_selector_timeout: 10
+  scroll_delay: 1.0
+  screenshot_on_error: false

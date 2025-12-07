@@ -21,13 +21,15 @@ from datetime import datetime
 from pathlib import Path
 
 import sys
-if sys.platform == 'win32':
-    import io
-    try:
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-    except:
-        pass
+# if sys.platform == 'win32':
+#     import io
+#     try:
+#         if hasattr(sys.stdout, 'buffer'):
+#             sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+#         if hasattr(sys.stderr, 'buffer'):
+#             sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+#     except Exception:
+#         pass
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -405,6 +407,19 @@ class SeleniumAsyncWrapper:
                 'found': 0
             }
 
+    async def get_user_stats(self) -> Optional[Dict[str, Any]]:
+        """Get user stats asynchronously"""
+        if not self.crawler:
+            await self.initialize()
+        
+        if not self.crawler:
+            return None
+            
+        return await self.loop.run_in_executor(
+            None,
+            self.crawler.get_user_stats
+        )
+
     async def cleanup(self):
         """Clean up resources"""
         if self.crawler:
@@ -423,34 +438,34 @@ async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
                                  books: Optional[List[Dict]] = None,
                                  db_session=None) -> Dict[str, Any]:
     """Run top search using Selenium crawler integrated with master manager
-
+    
     This is the main integration point for MasterAudiobookManager.
-
+    
     Args:
         missing_analysis: Optional output from detect_missing_books()
         books: Optional list of books to search
         db_session: Optional SQLAlchemy session for database operations
-
+        
     Returns:
         Result dict with search statistics and status
     """
     logger.info("Starting Selenium top search...")
-
+    
     # Generate search terms from analysis
     search_terms = []
-
+    
     if missing_analysis:
         # Extract search terms from missing books analysis
         series_missing = missing_analysis.get('series_analysis', {}).get('missing_books', [])
         author_missing = missing_analysis.get('author_analysis', {}).get('missing_books', [])
-
+        
         search_terms.extend(SeleniumSearchTermGenerator.from_series_analysis(series_missing))
         search_terms.extend(SeleniumSearchTermGenerator.from_author_analysis(author_missing))
-
+        
     elif books:
         # Use provided books list
         search_terms = SeleniumSearchTermGenerator.from_missing_books_list(books)
-
+    
     if not search_terms:
         logger.warning("No search terms generated")
         return {
@@ -460,7 +475,7 @@ async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
             'found': 0,
             'queued': 0
         }
-
+    
     # Initialize wrapper
     wrapper = SeleniumAsyncWrapper()
     if not await wrapper.initialize():
@@ -471,10 +486,15 @@ async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
             'found': 0,
             'queued': 0
         }
-
+        
+    # Fetch user stats (Ratio, BP) - Integration of mam-exporter features
+    user_stats = await wrapper.get_user_stats()
+    if user_stats:
+        logger.info(f"User Stats: Ratio={user_stats.get('ratio')}, BP={user_stats.get('bonus_points')}")
+    
     # Initialize result processor
     processor = SeleniumSearchResultProcessor(db_session)
-
+    
     # Run searches
     for search_term in search_terms:
         try:
@@ -482,29 +502,43 @@ async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
             search_query = search_term.get('title', '')
             if search_term.get('author'):
                 search_query += f" {search_term['author']}"
-
+            
             # Run search
             result = await wrapper.search_books([{'title': search_query, 'author': search_term.get('author', '')}])
-
+            
             # Process result
             processor.process_search_result(result, search_term)
-
+            
         except Exception as e:
             logger.error(f"Error searching for {search_term.get('title', 'Unknown')}: {e}")
             processor.processed['errors'].append({
                 'search_term': search_term,
                 'error': str(e)
             })
-
+            
     # Cleanup
     await wrapper.cleanup()
-
+    
     # Return summary
     summary = processor.get_summary()
     summary['success'] = True
-
+    summary['user_stats'] = user_stats
+    
     logger.info(f"Selenium search completed: {summary}")
     return summary
+
+
+async def get_mam_user_stats() -> Optional[Dict[str, Any]]:
+    """Fetch MAM user stats (Ratio, Bonus Points)"""
+    wrapper = SeleniumAsyncWrapper()
+    try:
+        if await wrapper.initialize():
+            return await wrapper.get_user_stats()
+    except Exception as e:
+        logger.error(f"Error fetching stats: {e}")
+    finally:
+        await wrapper.cleanup()
+    return None
 
 
 # For direct testing
@@ -514,6 +548,11 @@ if __name__ == "__main__":
     async def test():
         """Test the integration"""
         logger.basicConfig(level=logging.INFO)
+
+        # Test stats fetching
+        print("Fetching stats...")
+        stats = await get_mam_user_stats()
+        print(f"Stats: {stats}")
 
         # Test with sample books
         books = [

@@ -13,8 +13,8 @@ import sys
 import warnings
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
-from pydantic import BaseSettings, Field, validator, SecretStr
-from pydantic_settings import BaseSettings as BaseSettingsV2
+from pydantic import Field, validator, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -29,52 +29,43 @@ class SecuritySettings(BaseSettings):
     """Security and API key management settings."""
     
     # API Keys - CRITICAL: These should NOT be hardcoded
-    anthropic_api_key: SecretStr = Field(default=None, env="ANTHROPIC_API_KEY")
-    google_books_api_key: SecretStr = Field(default=None, env="GOOGLE_BOOKS_API_KEY")
+    anthropic_api_key: SecretStr = Field(default=None, validation_alias="ANTHROPIC_API_KEY")
+    google_books_api_key: SecretStr = Field(default=None, validation_alias="GOOGLE_BOOKS_API_KEY")
     
     # Database Configuration
-    postgres_host: str = Field(default="localhost", env="POSTGRES_HOST")
-    postgres_port: int = Field(default=5432, env="POSTGRES_PORT") 
-    postgres_db: str = Field(default="audiobooks", env="POSTGRES_DB")
-    postgres_user: str = Field(default="postgres", env="POSTGRES_USER")
-    postgres_password: SecretStr = Field(default=None, env="POSTGRES_PASSWORD")
+    postgres_host: str = Field(default="localhost", validation_alias="POSTGRES_HOST")
+    postgres_port: int = Field(default=5432, validation_alias="POSTGRES_PORT") 
+    postgres_db: str = Field(default="audiobooks", validation_alias="POSTGRES_DB")
+    postgres_user: str = Field(default="postgres", validation_alias="POSTGRES_USER")
+    postgres_password: SecretStr = Field(default=None, validation_alias="POSTGRES_PASSWORD")
     
-    class Config:
-        env_file_encoding = 'utf-8'
-        case_sensitive = True
-        # Prevent secrets from being logged
-        fields = {
-            'anthropic_api_key': {'sensitive': True},
-            'google_books_api_key': {'sensitive': True},
-            'postgres_password': {'sensitive': True},
-        }
+    model_config = SettingsConfigDict(
+        env_file_encoding='utf-8',
+        case_sensitive=True
+    )
 
 
 class APIEndpoints(BaseSettings):
     """API endpoint configurations."""
     
     # Audiobookshelf API
-    abs_url: str = Field(default="http://localhost:13378", env="ABS_URL")
-    abs_token: SecretStr = Field(default=None, env="ABS_TOKEN")
+    abs_url: str = Field(default="http://localhost:13378", validation_alias="ABS_URL")
+    abs_token: SecretStr = Field(default=None, validation_alias="ABS_TOKEN")
     
     # MyAnonamouse credentials (for crawler)
-    mam_username: str = Field(default=None, env="MAM_USERNAME")
-    mam_password: SecretStr = Field(default=None, env="MAM_PASSWORD")
+    mam_username: str = Field(default=None, validation_alias="MAM_USERNAME")
+    mam_password: SecretStr = Field(default=None, validation_alias="MAM_PASSWORD")
     
     # qBittorrent API
-    qb_host: str = Field(default="localhost", env="QB_HOST")
-    qb_port: int = Field(default=8080, env="QB_PORT")
-    qb_username: str = Field(default="admin", env="QB_USERNAME")
-    qb_password: SecretStr = Field(default=None, env="QB_PASSWORD")
+    qb_host: str = Field(default="localhost", validation_alias="QB_HOST")
+    qb_port: int = Field(default=8080, validation_alias="QB_PORT")
+    qb_username: str = Field(default="admin", validation_alias="QB_USERNAME")
+    qb_password: SecretStr = Field(default=None, validation_alias="QB_PASSWORD")
     
-    class Config:
-        env_file_encoding = 'utf-8'
-        case_sensitive = True
-        fields = {
-            'abs_token': {'sensitive': True},
-            'mam_password': {'sensitive': True},
-            'qb_password': {'sensitive': True},
-        }
+    model_config = SettingsConfigDict(
+        env_file_encoding='utf-8',
+        case_sensitive=True
+    )
 
 
 # ============================================================================
@@ -85,22 +76,22 @@ class CrawlerSettings(BaseSettings):
     """Crawler and stealth operation settings."""
     
     # Browser settings for stealth crawling
-    browser_headless: bool = Field(default=True, env="BROWSER_HEADLESS")
+    browser_headless: bool = Field(default=True, validation_alias="BROWSER_HEADLESS")
     browser_user_agent: str = Field(
         default="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        env="BROWSER_USER_AGENT"
+        validation_alias="BROWSER_USER_AGENT"
     )
     
     # Request throttling
-    request_delay_min: float = Field(default=1.0, env="REQUEST_DELAY_MIN")
-    request_delay_max: float = Field(default=3.0, env="REQUEST_DELAY_MAX")
+    request_delay_min: float = Field(default=1.0, validation_alias="REQUEST_DELAY_MIN")
+    request_delay_max: float = Field(default=3.0, validation_alias="REQUEST_DELAY_MAX")
     
     # Proxy settings (optional)
-    http_proxy: Optional[str] = Field(default=None, env="HTTP_PROXY")
-    https_proxy: Optional[str] = Field(default=None, env="HTTPS_PROXY")
+    http_proxy: Optional[str] = Field(default=None, validation_alias="HTTP_PROXY")
+    https_proxy: Optional[str] = Field(default=None, validation_alias="HTTPS_PROXY")
     
     # VPN settings (optional)
-    wireguard_config: Optional[str] = Field(default=None, env="WIREGUARD_CONFIG")
+    wireguard_config: Optional[str] = Field(default=None, validation_alias="WIREGUARD_CONFIG")
 
 
 # ============================================================================
@@ -111,27 +102,32 @@ class RAGSettings(BaseSettings):
     """RAG (Retrieval-Augmented Generation) system configuration."""
     
     # Model configuration
-    model_name: str = Field(default="all-MiniLM-L6-v2", env="RAG_MODEL_NAME")
-    dimension: int = Field(default=384, env="RAG_DIMENSION")
-    top_k: int = Field(default=5, env="RAG_TOP_K")
-    llm_model: str = Field(default="claude-haiku-4-5", env="RAG_LLM_MODEL")
-    max_tokens: int = Field(default=1500, env="RAG_MAX_TOKENS")
+    model_name: str = Field(default="all-MiniLM-L6-v2", validation_alias="RAG_MODEL_NAME")
+    dimension: int = Field(default=384, validation_alias="RAG_DIMENSION")
+    top_k: int = Field(default=5, validation_alias="RAG_TOP_K")
+    llm_model: str = Field(default="claude-haiku-4-5", validation_alias="RAG_LLM_MODEL")
+    max_tokens: int = Field(default=1500, validation_alias="RAG_MAX_TOKENS")
     
     # File paths
-    index_path: str = Field(default="index.faiss", env="RAG_INDEX_PATH")
-    db_path: str = Field(default="metadata.sqlite", env="RAG_DB_PATH")
+    index_path: str = Field(default="index.faiss", validation_alias="RAG_INDEX_PATH")
+    db_path: str = Field(default="metadata.sqlite", validation_alias="RAG_DB_PATH")
     
     # Header splitting configuration
     headers_to_split: List[Tuple[str, str]] = Field(
         default_factory=lambda: [("#", "H1"), ("##", "H2"), ("###", "H3")],
-        env="RAG_HEADERS_TO_SPLIT"
+        validation_alias="RAG_HEADERS_TO_SPLIT"
     )
     
     # Remote API usage mode
     remote_mode: str = Field(
         default="ask",
-        env="REMOTE_MODE",
+        validation_alias="REMOTE_MODE",
         description="Remote API usage mode: 'ask', 'off', or 'on'"
+    )
+    
+    model_config = SettingsConfigDict(
+        protected_namespaces=('settings_',),
+        env_file_encoding='utf-8'
     )
     
     @validator('remote_mode')
@@ -148,42 +144,42 @@ class RAGSettings(BaseSettings):
 class OutputSettings(BaseSettings):
     """Configuration for output directories and files."""
     
-    guides_dir: str = Field(default="guides_output", env="GUIDES_DIR")
-    forum_dir: str = Field(default="forum_qbittorrent_output", env="FORUM_DIR")
-    state_file: str = Field(default="crawler_state.json", env="STATE_FILE")
-    log_file: str = Field(default="stealth_crawler.log", env="LOG_FILE")
+    guides_dir: str = Field(default="guides_output", validation_alias="GUIDES_DIR")
+    forum_dir: str = Field(default="forum_qbittorrent_output", validation_alias="FORUM_DIR")
+    state_file: str = Field(default="crawler_state.json", validation_alias="STATE_FILE")
+    log_file: str = Field(default="stealth_crawler.log", validation_alias="LOG_FILE")
 
 
 class SystemSettings(BaseSettings):
     """System-wide operational settings."""
     
     # Application settings
-    app_name: str = Field(default="MAMcrawler", env="APP_NAME")
-    app_version: str = Field(default="2.0.0", env="APP_VERSION")
-    debug_mode: bool = Field(default=False, env="DEBUG_MODE")
+    app_name: str = Field(default="MAMcrawler", validation_alias="APP_NAME")
+    app_version: str = Field(default="2.0.0", validation_alias="APP_VERSION")
+    debug_mode: bool = Field(default=False, validation_alias="DEBUG_MODE")
     
     # File paths
-    output_dir: str = Field(default="output", env="OUTPUT_DIR")
-    temp_dir: str = Field(default="temp", env="TEMP_DIR")
+    output_dir: str = Field(default="output", validation_alias="OUTPUT_DIR")
+    temp_dir: str = Field(default="temp", validation_alias="TEMP_DIR")
     
     # Performance settings
-    max_concurrent_requests: int = Field(default=10, env="MAX_CONCURRENT_REQUESTS")
-    request_timeout: int = Field(default=30, env="REQUEST_TIMEOUT")
+    max_concurrent_requests: int = Field(default=10, validation_alias="MAX_CONCURRENT_REQUESTS")
+    request_timeout: int = Field(default=30, validation_alias="REQUEST_TIMEOUT")
     
     # Database settings
-    db_pool_size: int = Field(default=10, env="DB_POOL_SIZE")
-    db_max_overflow: int = Field(default=20, env="DB_MAX_OVERFLOW")
-    db_pool_timeout: int = Field(default=30, env="DB_POOL_TIMEOUT")
+    db_pool_size: int = Field(default=10, validation_alias="DB_POOL_SIZE")
+    db_max_overflow: int = Field(default=20, validation_alias="DB_MAX_OVERFLOW")
+    db_pool_timeout: int = Field(default=30, validation_alias="DB_POOL_TIMEOUT")
     
     # Logging settings
-    log_level: str = Field(default="INFO", env="LOG_LEVEL")
+    log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
     log_format: str = Field(
         default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        env="LOG_FORMAT"
+        validation_alias="LOG_FORMAT"
     )
-    log_file_path: str = Field(default="logs/mamcrawler.log", env="LOG_FILE_PATH")
-    max_log_size_mb: int = Field(default=100, env="MAX_LOG_SIZE_MB")
-    backup_count: int = Field(default=5, env="BACKUP_COUNT")
+    log_file_path: str = Field(default="logs/mamcrawler.log", validation_alias="LOG_FILE_PATH")
+    max_log_size_mb: int = Field(default=100, validation_alias="MAX_LOG_SIZE_MB")
+    backup_count: int = Field(default=5, validation_alias="BACKUP_COUNT")
 
 
 # ============================================================================
@@ -329,6 +325,9 @@ DEFAULT_OUTPUT_CONFIG = config_manager.output
 
 # Remote API usage mode (legacy compatibility)
 REMOTE_MODE = config_manager.rag.remote_mode
+
+# Export as 'config' for new modules
+config = config_manager
 
 # ============================================================================
 # VALIDATION AND UTILITY FUNCTIONS

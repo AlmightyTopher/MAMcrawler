@@ -458,8 +458,12 @@ class absToolboxClient:
 
     def _standardize_series_name(self, name: str) -> str:
         """Standardize series name format."""
-        # Remove Series/Vol. prefixes
-        name = name.replace("Series ", "").replace("Vol. ", "").strip()
+        import re
+        # Remove "Vol." or "Volume"
+        name = re.sub(r'\b(Vol\.|Volume)\s*', '', name, flags=re.IGNORECASE)
+        
+        # Remove "Series" if it's at the end
+        name = re.sub(r'\s+Series$', '', name, flags=re.IGNORECASE)
 
         # Normalize whitespace
         name = " ".join(name.split())

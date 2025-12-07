@@ -1,0 +1,42 @@
+# Application Configuration
+# Core application settings for MAMcrawler
+
+name: "MAMcrawler"
+version: "2.0.0"
+description: "MyAnonamouse.net Audiobook Crawler and Downloader"
+author: "Agent 8"
+license: "MIT"
+
+# Environment settings
+environment: "development"  # development, staging, production
+debug: false
+log_level: "INFO"
+
+# Application features
+features:
+  crawler: true
+  downloader: true
+  metadata_sync: true
+  audiobook_catalog: true
+  automated_batch: true
+  api_server: false
+
+# Performance settings
+performance:
+  max_concurrent_requests: 10
+  request_timeout: 30
+  rate_limit_delay: 1.0
+
+# File paths (relative to project root)
+paths:
+  output_dir: "output"
+  temp_dir: "temp"
+  logs_dir: "logs"
+  data_dir: "data"
+  cache_dir: "cache"
+
+# System settings
+system:
+  timezone: "America/Los_Angeles"
+  locale: "en_US"
+  encoding: "utf-8"

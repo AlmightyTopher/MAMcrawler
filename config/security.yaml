@@ -1,0 +1,53 @@
+# Security Configuration
+# Security settings and encryption configuration
+
+# Encryption settings
+encryption:
+  enabled: true
+  algorithm: "AES-256-GCM"
+  key_rotation_days: 90
+  master_key_file: ".master.key"
+
+# Secret management
+secrets:
+  storage: "encrypted"  # encrypted, keyring, environment
+  auto_encrypt: true
+  backup_encrypted: true
+
+# API key validation
+api_keys:
+  validate_on_startup: true
+  require_encryption: true
+  mask_in_logs: true
+
+# Authentication
+auth:
+  session_timeout: 3600
+  max_login_attempts: 5
+  lockout_duration: 900
+  require_strong_passwords: true
+
+# Network security
+network:
+  ssl_verify: true
+  certificate_validation: true
+  allowed_hosts: ["myanonamouse.net", "audiobookshelf.org", "goodreads.com"]
+  blocked_ips: []
+
+# Data protection
+data_protection:
+  encrypt_sensitive_logs: true
+  sanitize_error_messages: true
+  mask_pii_data: true
+
+# Compliance
+compliance:
+  gdpr_compliant: true
+  data_retention_days: 2555  # 7 years
+  audit_logging: true
+
+# Virtual environment
+virtual_environment:
+  required: true
+  check_on_startup: true
+  allowed_paths: ["venv", ".venv"]

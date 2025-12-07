@@ -260,8 +260,11 @@ class HardcoverClient:
         Raises:
             Exception: On API error or rate limit
         """
+        # Auto-connect if session is missing (lazy initialization)
         if not self.session:
-            raise RuntimeError("Client not initialized. Use 'async with' context manager.")
+            self.session = aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=30, connect=10)
+            )
 
         # Rate limit
         await self.rate_limiter.wait()
@@ -301,6 +304,12 @@ class HardcoverClient:
         except asyncio.TimeoutError:
             logger.error("Hardcover API request timeout")
             raise Exception("Hardcover API timeout")
+
+    async def close(self):
+        """Close the client session"""
+        if self.session:
+            await self.session.close()
+            self.session = None
 
     def _deserialize_book(self, data: Dict) -> HardcoverBook:
         """Convert GraphQL response to HardcoverBook object"""

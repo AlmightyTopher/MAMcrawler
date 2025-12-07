@@ -1,0 +1,79 @@
+[2025-11-30 09:18:18] [START] REAL AUDIOBOOK ACQUISITION WORKFLOW WITH REAL DATA
+[2025-11-30 09:18:18] [INFO] Start time: 2025-11-30T09:18:18.282324
+[2025-11-30 09:18:18] [INFO] 
+[2025-11-30 09:18:18] [INFO] ================================================================================
+[2025-11-30 09:18:18] [INFO] SYSTEM CONNECTIVITY CHECK
+[2025-11-30 09:18:18] [INFO] ================================================================================
+[2025-11-30 09:18:18] [OK] AudiobookShelf OK: 1 libraries
+[2025-11-30 09:18:18] [OK] qBittorrent OK: http://192.168.0.48:52095/
+[2025-11-30 09:18:18] [OK] MAM credentials configured
+[2025-11-30 09:18:18] [INFO] 
+[2025-11-30 09:18:18] [OK] ALL CORE SYSTEMS READY FOR REAL DATA PROCESSING
+[2025-11-30 09:18:18] [INFO] 
+[2025-11-30 09:18:18] [INFO] ================================================================================
+[2025-11-30 09:18:18] [INFO] CURRENT LIBRARY SCAN
+[2025-11-30 09:18:18] [INFO] ================================================================================
+[2025-11-30 09:18:18] [INFO] Scanning library: Library
+[2025-11-30 09:18:18] [INFO] Loaded 500 items
+[2025-11-30 09:18:18] [INFO] Loaded 1000 items
+[2025-11-30 09:18:18] [INFO] Limiting scan to 1000 items for testing
+[2025-11-30 09:18:18] [INFO] Existing books: 494
+[2025-11-30 09:18:18] [INFO] Existing authors: 0
+[2025-11-30 09:18:18] [INFO] Existing series: 297
+[2025-11-30 09:18:18] [OK] Library scan complete: 1000 items
+[2025-11-30 09:18:18] [INFO] 
+[2025-11-30 09:18:18] [INFO] ================================================================================
+[2025-11-30 09:18:18] [INFO] AUDIOBOOK DISCOVERY
+[2025-11-30 09:18:18] [INFO] ================================================================================
+[2025-11-30 09:18:18] [INFO] Loaded 20 REAL audiobooks to download
+[2025-11-30 09:18:18] [INFO] Selected 18 new audiobooks for acquisition
+[2025-11-30 09:18:18] [OK] Discovery complete: 18 books to acquire
+[2025-11-30 09:18:18] [INFO] 
+[2025-11-30 09:18:18] [INFO] ================================================================================
+[2025-11-30 09:18:18] [INFO] MAM CRAWLING & DOWNLOADING
+[2025-11-30 09:18:18] [INFO] ================================================================================
+[2025-11-30 09:18:33] [FAIL] MAM login failed: Message: 
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0x7ff66c6ea235
+	0x7ff66c442630
+	0x7ff66c1d16dd
+	0x7ff66c22a27e
+	0x7ff66c22a58c
+	0x7ff66c27ed77
+	0x7ff66c27baba
+	0x7ff66c21b0ed
+	0x7ff66c21bf63
+	0x7ff66c715d60
+	0x7ff66c70fe8a
+	0x7ff66c731005
+	0x7ff66c45d71e
+	0x7ff66c464e1f
+	0x7ff66c44b7c4
+	0x7ff66c44b97f
+	0x7ff66c4318e8
+	0x7ffc6d9fe8d7
+	0x7ffc6faac53c
+
+[2025-11-30 09:18:35] [INFO] 
+[2025-11-30 09:18:35] [INFO] ================================================================================
+[2025-11-30 09:18:35] [INFO] AUDIOBOOKSHELF INTEGRATION
+[2025-11-30 09:18:35] [INFO] ================================================================================
+[2025-11-30 09:18:35] [OK] AudiobookShelf integration complete: 0 books added
+[2025-11-30 09:18:35] [INFO] 
+[2025-11-30 09:18:35] [INFO] ================================================================================
+[2025-11-30 09:18:35] [INFO] METADATA SYNC
+[2025-11-30 09:18:35] [INFO] ================================================================================
+[2025-11-30 09:18:35] [OK] Metadata sync complete: 0 books synced
+[2025-11-30 09:18:35] [INFO] 
+[2025-11-30 09:18:35] [INFO] ================================================================================
+[2025-11-30 09:18:35] [INFO] WORKFLOW COMPLETE
+[2025-11-30 09:18:35] [INFO] ================================================================================
+[2025-11-30 09:18:35] [OK] System connectivity verified
+[2025-11-30 09:18:35] [OK] Current library cataloged
+[2025-11-30 09:18:35] [OK] Discovered 18 new audiobooks
+[2025-11-30 09:18:35] [OK] Downloaded 0 audiobooks
+[2025-11-30 09:18:35] [OK] Added 0 to AudiobookShelf
+[2025-11-30 09:18:35] [OK] Synced metadata for 0 books
+[2025-11-30 09:18:35] [INFO] 
+[2025-11-30 09:18:35] [SUCCESS] REAL AUDIOBOOK ACQUISITION WORKFLOW COMPLETE WITH REAL DATA

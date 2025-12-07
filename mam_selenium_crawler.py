@@ -23,13 +23,15 @@ from typing import Optional, Dict, Any, List
 from urllib.parse import quote, urljoin
 import re
 
-if sys.platform == 'win32':
-    import io
-    try:
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-    except:
-        pass
+# if sys.platform == 'win32':
+#     import io
+#     try:
+#         if hasattr(sys.stdout, 'buffer'):
+#             sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+#         if hasattr(sys.stderr, 'buffer'):
+#             sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+#     except Exception:
+#         pass
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -405,8 +407,14 @@ class SeleniumMAMCrawler:
         return False
 
     def search_mam(self, search_term: str) -> Optional[Dict[str, Any]]:
-        """Search MAM and extract first result."""
+        """Search MAM and extract best result using QualityFilter."""
         try:
+            # Import QualityFilter and Categories here to avoid circular imports if any
+            from mamcrawler.quality import QualityFilter
+            from mamcrawler.mam_categories import MAMCategories
+            
+            quality_filter = QualityFilter()
+            
             self.anti_crawl.check_rate_limit(2.0)
             self.anti_crawl.apply_random_delay(1.0, 3.0)
 
@@ -439,7 +447,7 @@ class SeleniumMAMCrawler:
                 search_url = (
                     f"{self.base_url}/tor/browse.php"
                     f"?tor[searchstr]={quote(search_term)}"
-                    f"&tor[cat][]=13"
+                    f"&tor[cat][]=13" # Force Audiobook category
                 )
                 self.driver.get(search_url)
 
@@ -447,10 +455,6 @@ class SeleniumMAMCrawler:
             time.sleep(3)
 
             page_source = self.driver.page_source
-
-            # Save for debugging
-            with open(f'mam_selenium_search_{search_term.replace(" ", "_")}.html', 'w', encoding='utf-8') as f:
-                f.write(page_source)
 
             # Check for login page
             if 'not logged in' in page_source.lower():
@@ -468,71 +472,158 @@ class SeleniumMAMCrawler:
             soup = BeautifulSoup(page_source, 'html.parser')
 
             # Look for torrent links
-            torrent_links = []
+            # We will now score them instead of taking the first one
+            candidates = []
 
-            for link in soup.find_all('a', href=re.compile(r'/t/\d+')):
-                torrent_links.append(link)
+            for link in soup.find_all('a', href=True):
+                href = link.get('href', '')
+                # Check if this is a torrent link (/t/\d+) and not a forum thread (/f/t/)
+                if re.search(r'^/t/\d+', href) and not re.search(r'^/f/t/', href):
+                    title = link.get_text(strip=True)
+                    
+                    # Basic metadata extraction (best effort without full table parsing)
+                    # We assume title contains most info
+                    release_data = {
+                        'title': title,
+                        'size_mb': 0, # Placeholder
+                        'seeders': 0, # Placeholder
+                        'leechers': 0 # Placeholder
+                    }
+                    
+                    # Score the release
+                    score = quality_filter.score_release(release_data)
+                    
+                    # Check if it passes basic quality checks (e.g. not abridged if we want unabridged)
+                    # For now, we trust score_release to penalize bad ones
+                    
+                    candidates.append({
+                        'link': link,
+                        'score': score,
+                        'title': title,
+                        'url': href
+                    })
 
-            if not torrent_links:
+            if not candidates:
                 logger.info(f"No torrent links found")
                 return None
 
-            # Get first result
-            first_link = torrent_links[0]
-            result_title = first_link.get_text(strip=True)
-            torrent_url = first_link.get('href', '')
+            # Sort by score descending
+            candidates.sort(key=lambda x: x['score'], reverse=True)
+            
+            best_candidate = candidates[0]
+            logger.info(f"Selected best candidate: {best_candidate['title']} (Score: {best_candidate['score']})")
+            
+            first_link = best_candidate['link']
+            result_title = best_candidate['title']
+            torrent_url = best_candidate['url']
 
             if torrent_url.startswith('/'):
                 torrent_url = urljoin(self.base_url, torrent_url)
 
+            logger.info(f"Found torrent link: {torrent_url}")
+
             # Extract torrent ID
             match = re.search(r'/t/(\d+)', torrent_url)
             if not match:
+                logger.warning(f"Could not extract torrent ID from {torrent_url}")
                 return None
 
             torrent_id = match.group(1)
-            logger.info(f"Found: {result_title[:60]}")
-
+            
             # Get magnet link
+            logger.info(f"Attempting to get magnet link for torrent {torrent_id}...")
             magnet = self._get_magnet_link(torrent_id)
 
             if magnet:
-                logger.info(f"Magnet: {magnet[:60]}...")
                 return {
                     'title': result_title,
                     'url': torrent_url,
                     'magnet': magnet,
-                    'torrent_id': torrent_id
+                    'torrent_id': torrent_id,
+                    'score': best_candidate['score']
                 }
 
+            logger.warning(f"Failed to get magnet link for {torrent_id}")
             return None
 
         except Exception as e:
             logger.error(f"Search error: {e}")
             return None
 
+    def _download_from_mam(self, download_url: str, output_file: str) -> bool:
+        """Download file from MAM's proprietary download system using authenticated session"""
+        try:
+            import requests
+            from requests.adapters import HTTPAdapter
+
+            logger.info(f"Downloading from MAM: {download_url[:80]}...")
+
+            # Get cookies from Selenium and use them with requests
+            session = requests.Session()
+
+            # Copy cookies from Selenium to requests session
+            for cookie in self.driver.get_cookies():
+                session.cookies.set(cookie['name'], cookie['value'])
+
+            # Download the file
+            response = session.get(download_url, timeout=300, stream=True)
+
+            if response.status_code == 200:
+                # Write file
+                with open(output_file, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+
+                file_size = os.path.getsize(output_file)
+                logger.info(f"File downloaded successfully: {output_file} ({file_size:,} bytes)")
+                return True
+            else:
+                logger.error(f"Download failed with status {response.status_code}: {response.text[:200]}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error downloading from MAM: {e}")
+            return False
+
     def _get_magnet_link(self, torrent_id: str) -> Optional[str]:
-        """Extract magnet link from torrent page."""
+        """Extract magnet link or download URL from torrent page."""
         try:
             self.anti_crawl.apply_random_delay(0.5, 1.5)
 
             torrent_url = f"{self.base_url}/t/{torrent_id}"
-            logger.debug(f"Fetching magnet from {torrent_url}")
+            logger.debug(f"Fetching download link from {torrent_url}")
 
             self.driver.get(torrent_url)
             time.sleep(2)
 
             page_source = self.driver.page_source
 
-            # Look for magnet link
+            # Save for debugging
+            with open(f'mam_torrent_{torrent_id}.html', 'w', encoding='utf-8') as f:
+                f.write(page_source)
+
+            # Try to find magnet link first
             magnet_match = re.search(r'(magnet:\?[^"<\s]+)', page_source)
             if magnet_match:
-                return magnet_match.group(1)
+                magnet = magnet_match.group(1)
+                logger.info(f"Found magnet for torrent {torrent_id}: {magnet[:80]}...")
+                return magnet
 
+            # If no magnet, try to find the direct download link from MAM
+            download_match = re.search(r'href="(/tor/download\.php/[^"]+)"', page_source)
+            if download_match:
+                download_path = download_match.group(1)
+                download_url = urljoin(self.base_url, download_path)
+                logger.info(f"Found MAM download URL for torrent {torrent_id}: {download_url[:80]}...")
+                # IMPORTANT: Return the URL marked as MAM-specific so caller knows to handle differently
+                return f"MAM_AUTH:{download_url}"
+
+            logger.warning(f"No magnet or download link found on torrent page {torrent_id}")
             return None
 
         except Exception as e:
-            logger.error(f"Error getting magnet link: {e}")
+            logger.error(f"Error getting download link for {torrent_id}: {e}")
             return None
 
     def search_and_queue(self, books: List[Dict[str, str]]):
@@ -630,6 +721,212 @@ class SeleniumMAMCrawler:
             except Exception as e:
                 logger.error(f"Error closing WebDriver: {e}")
 
+    def get_user_stats(self) -> Optional[Dict[str, Any]]:
+        """
+        Fetch comprehensive user statistics from MAM.
+        Retrieves: Ratio, Bonus Points, Upload/Download, Class, Seeding/Leeching, etc.
+        Generates a shorthand status line for easy sharing/logging.
+        """
+        print("STEP: Fetching User Stats")
+        print("-" * 120)
+        
+        try:
+            # Ensure driver is initialized
+            if not self.driver:
+                if not self.setup():
+                    return None
+
+            if not self.authenticated:
+                if not self.login():
+                    return None
+            
+            # Navigate to User Details for detailed stats
+            # We need to find the profile link first
+            if "index.php" not in self.driver.current_url:
+                self.driver.get(f"{self.base_url}/index.php")
+                time.sleep(2)
+                
+            soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+            
+            # Try multiple ways to find profile link
+            profile_link = soup.find('a', href=re.compile(r'userdetails\.php\?id=\d+'))
+            
+            # Fallback: Look for link with text matching username if we knew it, or just "Profile"
+            if not profile_link:
+                links = soup.find_all('a', href=True)
+                for link in links:
+                    if 'userdetails.php?id=' in link['href'] or '/u/' in link['href']:
+                        # Check if /u/ is followed by digits
+                        if '/u/' in link['href']:
+                            match = re.search(r'/u/(\d+)', link['href'])
+                            if match:
+                                profile_link = link
+                                break
+                        else:
+                            profile_link = link
+                            break
+            
+            # Hard fallback for this specific user if dynamic detection fails
+            if not profile_link:
+                logger.warning("Could not find profile link dynamically. Trying known ID.")
+                profile_url = f"{self.base_url}/u/229756"
+            else:
+                profile_url = urljoin(self.base_url, profile_link['href'])
+            
+            logger.info(f"Navigating to profile: {profile_url}")
+            self.driver.get(profile_url)
+            time.sleep(2)
+            
+            # Parse Profile Page
+            page_source = self.driver.page_source
+            soup = BeautifulSoup(page_source, 'html.parser')
+            text_content = soup.get_text()
+            
+            stats = {
+                'updated_at': datetime.now().isoformat(),
+                'raw_data': {},
+                'shorthand': ''
+            }
+            
+            # 1. Extract ALL Data (Key-Value pairs from tables)
+            # MAM profile tables usually have cells with labels and values
+            for row in soup.find_all('tr'):
+                cols = row.find_all('td')
+                if len(cols) >= 2:
+                    # Try to identify key-value pairs
+                    # Often the first col is label, second is value
+                    key = cols[0].get_text(strip=True).replace(':', '')
+                    val = cols[1].get_text(strip=True)
+                    
+                    # Filter out empty or extremely long text
+                    if key and val and len(key) < 50 and len(val) < 200:
+                        # Check if key is already present (avoid duplicates)
+                        if key not in stats['raw_data']:
+                            stats['raw_data'][key] = val
+                            
+            # 2. Extract Specific Fields for Shorthand
+            def get_val(k):
+                for rk, rv in stats['raw_data'].items():
+                    if rk.lower() == k.lower():
+                        return rv
+                return None
+
+            # Fields
+            uploaded_str = get_val('Uploaded')
+            downloaded_str = get_val('Downloaded')
+            ratio_str = get_val('Share ratio')
+            class_str = get_val('Class')
+            sat_str = get_val('Satisfied')
+            unsat_str = get_val('Unsatisfied')
+            leech_str = get_val('Leeching')
+            
+            # Bonus Rate (from text)
+            # "Last update had ... worth X per hour"
+            bonus_rate_val = 0.0
+            bonus_match = re.search(r'worth\s*([\d\.,]+)\s*per hour', text_content)
+            if bonus_match:
+                bonus_rate_val = float(bonus_match.group(1).replace(',', ''))
+                stats['raw_data']['Bonus Rate'] = f"{bonus_rate_val} per hour"
+
+            # 3. Calculate Shorthand
+            try:
+                # Helper for bytes conversion
+                def parse_bytes(s):
+                    if not s: return 0.0
+                    # Remove "Real" prefix if present (though get_val should hit exact key, 
+                    # but sometimes keys are "Real Uploaded")
+                    # The user said ignore Real, so we used get_val('Uploaded') which should match "Uploaded" key
+                    
+                    # Parse "1.23 TiB"
+                    match = re.search(r'([\d\.,]+)\s*([TGMK]i?B)', s)
+                    if not match: return 0.0
+                    
+                    val = float(match.group(1).replace(',', ''))
+                    unit = match.group(2)
+                    
+                    multipliers = {
+                        'B': 1, 
+                        'KB': 1024, 'MB': 1024**2, 'GB': 1024**3, 'TB': 1024**4, 'PB': 1024**5,
+                        'KiB': 1024, 'MiB': 1024**2, 'GiB': 1024**3, 'TiB': 1024**4, 'PiB': 1024**5
+                    }
+                    return val * multipliers.get(unit, 1)
+
+                up_bytes = parse_bytes(uploaded_str)
+                down_bytes = parse_bytes(downloaded_str)
+                
+                # Convert to Target Units (TB for Up, GB for Down)
+                up_tb = up_bytes / (1024**4)
+                down_gb = down_bytes / (1024**3)
+                
+                # Format Bonus
+                if bonus_rate_val >= 1000:
+                    bonus_str = f"{bonus_rate_val/1000:.2f}k/hr"
+                else:
+                    bonus_str = f"{bonus_rate_val:.2f}/hr"
+                
+                # Counts
+                sat_count = sat_str if sat_str else "0"
+                unsat_count = unsat_str if unsat_str else "0"
+                leech_count = leech_str if leech_str else "0"
+                
+                # Ratio
+                ratio_val = ratio_str.replace(',', '') if ratio_str else "0"
+                
+                # Construct Line
+                # Up X TB | Dn X GB | Ratio X | Class | Bonus/hr | SatCount Sat | UnsatCount Unsat | LeechCount Leech
+                shorthand = (
+                    f"Up {up_tb:.2f} TB | "
+                    f"Dn {down_gb:.2f} GB | "
+                    f"Ratio {ratio_val} | "
+                    f"{class_str} | "
+                    f"{bonus_str} | "
+                    f"{sat_count} Sat | "
+                    f"{unsat_count} Unsat | "
+                    f"{leech_count} Leech"
+                )
+                
+                stats['shorthand'] = shorthand
+                print(f"  ✓ Shorthand: {shorthand}")
+                
+                # Calculate Buffer
+                buffer_bytes = up_bytes - down_bytes
+                
+                def format_bytes(b):
+                    for unit in ['B', 'KB', 'MB', 'GB', 'TB', 'PB']:
+                        if abs(b) < 1024.0:
+                            return f"{b:.2f} {unit}"
+                        b /= 1024.0
+                    return f"{b:.2f} PB"
+                
+                stats['buffer'] = format_bytes(buffer_bytes)
+                
+            except Exception as e:
+                logger.error(f"Error calculating shorthand: {e}")
+                stats['shorthand'] = "Error generating shorthand"
+
+            # Populate main stats for UI compatibility
+            stats['ratio'] = float(ratio_str.replace(',', '')) if ratio_str else 0.0
+            stats['uploaded'] = uploaded_str
+            stats['downloaded'] = downloaded_str
+            stats['class'] = class_str
+            stats['seeding'] = int(sat_str) if sat_str and sat_str.isdigit() else 0 # Approx
+            stats['leeching'] = int(leech_str) if leech_str and leech_str.isdigit() else 0
+            
+            # Add Real Stats if available
+            stats['real_uploaded'] = get_val('Real Uploaded')
+            stats['real_downloaded'] = get_val('Real Downloaded')
+            
+            # Total Bonus Points
+            bp_match = re.search(r'Bonus Points:\s*([\d\.,]+)', text_content)
+            if bp_match:
+                stats['bonus_points'] = float(bp_match.group(1).replace(',', ''))
+            
+            return stats
+            
+        except Exception as e:
+            logger.error(f"Error fetching user stats: {e}")
+            return None
+
     def run(self, books: List[Dict[str, str]]) -> bool:
         """Execute workflow."""
         try:
@@ -640,6 +937,9 @@ class SeleniumMAMCrawler:
             if not self.authenticated:
                 if not self.login():
                     return False
+            
+            # Fetch and display stats first (integration of mam-exporter features)
+            self.get_user_stats()
 
             self.search_and_queue(books)
             self.show_queue()

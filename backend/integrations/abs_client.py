@@ -19,6 +19,17 @@ from tenacity import (
     retry_if_exception_type,
 )
 
+from backend.integrations.abs_managers.library_manager import LibraryManager
+from backend.integrations.abs_managers.collection_manager import CollectionManager
+from backend.integrations.abs_managers.playlist_manager import PlaylistManager
+from backend.integrations.abs_managers.progress_manager import ProgressManager
+from backend.integrations.abs_managers.user_manager import UserManager
+from backend.integrations.abs_managers.backup_manager import BackupManager
+from backend.integrations.abs_managers.notification_manager import NotificationManager
+from backend.integrations.abs_managers.rss_manager import RSSManager
+from backend.integrations.abs_managers.api_key_manager import APIKeyManager
+from backend.integrations.abs_managers.email_manager import EmailManager
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,6 +72,18 @@ class AudiobookshelfClient:
             "Authorization": f"Bearer {api_token}",
             "Content-Type": "application/json",
         }
+
+        # Initialize manager modules
+        self.libraries = LibraryManager(self)
+        self.collections = CollectionManager(self)
+        self.playlists = PlaylistManager(self)
+        self.progress = ProgressManager(self)
+        self.users = UserManager(self)
+        self.backups = BackupManager(self)
+        self.notifications = NotificationManager(self)
+        self.rss = RSSManager(self)
+        self.api_keys = APIKeyManager(self)
+        self.email = EmailManager(self)
 
         logger.info(f"Initialized AudiobookshelfClient for {self.base_url}")
 

@@ -137,11 +137,11 @@ class BaseMAMCrawler(ABC):
     def sanitize_filename(self, title: str, max_length: int = 100) -> str:
         """
         Convert title to safe filename.
-        
+
         Args:
             title: The title to sanitize
             max_length: Maximum length of the filename
-            
+
         Returns:
             Sanitized filename
         """
@@ -149,56 +149,99 @@ class BaseMAMCrawler(ABC):
         filename = re.sub(r'[<>:"/\\|?*]', '', title)
         # Replace whitespace with underscores
         filename = re.sub(r'\s+', '_', filename)
+        # Remove leading/trailing underscores
+        filename = filename.strip('_')
         # Limit length
         return filename[:max_length]
 
     def is_allowed_path(self, url: str) -> bool:
         """
         Check if the URL path is allowed for crawling.
-        
+
         Args:
             url: The URL to check
-            
+
         Returns:
             True if the URL path is allowed
         """
+        if not url:
+            return False
+
         parsed = urlparse(url)
-        
+
         # Must be on the correct domain
         if parsed.netloc != "www.myanonamouse.net":
             return False
 
-        # Check against allowed paths
-        path = parsed.path
+        # Normalize path: empty path becomes "/", ensure trailing slash for comparison
+        path = parsed.path if parsed.path else "/"
+
         for allowed in self.allowed_paths:
             # Handle homepage as exact match only
             if allowed == "/" and path == "/":
                 return True
-            # For other paths, check prefix but not for "/"
-            elif allowed != "/" and path.startswith(allowed):
-                return True
+            # For other paths, check prefix (normalize both to have trailing slashes)
+            elif allowed != "/":
+                # Ensure both have trailing slashes for consistent prefix matching
+                allowed_norm = allowed if allowed.endswith('/') else allowed + '/'
+                path_norm = path if path.endswith('/') else path + '/'
+
+                if path_norm.startswith(allowed_norm):
+                    return True
 
         return False
 
     def extract_category_from_url(self, url: str) -> str:
         """
         Extract category from URL.
-        
+
         Args:
             url: The URL to extract category from
-            
+
         Returns:
             Category string
         """
-        if '?gid=' in url:
+        # Parse URL to separate path from query params
+        parsed = urlparse(url)
+
+        # Check for guide with gid query parameter
+        if 'gid=' in parsed.query:
             return "Guide"
-        
-        path_parts = url.rstrip('/').split('/')
-        if len(path_parts) >= 2:
-            category = path_parts[-2] if path_parts[-1] else path_parts[-2]
-            if category != 'guides':
-                return category.replace('-', ' ').replace('_', ' ').title()
-        return "General"
+
+        # Get path and strip leading/trailing slashes
+        path = parsed.path.strip('/')
+
+        # Homepage or empty path
+        if not path:
+            return "General"
+
+        # Split path into segments (filter out empty strings)
+        segments = [s for s in path.split('/') if s]
+
+        if len(segments) == 0:
+            return "General"
+
+        # Pattern: /t/<category>/<id> - torrent pages
+        if segments[0] == 't' and len(segments) >= 2:
+            category = segments[1]
+            return category.replace('-', ' ').replace('_', ' ').title()
+
+        # Pattern: /f/<category>/... - forum pages
+        if segments[0] == 'f' and len(segments) >= 2:
+            category = segments[1]
+            return category.replace('-', ' ').replace('_', ' ').title()
+
+        # Pattern: /guides or /guides/... - guides section
+        if segments[0] == 'guides':
+            return "Guide"
+
+        # Pattern: /tor/browse.php or /tor/search.php - torrent section
+        if segments[0] == 'tor':
+            return "Torrent"
+
+        # Default: use first path segment, normalized
+        category = segments[0]
+        return category.replace('-', ' ').replace('_', ' ').title()
 
     def anonymize_content(self, content: str, max_length: int = 5000) -> str:
         """

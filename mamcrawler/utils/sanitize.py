@@ -21,6 +21,8 @@ def sanitize_filename(title: str, max_length: int = 100) -> str:
     filename = re.sub(r'[<>:"/\\|?*]', '', title)
     # Replace whitespace with underscores
     filename = re.sub(r'\s+', '_', filename)
+    # Remove leading/trailing underscores
+    filename = filename.strip('_')
     # Limit length
     return filename[:max_length]
 

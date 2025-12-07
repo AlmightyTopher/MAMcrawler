@@ -32,7 +32,7 @@ class GuideMarkdownWriter:
         self.config = config or DEFAULT_OUTPUT_CONFIG
         output_path = output_dir or self.config.guides_dir
         self.output_dir = Path(output_path)
-        self.output_dir.mkdir(exist_ok=True)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def save_guide(self, guide_data: Dict[str, Any]) -> Optional[Path]:
         """

@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
+from mamcrawler.qbit_healer import QBitHealer
+
 class QBittorrentMonitor:
     """
     Monitors qBittorrent torrents in real-time.
@@ -25,7 +27,8 @@ class QBittorrentMonitor:
         self.monitoring = False
         self.stalled_torrents = {}  # hash -> stall_count
         self.monitoring_task = None
-    
+        self.healer = QBitHealer()
+
     async def start_monitoring(self, interval: int = 60):
         """
         Start continuous monitoring.
@@ -118,7 +121,7 @@ class QBittorrentMonitor:
         
         Strategy:
         1. First stall: Wait and monitor
-        2. Second stall: Force reannounce
+        2. Second stall: Run automated diagnosis and healing (Fix binding/trackers)
         3. Third stall: Pause and resume
         4. Fourth+ stall: Log error
         """
@@ -132,8 +135,21 @@ class QBittorrentMonitor:
             logger.info(f"  Monitoring for next check...")
         
         elif stall_count == 2:
-            # Force reannounce
-            logger.info(f"  Forcing reannounce...")
+            # Run Automated Healer
+            logger.info(f"  Running automated diagnosis and healing...")
+            try:
+                # Run healing in executor to avoid blocking async loop
+                loop = asyncio.get_running_loop()
+                results = await loop.run_in_executor(None, self.healer.diagnose_and_heal)
+                
+                if results.get('binding_reset') or results.get('trackers_fixed'):
+                    logger.info("  ✓ Healer applied fixes. Resetting stall count.")
+                    self.stalled_torrents[torrent_hash] = 0
+                    return
+            except Exception as e:
+                logger.error(f"  Healer failed: {e}")
+                
+            # Fallback to simple reannounce if healer didn't fix it
             try:
                 await self.qbt_client.reannounce_torrent(torrent_hash)
             except Exception as e:

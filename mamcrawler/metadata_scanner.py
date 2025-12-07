@@ -17,9 +17,11 @@ class MetadataScanner:
     Performs full metadata scan combining multiple sources.
     """
     
-    def __init__(self):
+    def __init__(self, qbt_client=None, abs_client=None, metadata_provider=None):
         self.narrator_detector = NarratorDetector()
-        self.goodreads = GoodreadsMetadata()
+        self.metadata_provider = metadata_provider
+        # Keep legacy attribute for compatibility if needed, or just remove it
+        self.goodreads = metadata_provider 
     
     async def scan_audiobook(self, 
                             audiobook_path: str,
@@ -76,15 +78,21 @@ class MetadataScanner:
             canonical['narrator'] = narrator
             canonical['sources'].append('audio_detection')
         
-        # Step 5: Query Goodreads for canonical data (Section 14)
-        if canonical.get('title') and canonical.get('author'):
-            goodreads_data = await self.goodreads.search_book(
-                canonical['title'],
-                canonical['author']
-            )
-            if goodreads_data:
-                canonical.update(self._merge_goodreads(canonical, goodreads_data))
-                canonical['sources'].append('goodreads')
+        # Step 5: Query Metadata Provider (Hardcover) for canonical data (Section 14)
+        if self.metadata_provider and canonical.get('title') and canonical.get('author'):
+            try:
+                # Ensure client is connected (if it supports auto-connect or is already connected)
+                # We assume the provider handles its own connection state or is stateless
+                result = await self.metadata_provider.resolve_book(
+                    title=canonical['title'],
+                    author=canonical['author']
+                )
+                
+                if result.success and result.book:
+                    canonical.update(self._merge_provider_metadata(canonical, result.book))
+                    canonical['sources'].append('hardcover')
+            except Exception as e:
+                logger.warning(f"Metadata provider resolution failed: {e}")
         
         # Step 6: Resolve conflicts using priority order (Section 15)
         canonical = self._resolve_conflicts(canonical)
@@ -95,24 +103,74 @@ class MetadataScanner:
         logger.info(f"  Sources: {', '.join(canonical['sources'])}")
         
         return canonical
+
+    def _merge_provider_metadata(self, canonical: Dict, book_obj) -> Dict:
+        """
+        Merge Hardcover data with canonical metadata.
+        
+        Hardcover takes priority for:
+        - Series name and ordering
+        - Description
+        - Publication info
+        """
+        merged = canonical.copy()
+        
+        # Extract series info
+        series_info = book_obj.get_primary_series()
+        if series_info:
+            merged['series'] = series_info[0]
+            merged['series_number'] = series_info[1]
+            
+        # Description
+        if book_obj.description:
+            merged['description'] = book_obj.description
+            
+        # Publication Date
+        if book_obj.original_publication_date:
+            merged['publication_date'] = book_obj.original_publication_date
+            
+        # ISBN (Try to find any ISBN)
+        isbn = None
+        for edition in book_obj.editions:
+            if edition.isbn_13:
+                isbn = edition.isbn_13
+                break
+            if edition.isbn_10:
+                isbn = edition.isbn_10
+                break
+        if isbn:
+            merged['isbn'] = isbn
+            
+        # Use Hardcover title/author if canonical doesn't have them (or to correct them)
+        # We generally trust the provider's spelling more
+        if book_obj.title:
+            merged['title'] = book_obj.title
+        
+        if book_obj.authors:
+            # Use primary author
+            merged['author'] = book_obj.authors[0].name
+            
+        return merged
     
     def _extract_from_torrent(self, torrent_metadata: Dict) -> Dict:
         """Extract metadata from torrent file."""
-        return {
+        data = {
             'title': torrent_metadata.get('title'),
             'author': torrent_metadata.get('author'),
             'narrator': torrent_metadata.get('narrator'),
         }
+        return {k: v for k, v in data.items() if v is not None}
     
     def _extract_from_mam(self, mam_metadata: Dict) -> Dict:
         """Extract metadata from MAM page."""
-        return {
+        data = {
             'title': mam_metadata.get('title'),
             'author': mam_metadata.get('author'),
             'narrator': mam_metadata.get('narrator'),
             'series': mam_metadata.get('series'),
             'series_number': mam_metadata.get('series_number'),
         }
+        return {k: v for k, v in data.items() if v is not None}
     
     def _extract_from_filename(self, audiobook_path: str) -> Dict:
         """

@@ -118,31 +118,37 @@ class MAMUtils:
     def is_allowed_path(url: str) -> bool:
         """
         Check if the URL path is allowed for crawling.
-        
+
         Args:
             url: The URL to check
-            
+
         Returns:
             True if the URL path is allowed
         """
         if not url:
             return False
-            
+
         parsed = urlparse(url)
-        
+
         # Must be on the correct domain
         if parsed.netloc != "www.myanonamouse.net":
             return False
 
-        # Check against allowed paths
-        path = parsed.path
+        # Normalize path: empty path becomes "/", ensure trailing slash for comparison
+        path = parsed.path if parsed.path else "/"
+
         for allowed in MAMUtils.ALLOWED_PATHS:
             # Handle homepage as exact match only
             if allowed == "/" and path == "/":
                 return True
-            # For other paths, check prefix but not for "/"
-            elif allowed != "/" and path.startswith(allowed):
-                return True
+            # For other paths, check prefix (normalize both to have trailing slashes)
+            elif allowed != "/":
+                # Ensure both have trailing slashes for consistent prefix matching
+                allowed_norm = allowed if allowed.endswith('/') else allowed + '/'
+                path_norm = path if path.endswith('/') else path + '/'
+
+                if path_norm.startswith(allowed_norm):
+                    return True
 
         return False
     

@@ -1,0 +1,88 @@
+# Audiobook Automation Configuration
+# Settings for automated audiobook batch processing and management
+
+# Scheduling
+schedule:
+  enabled: true
+  frequency: "weekly"
+  day_of_week: "monday"
+  time: "02:00"
+  timezone: "America/Los_Angeles"
+
+# Query settings
+query:
+  top_n_per_genre: 10
+  timespan_preference: "recent"
+  skip_duplicates: true
+  min_seeders: 5
+  max_concurrent_searches: 3
+
+# Genre filtering
+genres:
+  included:
+    - "Fantasy"
+    - "Science Fiction"
+    - "Mystery"
+    - "Thriller"
+    - "Romance"
+    - "Historical Fiction"
+    - "Biography"
+    - "Self-Help"
+  excluded:
+    - "Erotica"
+    - "New Age"
+    - "Poetry"
+
+# Download settings
+download:
+  auto_add_to_qbittorrent: true
+  category: "audiobooks-auto"
+  save_path: ""
+  dry_run: false
+  max_concurrent_downloads: 5
+  prioritize_series: true
+
+# Quality filters
+quality:
+  preferred_formats: ["FLAC", "MP3", "M4B"]
+  min_bitrate: 128
+  min_duration_hours: 1
+  max_file_size_gb: 15
+  require_complete_series: false
+
+# Metadata processing
+metadata:
+  auto_correct_titles: true
+  auto_correct_authors: true
+  update_series_info: true
+  sync_to_audiobookshelf: true
+  generate_descriptions: true
+
+# Notification settings
+notifications:
+  enabled: true
+  on_completion: true
+  on_error: true
+  summary_report: true
+  email_recipients: []
+
+# Error handling
+error_handling:
+  max_retries: 3
+  retry_delay_minutes: 15
+  skip_on_error: false
+  quarantine_failed: true
+
+# Performance
+performance:
+  batch_size: 50
+  processing_timeout_hours: 24
+  cleanup_temp_files: true
+  enable_progress_tracking: true
+
+# Logging
+logging:
+  log_file: "audiobook_auto.log"
+  log_level: "INFO"
+  max_log_size_mb: 100
+  backup_count: 5

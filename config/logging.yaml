@@ -1,0 +1,56 @@
+# Logging Configuration
+# Centralized logging settings for all components
+
+# Console logging
+console:
+  enabled: true
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  colorize: true
+
+# File logging
+file:
+  enabled: true
+  level: "DEBUG"
+  path: "logs/mamcrawler.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
+  max_size_mb: 100
+  backup_count: 5
+  encoding: "utf-8"
+
+# Error logging (separate file for errors)
+error_file:
+  enabled: true
+  level: "ERROR"
+  path: "logs/errors.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
+  max_size_mb: 50
+  backup_count: 10
+
+# Component-specific logging levels
+components:
+  crawler: "INFO"
+  downloader: "INFO"
+  database: "WARNING"
+  api_client: "WARNING"
+  security: "INFO"
+
+# External service logging
+external:
+  requests: "WARNING"
+  urllib3: "WARNING"
+  selenium: "WARNING"
+  playwright: "WARNING"
+
+# Performance logging
+performance:
+  enabled: false
+  slow_query_threshold: 5.0  # seconds
+  log_database_queries: false
+
+# Security logging
+security:
+  enabled: true
+  log_auth_events: true
+  log_api_access: false
+  mask_sensitive_data: true
