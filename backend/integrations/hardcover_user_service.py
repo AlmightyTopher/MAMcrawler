@@ -213,9 +213,10 @@ class HardcoverUserService:
 # CLI / Demo
 # ============================================================================
 async def demo():
-    import os
-    abs_url = os.getenv("ABS_URL", "http://localhost:13378")
-    abs_token = os.getenv("ABS_TOKEN")
+    from backend.config import get_settings
+    settings = get_settings()
+    abs_url = settings.ABS_URL
+    abs_token = settings.ABS_TOKEN
     
     if not abs_token:
         print("Set ABS_TOKEN env var")

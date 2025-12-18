@@ -17,7 +17,8 @@ class Author(Base):
     Attributes:
         id: Primary key
         name: Author name (unique)
-        goodreads_id: Goodreads author ID for external lookups
+        hardcover_id: Hardcover author ID (primary metadata provider)
+        goodreads_id: Goodreads author ID (legacy, RSS sync only)
         google_books_id: Google Books author ID for external lookups
         mam_author_id: MyAnonamouse author ID for external lookups
         total_audiobooks_external: Total audiobooks found in external sources
@@ -40,8 +41,9 @@ class Author(Base):
     # Author info
     name = Column(String(500), nullable=False, unique=True, index=True)
 
-    # External IDs for cross-platform searching
-    goodreads_id = Column(String(255), nullable=True, index=True)
+    # External IDs for cross-platform searching (Hardcover is primary metadata provider)
+    hardcover_id = Column(String(255), nullable=True, index=True)
+    goodreads_id = Column(String(255), nullable=True, index=True)  # Legacy, used for RSS sync only
     google_books_id = Column(String(255), nullable=True)
     mam_author_id = Column(String(255), nullable=True)
 

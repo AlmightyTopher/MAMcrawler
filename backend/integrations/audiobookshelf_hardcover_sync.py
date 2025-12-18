@@ -474,11 +474,12 @@ class AudiobookShelfHardcoverSync:
 
 async def demo():
     """Demonstration of sync"""
-    import os
+    from backend.config import get_settings
 
-    abs_url = os.getenv("AUDIOBOOKSHELF_URL", "http://localhost:13378")
-    abs_api_key = os.getenv("AUDIOBOOKSHELF_API_KEY")
-    hc_token = os.getenv("HARDCOVER_TOKEN")
+    settings = get_settings()
+    abs_url = settings.ABS_URL
+    abs_api_key = settings.ABS_TOKEN
+    hc_token = settings.HARDCOVER_TOKEN
 
     if not abs_api_key or not hc_token:
         print("Error: AUDIOBOOKSHELF_API_KEY and HARDCOVER_TOKEN required")

@@ -29,6 +29,8 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List
 import os
 
+from backend.config import get_settings
+
 import aiohttp
 from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
@@ -517,7 +519,8 @@ class RatioEmergencyService:
         try:
             from backend.integrations.qbittorrent_client import QBittorrentClient
 
-            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            settings = get_settings()
+            qb_url = f"{settings.QB_HOST}:{settings.QB_PORT}"
             qb_user = os.getenv('QBITTORRENT_USER', 'admin')
             qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
 
@@ -615,7 +618,8 @@ class RatioEmergencyService:
 
             from backend.integrations.qbittorrent_client import QBittorrentClient
 
-            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            settings = get_settings()
+            qb_url = f"{settings.QB_HOST}:{settings.QB_PORT}"
             qb_user = os.getenv('QBITTORRENT_USER', 'admin')
             qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
 
@@ -732,7 +736,8 @@ class RatioEmergencyService:
         try:
             from backend.integrations.qbittorrent_client import QBittorrentClient
 
-            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            settings = get_settings()
+            qb_url = f"{settings.QB_HOST}:{settings.QB_PORT}"
             qb_user = os.getenv('QBITTORRENT_USER', 'admin')
             qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
 
@@ -840,7 +845,8 @@ class RatioEmergencyService:
         try:
             from backend.integrations.qbittorrent_client import QBittorrentClient
 
-            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            settings = get_settings()
+            qb_url = f"{settings.QB_HOST}:{settings.QB_PORT}"
             qb_user = os.getenv('QBITTORRENT_USER', 'admin')
             qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
 
@@ -886,7 +892,8 @@ class RatioEmergencyService:
         try:
             from backend.integrations.qbittorrent_client import QBittorrentClient
 
-            qb_url = os.getenv('QBITTORRENT_URL', 'http://localhost:8080')
+            settings = get_settings()
+            qb_url = f"{settings.QB_HOST}:{settings.QB_PORT}"
             qb_user = os.getenv('QBITTORRENT_USER', 'admin')
             qb_pass = os.getenv('QBITTORRENT_PASSWORD', 'adminPassword')
 

@@ -18,8 +18,9 @@ class Series(Base):
         id: Primary key
         name: Series name (unique)
         author: Series author
-        goodreads_id: Goodreads series ID for external lookups
-        total_books_in_series: Total books in series per Goodreads
+        hardcover_id: Hardcover series ID (primary metadata provider)
+        goodreads_id: Goodreads series ID (legacy, RSS sync only)
+        total_books_in_series: Total books in series per metadata provider
         books_owned: Number of books currently owned
         books_missing: Number of books missing from series
         completion_percentage: % of series owned (0-100)
@@ -38,8 +39,9 @@ class Series(Base):
     name = Column(String(500), nullable=False, unique=True, index=True)
     author = Column(String(500), nullable=True)
 
-    # External IDs
-    goodreads_id = Column(String(255), nullable=True, index=True)
+    # External IDs (Hardcover is primary metadata provider)
+    hardcover_id = Column(String(255), nullable=True, index=True)
+    goodreads_id = Column(String(255), nullable=True, index=True)  # Legacy, used for RSS sync only
 
     # Series counts
     total_books_in_series = Column(Integer, nullable=True)

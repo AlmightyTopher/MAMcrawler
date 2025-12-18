@@ -35,6 +35,7 @@ import logging
 
 import logging
 # Use backend imports
+from backend.config import get_settings
 from backend.integrations.qbittorrent_resilient import ResilientQBittorrentClient
 from backend.utils.log_config import get_logger
 
@@ -48,15 +49,18 @@ class RealExecutionWorkflow:
     def __init__(self):
         self.log_file = Path("logs/real_workflow_execution.log")
         self.start_time = datetime.now()
-        self.abs_url = os.getenv('ABS_URL', 'http://localhost:13378').rstrip('/')
-        self.abs_token = os.getenv('ABS_TOKEN')
-        self.prowlarr_url = os.getenv('PROWLARR_URL', 'http://localhost:9696')
-        self.prowlarr_key = os.getenv('PROWLARR_API_KEY')
-        self.qb_url = os.getenv('QBITTORRENT_URL', 'http://192.168.0.48:52095/').rstrip('/')
-        self.qb_secondary_url = os.getenv('QBITTORRENT_SECONDARY_URL', None)  # Local fallback
+
+        # Use centralized config system instead of hardcoded URLs
+        settings = get_settings()
+        self.abs_url = settings.ABS_URL.rstrip('/')
+        self.abs_token = settings.ABS_TOKEN
+        self.prowlarr_url = settings.PROWLARR_URL
+        self.prowlarr_key = settings.PROWLARR_API_KEY
+        self.qb_url = f"{settings.QB_HOST}:{settings.QB_PORT}".rstrip('/')
+        self.qb_secondary_url = os.getenv('QBITTORRENT_SECONDARY_URL', None)  # Local fallback (not in config yet)
         if self.qb_secondary_url:
             self.qb_secondary_url = self.qb_secondary_url.rstrip('/')
-        self.qb_user = os.getenv('QBITTORRENT_USERNAME')
+        self.qb_user = settings.QB_USERNAME
         self.qb_pass = os.getenv('QBITTORRENT_PASSWORD')
         self.download_path = Path(os.getenv('DOWNLOAD_PATH', 'F:/Audiobookshelf/Books'))
 

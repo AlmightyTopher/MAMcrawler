@@ -21,6 +21,10 @@ sys.path.append(os.getcwd())
 from backend.config import get_settings
 from backend.database import Base
 
+# Import all models to ensure they're registered with Base.metadata
+# This is required for Alembic autogenerate to detect schema changes
+import backend.models  # noqa: F401
+
 # this is the Alembic Config object
 config = context.config
 

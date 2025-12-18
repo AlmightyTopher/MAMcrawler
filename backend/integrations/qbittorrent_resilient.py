@@ -345,11 +345,14 @@ class ResilientQBittorrentClient:
 
 async def demo_resilient_client():
     """Demo usage of resilient client"""
+    from backend.config import get_settings
+    settings = get_settings()
+
     async with ResilientQBittorrentClient(
-        primary_url="http://192.168.0.48:52095",
-        secondary_url="http://localhost:52095",
-        username="TopherGutbrod",
-        password=os.getenv("QB_PASSWORD", "adminadmin")
+        primary_url=f"{settings.QB_HOST}:{settings.QB_PORT}",
+        secondary_url=os.getenv("QB_SECONDARY_URL", f"http://localhost:{settings.QB_PORT}"),
+        username=settings.QB_USERNAME,
+        password=settings.QB_PASSWORD
     ) as client:
         # Perform health check
         health = await client.perform_health_check()

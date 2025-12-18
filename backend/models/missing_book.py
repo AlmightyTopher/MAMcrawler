@@ -26,7 +26,8 @@ class MissingBook(Base):
         reason_missing: Why this book is missing (series_gap, author_gap)
         isbn: ISBN identifier
         asin: Amazon Standard Identifier
-        goodreads_id: Goodreads book ID
+        hardcover_id: Hardcover book ID (primary metadata provider)
+        goodreads_id: Goodreads book ID (legacy, RSS sync only)
         identified_date: When gap was identified
         download_status: Current status (identified, queued, downloading, completed, failed)
         download_id: Foreign key to downloads table
@@ -58,10 +59,11 @@ class MissingBook(Base):
     # Why it's missing
     reason_missing = Column(String(100), nullable=False)  # series_gap, author_gap
 
-    # External source info
+    # External source info (Hardcover is primary metadata provider)
     isbn = Column(String(50), nullable=True)
     asin = Column(String(50), nullable=True)
-    goodreads_id = Column(String(255), nullable=True)
+    hardcover_id = Column(String(255), nullable=True)
+    goodreads_id = Column(String(255), nullable=True)  # Legacy, used for RSS sync only
 
     # Status tracking
     identified_date = Column(TIMESTAMP, default=func.now(), index=True)

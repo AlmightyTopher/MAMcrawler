@@ -15,6 +15,7 @@ import uvicorn
 from dotenv import load_dotenv
 import server_auth
 from backend.middleware.csrf import csrf_protection_middleware
+from backend.services.job_queue_service import JobQueueService
 
 # Load environment variables
 load_dotenv()
@@ -55,8 +56,10 @@ app.add_middleware(
 
 # State
 service_manager = ServiceManager()
-current_process: Optional[subprocess.Popen] = None
 STATS_FILE = "mam_stats.json"
+
+# Clean up orphaned jobs on startup
+JobQueueService.cleanup_orphaned_jobs()
 
 # Middleware order matters: CSRF first, then CORS
 app.middleware("http")(csrf_protection_middleware)
@@ -197,12 +200,13 @@ async def get_status():
         except Exception as e:
             logger.error(f"Failed to read status file: {e}")
 
-    # Fallback if process is running but no status file (or stale)
+    # Fallback: check database for running jobs
     if not active_task:
-        global current_process
-        if current_process and current_process.poll() is None:
+        running_jobs = JobQueueService.get_running_jobs()
+        if running_jobs:
+            job = running_jobs[0]
             active_task = {
-                "name": "Running Task...",
+                "name": job.get("name", "Running Task..."),
                 "progress": 50, # Indeterminate
                 "details": "Executing background process..."
             }
@@ -352,11 +356,11 @@ async def trigger_stats_refresh(background_tasks: BackgroundTasks):
 @app.post("/api/control/{action}")
 async def control_action(action: str):
     """Trigger a crawler action."""
-    global current_process
-    
-    if current_process and current_process.poll() is None:
+    # Check if a job is already running using database
+    running_jobs = JobQueueService.get_running_jobs()
+    if running_jobs:
         raise HTTPException(status_code=409, detail="A task is already running")
-        
+
     cmd = ["python", "master_audiobook_manager.py"]
     
     if action == "top-search":
@@ -369,14 +373,16 @@ async def control_action(action: str):
         raise HTTPException(status_code=400, detail="Invalid action")
         
     try:
-        # Run in background
-        current_process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
+        # Start job using job queue service
+        task_id = JobQueueService.start_job(
+            task_name=f"CONTROL_{action.upper()}",
+            command=cmd,
+            metadata={"action": action}
         )
-        return {"status": "success", "message": f"Started {action}"}
+        if task_id:
+            return {"status": "success", "message": f"Started {action}", "task_id": task_id}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to start task")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -396,13 +402,18 @@ def execute_task(action_name: str, flag: str):
     
     try:
         write_to_log("INFO", f"API initiated {action_name}")
-        current_process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
+        task_id = JobQueueService.start_job(
+            task_name=action_name,
+            command=cmd,
+            metadata={"flag": flag}
         )
-        return {"success": True}
+        if task_id:
+            return {"success": True, "task_id": task_id}
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": "Failed to start task"}
+            )
     except Exception as e:
         write_to_log("ERROR", f"Failed to start {action_name}: {str(e)}")
         return JSONResponse(
@@ -439,13 +450,17 @@ async def action_sync_goodreads():
     
     try:
         write_to_log("INFO", "API initiated Goodreads Sync")
-        current_process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
+        task_id = JobQueueService.start_job(
+            task_name="GOODREADS_SYNC",
+            command=cmd
         )
-        return {"success": True}
+        if task_id:
+            return {"success": True, "task_id": task_id}
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": "Failed to start task"}
+            )
     except Exception as e:
         write_to_log("ERROR", f"Failed to start Goodreads Sync: {str(e)}")
         return JSONResponse(
