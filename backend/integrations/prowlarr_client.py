@@ -518,6 +518,36 @@ class ProwlarrClient:
             logger.error(f"Search by IMDb ID failed: {str(e)}")
             raise
 
+    async def add_release(self, title: str, download_url: str, indexer_id: int = -1) -> bool:
+        """
+        Manually add a release to Prowlarr (e.g. from external source).
+        
+        Args:
+            title: Title of the release
+            download_url: URL to download (magnet or http)
+            indexer_id: Indexer ID (default -1 for Manual)
+            
+        Returns:
+            True if successful
+        """
+        logger.info(f"Adding release to Prowlarr: {title}")
+        endpoint = "/api/v1/search/grab"
+        
+        payload = {
+            "title": title,
+            "downloadUrl": download_url,
+            "indexerId": indexer_id
+        }
+        
+        try:
+            # Note: /search/grab returns 200 OK on success
+            await self._request("POST", endpoint, json=payload)
+            logger.info(f"Successfully added release: {title}")
+            return True
+        except ProwlarrError as e:
+            logger.error(f"Failed to add release: {e}")
+            return False
+
     async def close(self):
         """Close client session."""
         if self.session:

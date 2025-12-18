@@ -195,17 +195,7 @@ class GoogleBooksClient:
     ) -> Dict[str, Any]:
         """
         Make HTTP request with retry logic.
-
-        Args:
-            endpoint: API endpoint path
-            params: Query parameters
-
-        Returns:
-            JSON response
-
-        Raises:
-            GoogleBooksError: On API errors
-            GoogleBooksRateLimitError: On rate limit errors
+        Includes infinite backoff for 429 Rate Limits.
         """
         await self._ensure_session()
         await self._rate_limited_sleep()
@@ -220,36 +210,41 @@ class GoogleBooksClient:
 
         logger.debug(f"GET {url} - params: {params}")
 
-        try:
-            async with self.session.get(url, params=params) as response:
-                # Increment counter before checking status
-                self._increment_request_count()
+        # Infinite loop for Rate Limit handling (User Request)
+        while True:
+            try:
+                async with self.session.get(url, params=params) as response:
+                    # Increment counter before checking status
+                    self._increment_request_count()
 
-                # Check for rate limit errors
-                if response.status == 429:
-                    logger.error("API rate limit exceeded (429)")
-                    raise GoogleBooksRateLimitError("API rate limit exceeded")
+                    # Check for rate limit errors
+                    if response.status == 429:
+                        logger.warning("API rate limit exceeded (429). Sleeping 60s...")
+                        await asyncio.sleep(60)
+                        continue # Retry indefinitely
 
-                response.raise_for_status()
+                    response.raise_for_status()
 
-                data = await response.json()
-                logger.debug(f"Response: {response.status}")
-                return data
+                    data = await response.json()
+                    logger.debug(f"Response: {response.status}")
+                    return data
 
-        except aiohttp.ClientResponseError as e:
-            if e.status == 429:
-                raise GoogleBooksRateLimitError("API rate limit exceeded")
+            except aiohttp.ClientResponseError as e:
+                if e.status == 429:
+                    logger.warning("API rate limit exceeded (429 client error). Sleeping 60s...")
+                    await asyncio.sleep(60)
+                    continue
+                
+                logger.error(f"API error: {e.status} - {e.message}")
+                raise GoogleBooksError(f"API request failed: {e.status} {e.message}")
 
-            logger.error(f"API error: {e.status} - {e.message}")
-            raise GoogleBooksError(f"API request failed: {e.status} {e.message}")
+            except aiohttp.ClientError as e:
+                logger.error(f"Client error: {str(e)}")
+                raise GoogleBooksError(f"Request failed: {str(e)}")
 
-        except aiohttp.ClientError as e:
-            logger.error(f"Client error: {str(e)}")
-            raise GoogleBooksError(f"Request failed: {str(e)}")
-
-        except asyncio.TimeoutError:
-            logger.error(f"Request timeout for {url}")
-            raise GoogleBooksError("Request timeout")
+            except asyncio.TimeoutError:
+                logger.error(f"Request timeout for {url}")
+                raise GoogleBooksError("Request timeout")
 
     async def search(
         self,
@@ -473,6 +468,7 @@ class GoogleBooksClient:
                 return None
 
             metadata = self.extract_metadata(results[0])
+            metadata['_raw_payload'] = results[0]
             return metadata
 
         except GoogleBooksError as e:

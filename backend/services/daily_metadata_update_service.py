@@ -19,6 +19,7 @@ from sqlalchemy import and_, or_, asc, func
 
 from backend.models.book import Book
 from backend.integrations.google_books_client import GoogleBooksClient, GoogleBooksRateLimitError
+from backend.services.evidence_service import EvidenceService
 
 logger = logging.getLogger(__name__)
 
@@ -230,6 +231,19 @@ class DailyMetadataUpdateService:
             # Step 2: Extract metadata from top result
             result = results[0]
             extracted = self.google_books_client.extract_metadata(result)
+
+            # Capture Evidence (Shadow Mode)
+            try:
+                EvidenceService.ingest_evidence(
+                    self.db,
+                    source_name="GoogleBooks",
+                    book_id=book.id,
+                    raw_payload=result,
+                    normalized_data=extracted,
+                    resolution_method="search"
+                )
+            except Exception as e:
+                logger.error(f"Failed to capture evidence for book {book.id}: {e}")
 
             # Step 3: Identify what to update (gaps only, never overwrite)
             fields_updated = []

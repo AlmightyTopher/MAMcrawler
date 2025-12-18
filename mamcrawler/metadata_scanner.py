@@ -19,9 +19,7 @@ class MetadataScanner:
     
     def __init__(self, qbt_client=None, abs_client=None, metadata_provider=None):
         self.narrator_detector = NarratorDetector()
-        self.metadata_provider = metadata_provider
-        # Keep legacy attribute for compatibility if needed, or just remove it
-        self.goodreads = metadata_provider 
+        self.metadata_provider = metadata_provider 
     
     async def scan_audiobook(self, 
                             audiobook_path: str,
@@ -244,49 +242,13 @@ class MetadataScanner:
         
         return None
     
-    def _merge_goodreads(self, canonical: Dict, goodreads: Dict) -> Dict:
-        """
-        Merge Goodreads data with canonical metadata.
-        
-        Goodreads takes priority for:
-        - Series name and ordering
-        - Description
-        - Cover art
-        - Publication info
-        - Genres
-        
-        Does NOT overwrite:
-        - Title (use speech-to-text if available)
-        - Narrator
-        """
-        merged = canonical.copy()
-        
-        # Always use Goodreads for these
-        merged['series'] = goodreads.get('series') or canonical.get('series')
-        merged['series_number'] = goodreads.get('series_number') or canonical.get('series_number')
-        merged['description'] = goodreads.get('description') or canonical.get('description')
-        merged['cover_url'] = goodreads.get('cover_url') or canonical.get('cover_url')
-        merged['isbn'] = goodreads.get('isbn') or goodreads.get('isbn13') or canonical.get('isbn')
-        merged['publication_date'] = goodreads.get('publication_date') or canonical.get('publication_date')
-        merged['genres'] = goodreads.get('genres') or canonical.get('genres')
-        merged['rating'] = goodreads.get('rating') or canonical.get('rating')
-        merged['goodreads_url'] = goodreads.get('goodreads_url')
-        
-        # Use Goodreads title/author if canonical doesn't have them
-        if not merged.get('title'):
-            merged['title'] = goodreads.get('title')
-        if not merged.get('author'):
-            merged['author'] = goodreads.get('author')
-        
-        return merged
-    
     def _resolve_conflicts(self, canonical: Dict) -> Dict:
         """
         Resolve metadata conflicts using priority order (Section 15).
         
         Priority:
         1. Speech-to-text (title/series/sequence)
-        2. Goodreads (canonical data)
+        2. Metadata Provider (Hardcover)
         3. Narrator from torrent/audio
         4. Torrent technical metadata
         5. Audiobookshelf existing
@@ -294,7 +256,7 @@ class MetadataScanner:
         # Already handled in merge logic
         # This is a placeholder for future conflict resolution
         return canonical
-    
+
     async def update_audiobookshelf(self, 
                                     abs_item_id: str,
                                     metadata: Dict,

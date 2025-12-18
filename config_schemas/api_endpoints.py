@@ -8,7 +8,7 @@ from typing import Optional, Dict, Any, List
 import re
 
 
-class APIEndpointsConfig(BaseModel):
+class ApiEndpointsConfig(BaseModel):
     """API endpoints configuration schema."""
 
     # Audiobookshelf API

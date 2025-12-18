@@ -47,13 +47,13 @@ class Settings(BaseSettings):
     # ============================================================================
     # Server Configuration
     # ============================================================================
-    APP_HOST: str = "0.0.0.0"
-    APP_PORT: int = 8000
+    APP_HOST: str = "127.0.0.1"
+    APP_PORT: int = 8081
 
     # ============================================================================
     # Database Configuration
     # ============================================================================
-    DATABASE_URL: str = "postgresql://audiobook_user:audiobook_password@localhost:5432/audiobook_automation"
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/audiobooks"
     DATABASE_ECHO: bool = False
 
     # ============================================================================
@@ -87,7 +87,7 @@ class Settings(BaseSettings):
     # ============================================================================
     QB_HOST: str = "http://localhost"
     QB_PORT: int = 52095
-    QB_USERNAME: str = "TopherGutbrod"
+    QB_USERNAME: str = ""
     QB_PASSWORD: str = ""
     QB_TIMEOUT: int = 30
     QB_API_VERSION: str = "v2"
@@ -105,6 +105,18 @@ class Settings(BaseSettings):
     GOOGLE_BOOKS_API_KEY: str = ""
     GOOGLE_BOOKS_TIMEOUT: int = 10
     GOOGLE_BOOKS_RATE_LIMIT: int = 100  # Requests per day
+    
+    # ============================================================================
+    # Goodreads Integration
+    # ============================================================================
+    GOODREADS_USER_ID: str = ""
+    GOODREADS_RSS_KEY: str = ""
+    GOODREADS_RSS_URL: str = ""  # Will be constructed from ID and Key if not provided
+
+    # ============================================================================
+    # Hardcover Integration
+    # ============================================================================
+    HARDCOVER_TOKEN: str = ""
 
     # ============================================================================
     # MAM Crawler Integration
@@ -229,6 +241,10 @@ class Settings(BaseSettings):
                     "CRITICAL: PASSWORD_SALT not set in environment variables. "
                     "Set via .env file or environment variable."
                 )
+
+        # Construct Goodreads URL if not provided but components are present
+        if (not self.GOODREADS_RSS_URL or self.GOODREADS_RSS_URL == "") and self.GOODREADS_USER_ID and self.GOODREADS_RSS_KEY:
+            self.GOODREADS_RSS_URL = f"https://www.goodreads.com/review/list_rss/{self.GOODREADS_USER_ID}?key={self.GOODREADS_RSS_KEY}&shelf=%23ALL%23"
 
         return self
 

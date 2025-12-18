@@ -184,3 +184,45 @@ class UserManager:
         except Exception as e:
             logger.error(f"Failed to change password: {str(e)}")
             raise
+
+    # ========================================================================
+    # Admin / System Management Methods
+    # ========================================================================
+
+    async def get_users(self) -> Dict[str, Any]:
+        """
+        Get all users (Admin only).
+        Returns list of users.
+        """
+        logger.info("Fetching all users")
+        try:
+            # Note: This endpoint usually requires admin permissions
+            result = await self.client._request("GET", "/api/users")
+            return result
+        except Exception as e:
+            logger.error(f"Failed to get users: {e}")
+            raise
+
+    async def get_user(self, user_id: str) -> Dict[str, Any]:
+        """
+        Get detailed user info by ID (Admin only).
+        """
+        logger.info(f"Fetching user details: {user_id}")
+        try:
+            result = await self.client._request("GET", f"/api/users/{user_id}")
+            return result
+        except Exception as e:
+            logger.error(f"Failed to get user {user_id}: {e}")
+            raise
+
+    async def get_user_listening_stats(self, user_id: str) -> Dict[str, Any]:
+        """
+        Get listening stats for a user.
+        """
+        logger.info(f"Fetching listening stats for: {user_id}")
+        try:
+            result = await self.client._request("GET", f"/api/users/{user_id}/listening-stats")
+            return result
+        except Exception as e:
+            logger.error(f"Failed to get stats for {user_id}: {e}")
+            raise

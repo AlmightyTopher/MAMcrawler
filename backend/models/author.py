@@ -59,7 +59,7 @@ class Author(Base):
     date_updated = Column(TIMESTAMP, default=func.now(), onupdate=func.now())
 
     # Relationships
-    missing_books = relationship("MissingBook", back_populates="author")
+    # missing_books = relationship("MissingBook", back_populates="author")
 
     def __repr__(self) -> str:
         return f"<Author(id={self.id}, name={self.name}, owned={self.audiobooks_owned}, missing={self.audiobooks_missing})>"

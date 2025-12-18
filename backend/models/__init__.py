@@ -18,6 +18,8 @@ from backend.models.event_status import EventStatus
 from backend.models.rule_cache import RuleCache
 from backend.models.vip_pending_item import VIPPendingItem
 from backend.models.ratio_metrics import RatioMetrics
+from backend.models.evidence import EvidenceSource, EvidenceEvent, Assertion
+from backend.models.hardcover_sync_log import HardcoverSyncLog
 
 __all__ = [
     "Book",
@@ -36,4 +38,8 @@ __all__ = [
     "RuleCache",
     "VIPPendingItem",
     "RatioMetrics",
+    "EvidenceSource",
+    "EvidenceEvent",
+    "Assertion",
+    "HardcoverSyncLog",
 ]

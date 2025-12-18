@@ -10,8 +10,11 @@ from typing import Dict, List, Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends
 import uvicorn
 from dotenv import load_dotenv
+import server_auth
+from backend.middleware.csrf import csrf_protection_middleware
 
 # Load environment variables
 load_dotenv()
@@ -37,7 +40,10 @@ except ImportError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("APIServer")
 
-app = FastAPI(title="MAM Crawler API")
+app = FastAPI(
+    title="MAM Crawler API",
+    dependencies=[Depends(server_auth.get_current_user)]
+)
 
 # CORS
 app.add_middleware(
@@ -52,7 +58,11 @@ service_manager = ServiceManager()
 current_process: Optional[subprocess.Popen] = None
 STATS_FILE = "mam_stats.json"
 
-def get_latest_log_lines(n=20) -> List[Dict]:
+# Middleware order matters: CSRF first, then CORS
+app.middleware("http")(csrf_protection_middleware)
+
+
+def get_latest_log_lines(n=1000) -> List[str]:
     """Read the latest lines from the most recent log file."""
     try:
         log_files = list(Path(".").glob("master_manager_*.log"))
@@ -62,22 +72,18 @@ def get_latest_log_lines(n=20) -> List[Dict]:
         latest_log = max(log_files, key=os.path.getctime)
         
         lines = []
-        with open(latest_log, 'r', encoding='utf-8') as f:
-            # Read last N lines efficiently-ish
-            all_lines = f.readlines()
-            last_n = all_lines[-n:]
-            
-            for line in last_n:
-                parts = line.strip().split(' - ')
-                if len(parts) >= 3:
-                    lines.append({
-                        "time": parts[0].split(' ')[1],
-                        "level": parts[2],
-                        "message": " - ".join(parts[3:])
-                    })
+        try:
+            with open(latest_log, 'r', encoding='utf-8', errors='ignore') as f:
+                all_lines = f.readlines()
+                # Return exactly the last n lines, stripping only trailing newline
+                lines = [line.rstrip() for line in all_lines[-n:]]
+        except Exception:
+            pass # Transient read error
+                
         return lines
     except Exception as e:
         logger.error(f"Error reading logs: {e}")
+        return []
         return []
 
 def load_stats() -> Dict:
@@ -97,6 +103,21 @@ def save_stats(stats: Dict):
             json.dump(stats, f, indent=2)
     except Exception as e:
         logger.error(f"Error saving stats file: {e}")
+
+def write_to_log(level: str, message: str):
+    """Append a message to the latest log file."""
+    try:
+        log_files = list(Path(".").glob("master_manager_*.log"))
+        if not log_files:
+            return
+        
+        latest_log = max(log_files, key=os.path.getctime)
+        timestamp = datetime.now().strftime("%H:%M:%S,%f")[:-3]
+        
+        with open(latest_log, 'a', encoding='utf-8') as f:
+            f.write(f"[{timestamp}][{level}] - {message}\n")
+    except Exception as e:
+        logger.error(f"Failed to write to log: {e}")
 
 async def refresh_stats_task():
     """Background task to refresh stats from MAM."""
@@ -148,20 +169,43 @@ async def get_status():
     services = []
     for name, config in service_manager.services.items():
         is_running = service_manager.is_port_open(config['port'])
+        display_name = config['name']
+        if display_name == "Docker Desktop (for Prowlarr)":
+            display_name = "Prowlarr"
+            
         services.append({
-            "name": config['name'],
+            "name": display_name,
             "status": "running" if is_running else "stopped"
         })
         
     # Check active task
     active_task = None
-    global current_process
-    if current_process and current_process.poll() is None:
-        active_task = {
-            "name": "Running Task...",
-            "progress": 50, # Indeterminate
-            "details": "Executing requested operation"
-        }
+    
+    # Try to read granular status from active_status.json
+    status_file = "active_status.json"
+    if os.path.exists(status_file):
+        try:
+            with open(status_file, 'r') as f:
+                task_data = json.load(f)
+                # Check staleness (e.g. 30 seconds to be safe)
+                if time.time() - task_data.get('timestamp', 0) < 30:
+                    active_task = {
+                        "name": task_data.get('name', 'Unknown Task'),
+                        "progress": task_data.get('progress', 0),
+                        "details": task_data.get('details', '')
+                    }
+        except Exception as e:
+            logger.error(f"Failed to read status file: {e}")
+
+    # Fallback if process is running but no status file (or stale)
+    if not active_task:
+        global current_process
+        if current_process and current_process.poll() is None:
+            active_task = {
+                "name": "Running Task...",
+                "progress": 50, # Indeterminate
+                "details": "Executing background process..."
+            }
         
     # Get Logs
     recent_logs = get_latest_log_lines(5)
@@ -336,7 +380,86 @@ async def control_action(action: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def execute_task(action_name: str, flag: str):
+    """Helper to execute a task with concurrency locking."""
+    global current_process
+    
+    # SAFETY LOCK 1: Concurrency Guard
+    if current_process and current_process.poll() is None:
+        write_to_log("WARNING", f"Blocked attempt to start {action_name} while another task is running")
+        return JSONResponse(
+            status_code=409,
+            content={"success": False, "error": "Task already running"}
+        )
+        
+    cmd = ["python", "master_audiobook_manager.py", flag]
+    
+    try:
+        write_to_log("INFO", f"API initiated {action_name}")
+        current_process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        return {"success": True}
+    except Exception as e:
+        write_to_log("ERROR", f"Failed to start {action_name}: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+@app.post("/api/actions/top-search")
+async def action_top_search():
+    return execute_task("Top Search", "--top-search")
+
+@app.post("/api/actions/refresh-metadata")
+async def action_refresh_metadata():
+    return execute_task("Metadata Refresh", "--update-metadata")
+
+@app.post("/api/actions/detect-missing")
+async def action_detect_missing():
+    return execute_task("Missing Books Detection", "--missing-books")
+
+@app.post("/api/actions/sync-goodreads")
+async def action_sync_goodreads():
+    """Trigger Goodreads Sync."""
+    global current_process
+    
+    # SAFETY LOCK
+    if current_process and current_process.poll() is None:
+        write_to_log("WARNING", "Blocked attempt to start Goodreads Sync while another task is running")
+        return JSONResponse(
+            status_code=409, 
+            content={"success": False, "error": "Task already running"}
+        )
+
+    cmd = ["python", "goodreads_sync.py"]
+    
+    try:
+        write_to_log("INFO", "API initiated Goodreads Sync")
+        current_process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        return {"success": True}
+    except Exception as e:
+        write_to_log("ERROR", f"Failed to start Goodreads Sync: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "ok", "version": "1.0.0"}
+
 if __name__ == "__main__":
     print("Starting MAM Crawler API Server...")
-    print("Dashboard available at: http://localhost:8081")
-    uvicorn.run(app, host="0.0.0.0", port=8081)
+    server_auth.print_credentials()
+    print("Dashboard available at: http://127.0.0.1:8081")
+    uvicorn.run(app, host="127.0.0.1", port=8081)

@@ -7,7 +7,7 @@ for use throughout the audiobook management system.
 Usage:
     from backend.utils import BookNotFoundError, get_logger, format_duration
     from backend.utils.errors import AudiobookException
-    from backend.utils.logging import setup_logging
+    from backend.utils.log_config import setup_logging
     from backend.utils.helpers import calculate_metadata_completeness
 """
 
@@ -63,7 +63,7 @@ from backend.utils.errors import (
 # LOGGING FUNCTIONS
 # ============================================================================
 
-from backend.utils.logging import (
+from backend.utils.log_config import (
     # Setup functions
     setup_logging,
     get_logger,

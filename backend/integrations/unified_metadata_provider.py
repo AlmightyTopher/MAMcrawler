@@ -22,6 +22,9 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+from backend.database import get_db_context
+from backend.services.evidence_service import EvidenceService
+
 
 class MetadataSource(Enum):
     """Metadata sources in priority order."""
@@ -98,7 +101,8 @@ class UnifiedMetadataProvider:
         self,
         title: str,
         author: str = "",
-        mam_torrent_url: str = ""
+        mam_torrent_url: str = "",
+        book_id: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Get metadata with cascading fallback strategy.
@@ -136,7 +140,7 @@ class UnifiedMetadataProvider:
         # Step 2: Try Google Books (secondary source)
         if self.google_books_client and final_metadata.get('completeness', 0) < 0.80:
             logger.info(f"Attempting Google Books for: {title} by {author}")
-            google_result = await self._try_google_books(title, author)
+            google_result = await self._try_google_books(title, author, book_id)
             all_results.append(google_result)
 
             if google_result.success and google_result.metadata:
@@ -146,7 +150,7 @@ class UnifiedMetadataProvider:
         # Step 3: Try Hardcover (tertiary source)
         if self.hardcover_client and final_metadata.get('completeness', 0) < 0.70:
             logger.info(f"Attempting Hardcover for: {title} by {author}")
-            hardcover_result = await self._try_hardcover(title, author)
+            hardcover_result = await self._try_hardcover(title, author, book_id)
             all_results.append(hardcover_result)
 
             if hardcover_result.success and hardcover_result.metadata:
@@ -215,7 +219,7 @@ class UnifiedMetadataProvider:
                 error=str(e)
             )
 
-    async def _try_google_books(self, title: str, author: str = "") -> MetadataResult:
+    async def _try_google_books(self, title: str, author: str = "", book_id: Optional[int] = None) -> MetadataResult:
         """Try to extract metadata from Google Books API."""
         try:
             if not self.google_books_client:
@@ -230,6 +234,21 @@ class UnifiedMetadataProvider:
             metadata = await self.google_books_client.search_and_extract(title, author)
 
             if metadata:
+                # Capture Evidence
+                try:
+                    raw_payload = metadata.pop('_raw_payload', {})
+                    with get_db_context() as db:
+                        EvidenceService.ingest_evidence(
+                            db,
+                            source_name="GoogleBooks",
+                            book_id=book_id,
+                            raw_payload=raw_payload,
+                            normalized_data=metadata,
+                            resolution_method="fuzzy" # Assumed since it's a search
+                        )
+                except Exception as e:
+                    logger.error(f"Failed to capture GoogleBooks evidence: {e}")
+
                 completeness = self._calculate_completeness(metadata)
                 return MetadataResult(
                     source=MetadataSource.GOOGLE_BOOKS,
@@ -256,7 +275,7 @@ class UnifiedMetadataProvider:
                 error=str(e)
             )
 
-    async def _try_hardcover(self, title: str, author: str = "") -> MetadataResult:
+    async def _try_hardcover(self, title: str, author: str = "", book_id: Optional[int] = None) -> MetadataResult:
         """Try to extract metadata from Hardcover."""
         try:
             if not self.hardcover_client:
@@ -272,6 +291,23 @@ class UnifiedMetadataProvider:
             metadata = None
 
             if metadata:
+                # Capture Evidence
+                try:
+                    # Normalized data is just metadata here
+                    # Hardcover implementation is currently stubbed, so raw payload is mocked or missing
+                    # Assuming metadata reflects the payload for now.
+                    with get_db_context() as db:
+                         EvidenceService.ingest_evidence(
+                            db,
+                            source_name="Hardcover",
+                            book_id=book_id,
+                            raw_payload=metadata, # Stubbed implementation returns this directly often
+                            normalized_data=metadata,
+                            resolution_method="fuzzy"
+                        )
+                except Exception as e:
+                    logger.error(f"Failed to capture Hardcover evidence: {e}")
+
                 completeness = self._calculate_completeness(metadata)
                 return MetadataResult(
                     source=MetadataSource.HARDCOVER,

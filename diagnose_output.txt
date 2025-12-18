@@ -1,0 +1,78 @@
+
+Testing featured_book_series_id...
+SUCCESS: Found results
+{
+  "data": {
+    "books": [
+      {
+        "id": 1204431,
+        "title": "As Time Goes by: From the Industrial Revolutions to the Information Revolution",
+        "featured_book_series_id": null
+      }
+    ]
+  }
+}
+
+Testing book_series structure...
+SUCCESS: Found results
+{
+  "data": {
+    "books": [
+      {
+        "id": 1204431,
+        "title": "As Time Goes by: From the Industrial Revolutions to the Information Revolution",
+        "book_series": []
+      }
+    ]
+  }
+}
+
+Testing contributions...
+SUCCESS: Found results
+{
+  "data": {
+    "books": [
+      {
+        "id": 1204431,
+        "title": "As Time Goes by: From the Industrial Revolutions to the Information Revolution",
+        "contributions": [
+          {
+            "author": {
+              "name": "Christopher Freeman"
+            }
+          },
+          {
+            "author": {
+              "name": "Francisco Lou\u00e7\u00e3"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+
+Testing series root...
+SUCCESS: Found results
+{
+  "data": {
+    "series": [
+      {
+        "id": 157585,
+        "name": "New Zealand Sailing"
+      }
+    ]
+  }
+}
+
+Testing user_books root...
+SUCCESS: Found results
+{
+  "data": {
+    "user_books": [
+      {
+        "id": 2835156
+      }
+    ]
+  }
+}

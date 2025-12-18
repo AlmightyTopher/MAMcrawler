@@ -59,9 +59,11 @@ try:
     from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
     from webdriver_manager.chrome import ChromeDriverManager
     from bs4 import BeautifulSoup
+    # Import ConfigSystem for encryption
+    from config_system import get_config_system
 except ImportError as e:
     print(f"ERROR: Missing required library: {e}")
-    print("Install with: pip install selenium webdriver-manager beautifulsoup4")
+    print("Install with: pip install selenium webdriver-manager beautifulsoup4 cryptography")
     sys.exit(1)
 
 # Import our session-based qBittorrent client
@@ -176,7 +178,8 @@ class SeleniumMAMCrawler:
         self.results = {"searched": 0, "found": 0, "queued": 0, "failed": 0}
 
         # Cookie persistence
-        self.cookies_file = 'mam_cookies.json'
+        self.cookies_file = 'mam_cookies.enc'
+        self.legacy_cookies_file = 'mam_cookies.json'
 
     def setup(self) -> bool:
         """Initialize Selenium WebDriver and qBittorrent."""
@@ -253,35 +256,78 @@ class SeleniumMAMCrawler:
             return False
 
     def _load_cookies(self):
-        """Load saved cookies to restore session"""
+        """Load saved cookies to restore session (Encrypted)"""
+        cookies = None
+        
+        # Try loading encrypted cookies first
         if os.path.exists(self.cookies_file):
             try:
+                config_sys = get_config_system()
                 with open(self.cookies_file, 'r') as f:
-                    cookies = json.load(f)
+                    encrypted_data = f.read()
+                    
+                json_data = config_sys.secret_manager.decrypt_secret(encrypted_data)
+                cookies = json.loads(json_data)
+                logger.info(f"Loaded {len(cookies)} encrypted cookies")
+            except Exception as e:
+                logger.warning(f"Could not load encrypted cookies: {e}")
 
+        # Fallback to legacy plaintext cookies if no encrypted ones found
+        if not cookies and os.path.exists(self.legacy_cookies_file):
+            try:
+                logger.info("Migrating legacy plaintext cookies to encrypted storage...")
+                with open(self.legacy_cookies_file, 'r') as f:
+                    cookies = json.load(f)
+                # We will save them encrypted on next save
+            except Exception as e:
+                logger.warning(f"Could not load legacy cookies: {e}")
+
+        if cookies:
+            try:
                 self.driver.get(self.base_url)
                 self.anti_crawl.apply_random_delay(0.5, 1.5)
 
                 for cookie in cookies:
                     try:
+                        # Fix for domain mismatch if cookies are old or generic
+                        if 'domain' in cookie:
+                             # Ensure domain matches current base url domain or remove it to let selenium handle it
+                             if 'myanonamouse.net' not in cookie['domain']:
+                                 del cookie['domain']
+                        
                         self.driver.add_cookie(cookie)
                     except Exception as e:
                         logger.debug(f"Could not add cookie {cookie.get('name')}: {e}")
-
-                logger.info(f"Loaded {len(cookies)} saved cookies")
                 return True
             except Exception as e:
-                logger.warning(f"Could not load cookies: {e}")
+                logger.warning(f"Error applying cookies: {e}")
 
         return False
 
     def _save_cookies(self):
-        """Save cookies for session recovery"""
+        """Save cookies for session recovery (Encrypted)"""
         try:
             cookies = self.driver.get_cookies()
+            if not cookies:
+                return
+
+            config_sys = get_config_system()
+            json_data = json.dumps(cookies)
+            encrypted_data = config_sys.secret_manager.encrypt_secret(json_data)
+
             with open(self.cookies_file, 'w') as f:
-                json.dump(cookies, f)
-            logger.info(f"Saved {len(cookies)} cookies")
+                f.write(encrypted_data)
+                
+            logger.info(f"Saved {len(cookies)} encrypted cookies")
+            
+            # Secure delete legacy file if it exists
+            if os.path.exists(self.legacy_cookies_file):
+                try:
+                    os.remove(self.legacy_cookies_file)
+                    logger.info("Removed legacy plaintext cookie file")
+                except OSError:
+                    pass
+                    
         except Exception as e:
             logger.warning(f"Could not save cookies: {e}")
 
@@ -334,7 +380,14 @@ class SeleniumMAMCrawler:
                 logger.info("Login form submitted")
 
                 # Wait for page to load after login
-                time.sleep(5)
+                try:
+                    # Wait for logout link or some element that indicatesloggedIn state
+                    logger.info("Waiting for login to complete...")
+                    self.wait.until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='logout.php'], .torTable"))
+                    )
+                except TimeoutException:
+                    logger.warning("Login wait timed out, proceeding to check source...")
 
                 # Check if login was successful
                 page_source = self.driver.page_source
@@ -406,6 +459,89 @@ class SeleniumMAMCrawler:
 
         return False
 
+        return False
+
+    def discover_top_books(self, limit: int = 10) -> List[Dict[str, str]]:
+        """
+        Discover top trending audiobooks on MAM.
+        Navigates to the browse page, filters for audiobooks, sorts by activity.
+        """
+        print(f"STEP: Discovering Top {limit} Audiobooks")
+        print("-" * 120)
+
+        discovered = []
+        try:
+            if not self.driver:
+                if not self.setup():
+                    return []
+            
+            if not self.authenticated:
+                if not self.login():
+                    return []
+
+            self.anti_crawl.check_rate_limit(2.0)
+            
+            # Browser URL for Top 10 Audiobooks (Cat 14=Audiobook)
+            # sort=7 (Seeders), sort=2 (Date), sort=6 (Leechers)
+            # We'll use sort=2 (Date) to see new stuff, or maybe sort by activity.
+            # Let's try default browse with Audiobooks category selected.
+            # Cat IDs: Audiobooks is typically around 13, 14, or mixed. 
+            # Looking at search_mam it uses cat[]=13.
+            browse_url = f"{self.base_url}/tor/browse.php?tor[cat][]=14&tor[sort]=seeders&tor[sr]=desc"
+            
+            logger.info(f"Navigating to: {browse_url}")
+            logger.info(f"Navigating to: {browse_url}")
+            self.driver.get(browse_url)
+            
+            # Wait for torrent table
+            try:
+                self.wait.until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "torTable"))
+                )
+            except TimeoutException:
+                logger.warning("Timeout waiting for Browse table")
+                return []
+            
+            soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+            
+            # Find torrent rows
+            # Table usually has class 'torTable' or similar
+            rows = soup.find_all('tr')
+            count = 0
+            
+            for row in rows:
+                if count >= limit:
+                    break
+                    
+                # Find title link
+                link = row.find('a', href=re.compile(r'^/t/\d+'))
+                if link and not re.search(r'^/f/t/', link['href']):
+                    full_title = link.get_text(strip=True)
+                    
+                    # Heuristic split for Title / Author
+                    # MAM titles are often "Author - Title" or "Title - Author" or messy
+                    # We'll try to guess.
+                    # Common format: "Author - Series - Title" or "Author - Title"
+                    
+                    if ' - ' in full_title:
+                        parts = full_title.split(' - ', 1)
+                        author = parts[0].strip()
+                        title = parts[1].strip()
+                    else:
+                        title = full_title
+                        author = "Unknown"
+                        
+                    discovered.append({'title': title, 'author': author})
+                    logger.info(f"   -> Found: {title} by {author}")
+                    count += 1
+            
+            print(f"✓ Discovered {len(discovered)} books from Top list")
+            return discovered
+
+        except Exception as e:
+            logger.error(f"Discovery failed: {e}")
+            return []
+
     def search_mam(self, search_term: str) -> Optional[Dict[str, Any]]:
         """Search MAM and extract best result using QualityFilter."""
         try:
@@ -423,8 +559,11 @@ class SeleniumMAMCrawler:
             browse_url = f"{self.base_url}/tor/browse.php"
 
             # Navigate to browse page
+            # Navigate to browse page
             self.driver.get(browse_url)
-            time.sleep(2)
+            
+            # Wait for search input
+            self.wait.until(EC.presence_of_element_located((By.ID, "ts")))
 
             # Find and fill the search input
             try:
@@ -452,8 +591,17 @@ class SeleniumMAMCrawler:
                 self.driver.get(search_url)
 
             # Wait for results to load
-            time.sleep(3)
-
+            try:
+                # Wait for either results table or "No results" message
+                # This is tricky because if no results, we might just get a different page structure.
+                # Assuming 'torTable' is present on results.
+                self.wait.until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "torTable"))
+                )
+            except TimeoutException:
+                logger.warning("Timeout waiting for search results")
+                # Proceed to check page source in case it's just empty
+            
             page_source = self.driver.page_source
 
             # Check for login page
@@ -463,8 +611,11 @@ class SeleniumMAMCrawler:
                 if self.login():
                     # Retry search
                     self.driver.get(search_url)
-                    time.sleep(3)
-                    page_source = self.driver.page_source
+                    try:
+                         self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "torTable")))
+                         page_source = self.driver.page_source
+                    except TimeoutException:
+                         return None
                 else:
                     return None
 
@@ -549,6 +700,8 @@ class SeleniumMAMCrawler:
         except Exception as e:
             logger.error(f"Search error: {e}")
             return None
+
+
 
     def _download_from_mam(self, download_url: str, output_file: str) -> bool:
         """Download file from MAM's proprietary download system using authenticated session"""

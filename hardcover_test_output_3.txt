@@ -1,0 +1,28 @@
+2025-12-16 18:59:22,334 - __main__ - INFO - Starting Hardcover client tests...
+2025-12-16 18:59:22,334 - __main__ - INFO - Using token: eyJhbGciOi...
+2025-12-16 18:59:22,878 - __main__ - INFO - [PASS] ISBN Resolution - Resolved to: Project Hail Mary
+2025-12-16 18:59:23,108 - __main__ - INFO - [PASS] ISBN Not Found - Correctly returned failure: None
+2025-12-16 18:59:23,347 - __main__ - INFO - [PASS] Title+Author Resolution - Resolved to: The Way of Kings
+2025-12-16 18:59:23,530 - __main__ - INFO - [PASS] Title+Author Not Found - Correctly returned failure
+2025-12-16 18:59:26,089 - __main__ - INFO - [FAIL] Fuzzy Search - Unable to test
+2025-12-16 18:59:26,089 - backend.integrations.hardcover_client - INFO - Resolving: The Name of the Wind by Patrick Rothfuss (ISBN: None)
+2025-12-16 18:59:26,291 - __main__ - INFO - [PASS] Waterfall Resolution - Method: title_author, Confidence: 0.9
+2025-12-16 18:59:26,291 - backend.integrations.hardcover_client - INFO - Resolving: The Way of Kings by Brandon Sanderson (ISBN: None)
+2025-12-16 18:59:26,291 - __main__ - INFO - [PASS] Series Retrieval - Series: The Stormlight Archive (position 1)
+2025-12-16 18:59:26,525 - __main__ - INFO - [PASS] Caching - Cache miss: 234ms, Cache hit: 0ms
+2025-12-16 18:59:26,526 - __main__ - INFO - 
+================================================================================
+2025-12-16 18:59:26,526 - __main__ - INFO - TEST SUMMARY
+2025-12-16 18:59:26,526 - __main__ - INFO - ================================================================================
+2025-12-16 18:59:26,526 - __main__ - INFO - [PASS] ISBN Resolution - Resolved to: Project Hail Mary
+2025-12-16 18:59:26,526 - __main__ - INFO - [PASS] ISBN Not Found - Correctly returned failure: None
+2025-12-16 18:59:26,526 - __main__ - INFO - [PASS] Title+Author Resolution - Resolved to: The Way of Kings
+2025-12-16 18:59:26,527 - __main__ - INFO - [PASS] Title+Author Not Found - Correctly returned failure
+2025-12-16 18:59:26,527 - __main__ - INFO - [FAIL] Fuzzy Search - Unable to test
+2025-12-16 18:59:26,527 - __main__ - INFO - [PASS] Waterfall Resolution - Method: title_author, Confidence: 0.9
+2025-12-16 18:59:26,527 - __main__ - INFO - [PASS] Series Retrieval - Series: The Stormlight Archive (position 1)
+2025-12-16 18:59:26,527 - __main__ - INFO - [PASS] Caching - Cache miss: 234ms, Cache hit: 0ms
+2025-12-16 18:59:26,527 - __main__ - INFO - ================================================================================
+2025-12-16 18:59:26,527 - __main__ - INFO - Results: 7/8 passed
+2025-12-16 18:59:26,527 - __main__ - INFO - ================================================================================
+2025-12-16 18:59:26,527 - __main__ - WARNING - 1 tests failed

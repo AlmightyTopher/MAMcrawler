@@ -68,6 +68,17 @@ try:
 except ImportError as e:
     SELENIUM_AVAILABLE = False
     SeleniumIntegrationConfig = None
+    
+try:
+    from mamcrawler.status_reporter import StatusReporter
+except ImportError:
+    class StatusReporter:
+        def __init__(self, *args, **kwargs): pass
+        def update(self, *args, **kwargs): pass
+        def complete(self, *args, **kwargs): pass
+        def error(self, *args, **kwargs): pass
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
 
 load_dotenv()
 
@@ -119,7 +130,7 @@ class MasterAudiobookManager:
             self.maintenance = None
             self.monitor = None
             
-            self.logger.info("✓ Core logic modules initialized")
+            self.logger.debug("✓ Core logic modules initialized")
         else:
             self.logger.warning("⚠ Core logic modules NOT available - using legacy fallback")
 
@@ -128,7 +139,7 @@ class MasterAudiobookManager:
             SeleniumIntegrationConfig.validate() if SELENIUM_AVAILABLE else False
         )
         if self.selenium_available:
-            self.logger.info("✓ Selenium integration AVAILABLE - will use for real searches")
+            self.logger.debug("✓ Selenium integration AVAILABLE - will use for real searches")
         else:
             self.logger.warning("⚠ Selenium integration NOT available - searches will be limited")
 
@@ -155,18 +166,49 @@ class MasterAudiobookManager:
         }
 
     def setup_logging(self):
-        """Setup comprehensive logging."""
+        """Setup comprehensive logging using secure redaction."""
+        try:
+            from backend.utils.log_config import configure_logging, SecretsRedactingFormatter
+            # Use the robust centralized logging configuration
+            configure_logging(
+                app_name="master_manager",
+                log_level=logging.INFO,
+                log_file_prefix="master_manager"
+            )
+            self.logger = logging.getLogger("master_manager")
+            self.logger.info("Secure logging configured (redaction active).")
+        except ImportError as e:
+            # Fallback if backend.utils.log_config not available
+            self.logger.warning(f"Could not import secure logging: {e}")
+            self._setup_fallback_logging()
+
+    def _setup_fallback_logging(self):
+        """Fallback logging setup with basic redaction."""
         self.log_file = f"master_manager_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        
+        handler = logging.FileHandler(self.log_file, encoding='utf-8')
+        console = logging.StreamHandler(sys.stdout)
+        
+        # Basic formatter
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        console.setFormatter(formatter)
         
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler(self.log_file, encoding='utf-8'),
-                logging.StreamHandler(sys.stdout)
-            ]
+            handlers=[handler, console]
         )
         self.logger = logging.getLogger(__name__)
+        self.logger.warning("Using fallback logging (advanced redaction unavailable).")
+
+        # Hook uncaught exceptions
+        def handle_exception(exc_type, exc_value, exc_traceback):
+            if issubclass(exc_type, KeyboardInterrupt):
+                sys.__excepthook__(exc_type, exc_value, exc_traceback)
+                return
+            self.logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+        sys.excepthook = handle_exception
 
     def setup_directories(self):
         """Create necessary directories."""
@@ -240,45 +282,53 @@ class MasterAudiobookManager:
         self.logger.info("COMPREHENSIVE METADATA UPDATE")
         self.logger.info("=" * 70)
 
-        try:
-            # Ensure clients are set up
-            if CORE_MODULES_AVAILABLE and self.maintenance is None:
-                self.setup_clients()
+        with StatusReporter("Metadata Update", total=3) as status:
+            try:
+                status.update(0, "Initializing clients...", "Setup")
+                # Ensure clients are set up
+                if CORE_MODULES_AVAILABLE and self.maintenance is None:
+                    self.setup_clients()
 
-            if CORE_MODULES_AVAILABLE and self.maintenance:
-                # Step 1: Run weekly maintenance scan
-                self.logger.info("Step 1: Running metadata maintenance scan...")
-                results = await self.maintenance.run_weekly_scan()
-                
-                self.stats['metadata_updates'] = results.get('updated_count', 0)
-                
-                # Step 2: Analyze library (using new completion module if possible, or legacy)
-                self.logger.info("Step 2: Analyzing library for metadata completeness...")
-                # We can use the legacy analysis for now as it provides specific stats we use in reports
-                # Or we can upgrade this too. Let's keep legacy analysis for reporting consistency for now.
-                library_analysis = await self.analyze_library_metadata()
+                if CORE_MODULES_AVAILABLE and self.maintenance:
+                    # Step 1: Run weekly maintenance scan
+                    status.update(1, "Running metadata maintenance scan...", "Maintenance Scan")
+                    self.logger.info("Step 1: Running metadata maintenance scan...")
+                    results = await self.maintenance.run_weekly_scan()
+                    
+                    self.stats['metadata_updates'] = results.get('updated_count', 0)
+                    
+                    # Step 2: Analyze library (using new completion module if possible, or legacy)
+                    status.update(2, "Analyzing library for metadata completeness...", "Library Analysis")
+                    self.logger.info("Step 2: Analyzing library for metadata completeness...")
+                    # We can use the legacy analysis for now as it provides specific stats we use in reports
+                    # Or we can upgrade this too. Let's keep legacy analysis for reporting consistency for now.
+                    library_analysis = await self.analyze_library_metadata()
 
-                # Step 3: Generate metadata report
-                await self.generate_metadata_report(library_analysis)
+                    # Step 3: Generate metadata report
+                    status.update(2, "Generating metadata report...", "Reporting")
+                    await self.generate_metadata_report(library_analysis)
 
-                return {
-                    'success': True,
-                    'books_updated': self.stats['metadata_updates'],
-                    'library_analysis': library_analysis,
-                    'maintenance_results': results
-                }
-            else:
-                self.logger.warning("Core modules not available, skipping metadata update")
-                return {'success': False, 'error': 'Core modules not available'}
+                    status.complete(f"Updated {self.stats['metadata_updates']} books")
+                    return {
+                        'success': True,
+                        'books_updated': self.stats['metadata_updates'],
+                        'library_analysis': library_analysis,
+                        'maintenance_results': results
+                    }
+                else:
+                    self.logger.warning("Core modules not available, skipping metadata update")
+                    status.error("Core modules not available")
+                    return {'success': False, 'error': 'Core modules not available'}
 
-        except Exception as e:
-            self.logger.error(f"Metadata update failed: {e}")
-            self.stats['errors'].append({
-                'operation': 'metadata_update',
-                'error': str(e),
-                'timestamp': datetime.now().isoformat()
-            })
-            return {'success': False, 'error': str(e)}
+            except Exception as e:
+                self.logger.error(f"Metadata update failed: {e}")
+                status.error(str(e))
+                self.stats['errors'].append({
+                    'operation': 'metadata_update',
+                    'error': str(e),
+                    'timestamp': datetime.now().isoformat()
+                })
+                return {'success': False, 'error': str(e)}
 
     async def analyze_library_metadata(self) -> Dict[str, Any]:
         """Analyze the Audiobookshelf library for metadata completeness."""
@@ -512,6 +562,7 @@ class MasterAudiobookManager:
                     missing_numbers.append(i)
             
             if missing_numbers:
+                self.logger.info(f"   -> Found missing books in '{series_name}': {missing_numbers}")
                 missing_in_series.append({
                     'series_name': series_name,
                     'author': books[0].get('author', 'Unknown'),
@@ -579,33 +630,60 @@ class MasterAudiobookManager:
         Detect missing books in the library by analyzing series and authors.
         Orchestrates the analysis process.
         """
-        self.logger.info("Detecting missing books...")
+        self.logger.info("=" * 70)
+        self.logger.info("OPERATION: DETECT MISSING BOOKS")
+        self.logger.info("=" * 70)
         
-        # 1. Get library data
-        library_data = await self.get_audiobookshelf_library()
-        if not library_data:
-            return {'success': False, 'error': 'Could not fetch library data'}
-            
-        # 2. Analyze series
-        self.logger.info("Analyzing series gaps...")
-        series_analysis = await self.analyze_series_missing_books(library_data)
-        
-        # 3. Analyze authors
-        self.logger.info("Analyzing author gaps...")
-        author_analysis = await self.analyze_author_missing_books(library_data)
-        
-        self.stats['missing_books_found'] = (
-            series_analysis.get('series_with_missing_books', 0) + 
-            author_analysis.get('authors_with_missing', 0)
-        )
-        self.stats['series_books_missing'] = series_analysis.get('series_with_missing_books', 0)
-        self.stats['author_books_missing'] = author_analysis.get('authors_with_missing', 0)
-        
-        return {
-            'success': True,
-            'series_analysis': series_analysis,
-            'author_analysis': author_analysis
-        }
+        with StatusReporter("Missing Book Detection", total=4) as status:
+            try:
+                # 1. Get library data
+                status.update(0, "Fetching library index from Audiobookshelf...", "Fetching")
+                self.logger.info("Step 1: Fetching complete library index from Audiobookshelf API...")
+                library_data = await self.get_audiobookshelf_library()
+                
+                if not library_data:
+                    self.logger.error("Failed to load library data.")
+                    status.error("Could not fetch library data")
+                    return {'success': False, 'error': 'Could not fetch library data'}
+                
+                self.logger.info(f"Successfully loaded {len(library_data)} items from library.")
+                    
+                # 2. Analyze series
+                status.update(1, "Analyzing series gaps...", "Series Analysis")
+                self.logger.info("Step 2: Analyzing series sequences for missing entries...")
+                series_analysis = await self.analyze_series_missing_books(library_data)
+                
+                self.logger.info(f"Series Analysis: Found {series_analysis['series_with_missing_books']} series with gaps.")
+                
+                # 3. Analyze authors
+                status.update(2, "Analyzing high-volume author gaps...", "Author Analysis")
+                self.logger.info("Step 3: Analyzing high-volume authors for potential gaps...")
+                author_analysis = await self.analyze_author_missing_books(library_data)
+                
+                self.logger.info(f"Author Analysis: Flagged {author_analysis['authors_with_missing']} authors.")
+                
+                self.stats['missing_books_found'] = (
+                    series_analysis.get('series_with_missing_books', 0) + 
+                    author_analysis.get('authors_with_missing', 0)
+                )
+                self.stats['series_books_missing'] = series_analysis.get('series_with_missing_books', 0)
+                self.stats['author_books_missing'] = author_analysis.get('authors_with_missing', 0)
+                
+                # 4. Generate report
+                status.update(3, "Generating missing books report...", "Reporting")
+                await self.generate_missing_books_report(series_analysis, author_analysis)
+                
+                status.complete(f"Found {self.stats['missing_books_found']} missing books")
+
+                return {
+                    'success': True,
+                    'series_analysis': series_analysis,
+                    'author_analysis': author_analysis
+                }
+            except Exception as e:
+                self.logger.error(f"Missing book detection failed: {e}")
+                status.error(str(e))
+                return {'success': False, 'error': str(e)}
 
     async def run_top_10_search(self) -> Dict[str, Any]:
         """
@@ -617,123 +695,135 @@ class MasterAudiobookManager:
         self.logger.info("TOP 10 AUDIOBOOK SEARCH (SELENIUM - PRODUCTION MODE)")
         self.logger.info("=" * 70)
 
-        try:
-            if not self.selenium_available:
-                self.logger.error("❌ Selenium integration not available")
-                return {
-                    'success': False,
-                    'error': 'Selenium not configured',
-                    'searched': 0,
-                    'found': 0,
-                    'queued': 0
-                }
+        with StatusReporter("Top 10 Search", total=4) as status:
+            try:
+                status.update(0, "Initializing search...", "Setup")
+                if not self.selenium_available:
+                    self.logger.error("❌ Selenium integration not available")
+                    status.error("Selenium not available")
+                    return {
+                        'success': False,
+                        'error': 'Selenium not configured',
+                        'searched': 0,
+                        'found': 0,
+                        'queued': 0
+                    }
 
-            # Check Pacing if available
-            if CORE_MODULES_AVAILABLE and self.pacing:
-                self.logger.info("Checking event-aware pacing...")
-                try:
-                    # Fetch real stats from MAM
-                    user_stats = await get_mam_user_stats()
-                    
-                    if user_stats:
-                        current_ratio = user_stats.get('ratio', 0.0)
-                        bonus_points = user_stats.get('bonus_points', 0.0)
-                        self.logger.info(f"MAM Stats: Ratio={current_ratio}, BP={bonus_points}")
+                # Check Pacing if available
+                if CORE_MODULES_AVAILABLE and self.pacing:
+                    self.logger.info("Checking event-aware pacing...")
+                    try:
+                        # Fetch real stats from MAM
+                        user_stats = await get_mam_user_stats()
                         
-                        if not self.pacing.should_download_now(current_ratio):
-                            self.logger.warning(f"⚠️ Pacing check failed (Ratio {current_ratio} too low). Aborting search.")
-                            return {
-                                'success': False,
-                                'error': 'Pacing check failed',
-                                'searched': 0,
-                                'found': 0,
-                                'queued': 0
-                            }
-                    else:
-                        self.logger.warning("Could not fetch user stats, using cautious default (1.0)")
-                        if not self.pacing.should_download_now(1.0):
-                            return {
-                                'success': False,
-                                'error': 'Pacing check failed (default)',
-                                'searched': 0,
-                                'found': 0,
-                                'queued': 0
-                            }
+                        if user_stats:
+                            current_ratio = user_stats.get('ratio', 0.0)
+                            bonus_points = user_stats.get('bonus_points', 0.0)
+                            self.logger.info(f"MAM Stats: Ratio={current_ratio}, BP={bonus_points}")
                             
-                except Exception as e:
-                    self.logger.warning(f"Could not check pacing: {e}")
+                            if not self.pacing.should_download_now(current_ratio):
+                                msg = f"⚠️ Pacing check failed (Ratio {current_ratio} too low). Aborting search."
+                                self.logger.warning(msg)
+                                status.error(msg)
+                                return {
+                                    'success': False,
+                                    'error': 'Pacing check failed',
+                                    'searched': 0,
+                                    'found': 0,
+                                    'queued': 0
+                                }
+                        else:
+                            self.logger.warning("Could not fetch user stats, using cautious default (1.0)")
+                            if not self.pacing.should_download_now(1.0):
+                                return {
+                                    'success': False,
+                                    'error': 'Pacing check failed (default)',
+                                    'searched': 0,
+                                    'found': 0,
+                                    'queued': 0
+                                }
+                                
+                    except Exception as e:
+                        self.logger.warning(f"Could not check pacing: {e}")
 
-            # Step 1: Detect missing books to search for
-            self.logger.info("Step 1: Detecting missing books in library...")
-            missing_analysis = await self.detect_missing_books()
+                # Step 1: Detect missing books to search for
+                status.update(1, "Detecting missing books in library...", "Missing Detection")
+                self.logger.info("Step 1: Detecting missing books in library...")
+                missing_analysis = await self.detect_missing_books()
 
-            if not missing_analysis.get('success'):
-                self.logger.error("Missing book detection failed")
+                if not missing_analysis.get('success'):
+                    self.logger.error("Missing book detection failed")
+                    status.error("Missing book detection failed")
+                    return {
+                        'success': False,
+                        'error': 'Missing book detection failed',
+                        'searched': 0,
+                        'found': 0,
+                        'queued': 0
+                    }
+
+                # Step 2: Run Selenium search with actual MAM
+                status.update(2, "Running Selenium search on MyAnonamouse...", "Searching")
+                self.logger.info("Step 2: Running REAL searches on MyAnonamouse with Selenium...")
+                self.logger.info(f"   - Series missing books: {missing_analysis['series_analysis'].get('series_with_missing_books', 0)}")
+                self.logger.info(f"   - Authors analyzed: {missing_analysis['author_analysis'].get('total_authors_analyzed', 0)}")
+
+                result = await run_selenium_top_search(missing_analysis=missing_analysis)
+
+                # Update statistics
+                self.stats['search_results'] = result.get('queued', 0)
+                self.stats['selenium_queued'] = result.get('queued', 0)
+                self.stats['selenium_duplicates'] = result.get('duplicates', 0)
+
+                # Step 3: Generate report
+                status.update(3, "Generating final report...", "Reporting")
+                search_report = await self.generate_search_report({
+                    'searched': result.get('searched', 0),
+                    'found': result.get('found', 0),
+                    'queued': result.get('queued', 0),
+                    'duplicates': result.get('duplicates', 0),
+                    'mode': 'production'
+                })
+
+                self.logger.info("=" * 70)
+                self.logger.info("SEARCH RESULTS SUMMARY:")
+                self.logger.info(f"  Searched: {result.get('searched', 0)} terms")
+                self.logger.info(f"  Found: {result.get('found', 0)} audiobooks")
+                self.logger.info(f"  Queued: {result.get('queued', 0)} to qBittorrent")
+                self.logger.info(f"  Duplicates skipped: {result.get('duplicates', 0)}")
+                self.logger.info(f"  Report: {search_report}")
+                self.logger.info("=" * 70)
+
+                status.complete(f"Finished. Queued {result.get('queued', 0)} downloads.")
+
+                return {
+                    'success': result.get('success', False),
+                    'searched': result.get('searched', 0),
+                    'found': result.get('found', 0),
+                    'queued': result.get('queued', 0),
+                    'duplicates': result.get('duplicates', 0),
+                    'missing_analysis': missing_analysis,
+                    'report': search_report,
+                    'mode': 'production'
+                }
+
+            except Exception as e:
+                error_msg = f"Top 10 search failed: {e}"
+                self.logger.error(error_msg)
+                self.logger.exception(e)
+                status.error(str(e))
+                self.stats['errors'].append({
+                    'operation': 'top_10_search',
+                    'error': error_msg,
+                    'timestamp': datetime.now().isoformat()
+                })
                 return {
                     'success': False,
-                    'error': 'Missing book detection failed',
+                    'error': error_msg,
                     'searched': 0,
                     'found': 0,
                     'queued': 0
                 }
-
-            # Step 2: Run Selenium search with actual MAM
-            self.logger.info("Step 2: Running REAL searches on MyAnonamouse with Selenium...")
-            self.logger.info(f"   - Series missing books: {missing_analysis['series_analysis'].get('series_with_missing_books', 0)}")
-            self.logger.info(f"   - Authors analyzed: {missing_analysis['author_analysis'].get('total_authors_analyzed', 0)}")
-
-            result = await run_selenium_top_search(missing_analysis=missing_analysis)
-
-            # Update statistics
-            self.stats['search_results'] = result.get('queued', 0)
-            self.stats['selenium_queued'] = result.get('queued', 0)
-            self.stats['selenium_duplicates'] = result.get('duplicates', 0)
-
-            # Step 3: Generate report
-            search_report = await self.generate_search_report({
-                'searched': result.get('searched', 0),
-                'found': result.get('found', 0),
-                'queued': result.get('queued', 0),
-                'duplicates': result.get('duplicates', 0),
-                'mode': 'production'
-            })
-
-            self.logger.info("=" * 70)
-            self.logger.info("SEARCH RESULTS SUMMARY:")
-            self.logger.info(f"  Searched: {result.get('searched', 0)} terms")
-            self.logger.info(f"  Found: {result.get('found', 0)} audiobooks")
-            self.logger.info(f"  Queued: {result.get('queued', 0)} to qBittorrent")
-            self.logger.info(f"  Duplicates skipped: {result.get('duplicates', 0)}")
-            self.logger.info(f"  Report: {search_report}")
-            self.logger.info("=" * 70)
-
-            return {
-                'success': result.get('success', False),
-                'searched': result.get('searched', 0),
-                'found': result.get('found', 0),
-                'queued': result.get('queued', 0),
-                'duplicates': result.get('duplicates', 0),
-                'missing_analysis': missing_analysis,
-                'report': search_report,
-                'mode': 'production'
-            }
-
-        except Exception as e:
-            error_msg = f"Top 10 search failed: {e}"
-            self.logger.error(error_msg)
-            self.logger.exception(e)
-            self.stats['errors'].append({
-                'operation': 'top_10_search',
-                'error': error_msg,
-                'timestamp': datetime.now().isoformat()
-            })
-            return {
-                'success': False,
-                'error': error_msg,
-                'searched': 0,
-                'found': 0,
-                'queued': 0
-            }
 
     async def collect_search_results(self) -> List[Dict]:
         """Collect all results from search output files."""

@@ -20,7 +20,7 @@ from typing import Optional, List, Dict, Tuple
 from pathlib import Path
 from dataclasses import dataclass
 from datetime import datetime
-import sqlite3
+
 
 from backend.integrations.hardcover_client import HardcoverClient, ResolutionResult
 
@@ -167,42 +167,13 @@ class AudiobookShelfHardcoverSync:
         self,
         abs_url: str,
         abs_api_key: str,
-        hardcover_token: str,
-        audit_db_path: str = "abs_hardcover_sync.db"
+        hardcover_token: str
     ):
         self.abs_client = AudiobookShelfClient(abs_url, abs_api_key)
         self.hardcover_client = None
         self.hardcover_token = hardcover_token
-        self.audit_db_path = Path(audit_db_path)
-        self._init_audit_db()
 
-    def _init_audit_db(self):
-        """Initialize SQLite database for sync audits"""
-        self.audit_db_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with sqlite3.connect(self.audit_db_path) as conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS sync_history (
-                    id INTEGER PRIMARY KEY,
-                    abs_item_id TEXT,
-                    abs_title TEXT,
-                    abs_author TEXT,
-                    hardcover_id INTEGER,
-                    hardcover_title TEXT,
-                    hardcover_author TEXT,
-                    hardcover_series TEXT,
-                    changes_made TEXT,
-                    confidence REAL,
-                    resolution_method TEXT,
-                    synced_at TIMESTAMP,
-                    requires_verification INTEGER
-                )
-            """)
-            conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_abs_item
-                ON sync_history(abs_item_id)
-            """)
-            conn.commit()
 
     async def _extract_file_metadata(self, file_path: str) -> Dict:
         """Extract ID3 tags from audio file (stub - requires mutagen)"""
@@ -381,26 +352,26 @@ class AudiobookShelfHardcoverSync:
         return success
 
     def _record_sync(self, item_id: str, abs_data: AudiobookMetadata, hc_book, changes: Dict):
-        """Record sync in audit database"""
+        """Record sync in PostgreSQL audit database"""
         try:
-            with sqlite3.connect(self.audit_db_path) as conn:
-                conn.execute("""
-                    INSERT INTO sync_history
-                    (abs_item_id, abs_title, abs_author, hardcover_id, hardcover_title,
-                     hardcover_author, hardcover_series, changes_made, synced_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    item_id,
-                    abs_data.title,
-                    abs_data.author,
-                    hc_book.id,
-                    hc_book.title,
-                    hc_book.authors[0].name if hc_book.authors else None,
-                    hc_book.get_primary_series()[0] if hc_book.get_primary_series() else None,
-                    json.dumps(changes),
-                    datetime.now()
-                ))
-                conn.commit()
+            from backend.database import get_db_context
+            from backend.models.hardcover_sync_log import HardcoverSyncLog
+            
+            with get_db_context() as db:
+                log_entry = HardcoverSyncLog(
+                    abs_item_id=item_id,
+                    abs_title=abs_data.title,
+                    abs_author=abs_data.author,
+                    hardcover_id=hc_book.id,
+                    hardcover_title=hc_book.title,
+                    hardcover_author=hc_book.authors[0].name if hc_book.authors else None,
+                    hardcover_series=hc_book.get_primary_series()[0] if hc_book.get_primary_series() else None,
+                    changes_made=json.dumps(changes),
+                    synced_at=datetime.now()
+                )
+                db.add(log_entry)
+                db.commit()
+                logger.debug(f"Recorded sync log for {item_id}")
         except Exception as e:
             logger.error(f"Failed to record sync: {e}")
 

@@ -1,0 +1,43 @@
+Create a new issue (or multiple issues from markdown file)
+
+Usage:
+  bd create [title] [flags]
+
+Aliases:
+  create, new
+
+Flags:
+      --acceptance string      Acceptance criteria
+  -a, --assignee string        Assignee
+      --deps strings           Dependencies in format 'type:id' or 'id' (e.g., 'discovered-from:bd-20,blocks:bd-15' or 'bd-20')
+  -d, --description string     Issue description
+      --design string          Design notes
+  -e, --estimate int           Time estimate in minutes (e.g., 60 for 1 hour)
+      --external-ref string    External reference (e.g., 'gh-9', 'jira-ABC')
+  -f, --file string            Create multiple issues from markdown file
+      --force                  Force creation even if prefix doesn't match database prefix
+      --from-template string   Create issue from template (e.g., 'epic', 'bug', 'feature')
+  -h, --help                   help for create
+      --id string              Explicit issue ID (e.g., 'bd-42' for partitioning)
+  -l, --labels strings         Labels (comma-separated)
+      --parent string          Parent issue ID for hierarchical child (e.g., 'bd-a3f8e9')
+  -p, --priority string        Priority (0-4 or P0-P4, 0=highest) (default "2")
+      --repo string            Target repository for issue (overrides auto-routing)
+      --title string           Issue title (alternative to positional argument)
+  -t, --type string            Issue type (bug|feature|task|epic|chore) (default "task")
+
+Global Flags:
+      --actor string            Actor name for audit trail (default: $BD_ACTOR or $USER)
+      --allow-stale             Allow operations on potentially stale data (skip staleness check)
+      --db string               Database path (default: auto-discover .beads/*.db)
+      --json                    Output in JSON format
+      --lock-timeout duration   SQLite busy timeout (0 = fail immediately if locked) (default 30s)
+      --no-auto-flush           Disable automatic JSONL sync after CRUD operations
+      --no-auto-import          Disable automatic JSONL import when newer than DB
+      --no-daemon               Force direct storage mode, bypass daemon if running
+      --no-db                   Use no-db mode: load from JSONL, no SQLite
+      --profile                 Generate CPU profile for performance analysis
+  -q, --quiet                   Suppress non-essential output (errors only)
+      --readonly                Read-only mode: block write operations (for worker sandboxes)
+      --sandbox                 Sandbox mode: disables daemon and auto-sync
+  -v, --verbose                 Enable verbose/debug output

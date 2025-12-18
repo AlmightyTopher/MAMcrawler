@@ -21,6 +21,8 @@ from typing import Optional, Dict
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Security, Depends, Request, status
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from fastapi.responses import JSONResponse
@@ -33,6 +35,10 @@ from backend.database import init_db, close_db
 from backend.middleware import setup_security_middleware, verify_api_key
 from backend.auth import hash_password, verify_password, generate_token, verify_token, sanitize_input
 from backend.rate_limit import add_rate_limiting
+from backend.routes import dashboard_compat
+from backend.schedulers.register_tasks import register_all_tasks
+from backend.auth_dependency import get_authorized_user
+from backend.middleware.csrf import csrf_protection_middleware
 
 # Configure logging first
 logging.basicConfig(
@@ -57,6 +63,12 @@ except ImportError:
 
 # Get application settings
 settings = get_settings()
+
+# Initialize Templates
+try:
+    templates = Jinja2Templates(directory="backend/templates")
+except:
+    templates = None  # Handle case where directory doesn't exist yet
 
 # Initialize APScheduler (global instance)
 scheduler: Optional[AsyncIOScheduler] = None
@@ -121,6 +133,7 @@ async def lifespan(app: FastAPI):
                 global scheduler
                 logger.info("Starting APScheduler...")
                 scheduler = create_scheduler()
+                register_all_tasks(scheduler)
                 scheduler.start()
                 logger.info(f"APScheduler started with {len(scheduler.get_jobs())} jobs")
             except Exception as scheduler_error:
@@ -171,7 +184,8 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/docs" if settings.API_DOCS else None,
     redoc_url="/redoc" if settings.API_DOCS else None,
-    openapi_url="/openapi.json" if settings.API_DOCS else None
+    openapi_url="/openapi.json" if settings.API_DOCS else None,
+    dependencies=[Depends(get_authorized_user)]
 )
 
 
@@ -190,6 +204,9 @@ logger.info("Rate limiting configured for API protection")
 
 # Set up security middleware
 setup_security_middleware(app)
+
+# Register CSRF protection (Outer layer, checks headers early)
+app.middleware("http")(csrf_protection_middleware)
 
 
 @app.middleware("http")
@@ -377,17 +394,14 @@ async def health_check():
 
 
 @app.get(
-    "/",
+    "/api/info",
     tags=["System"],
-    summary="Root endpoint",
+    summary="API Info",
     description="Returns API information and available endpoints"
 )
-async def root():
+async def api_info():
     """
-    Root endpoint with API information
-    
-    Returns:
-        dict: API metadata and links
+    API Information endpoint (moved from root)
     """
     return {
         "name": settings.API_TITLE,
@@ -398,13 +412,35 @@ async def root():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+@app.get("/", include_in_schema=False)
+async def serve_dashboard():
+    """Serve the main Dashboard UI"""
+    from fastapi.responses import FileResponse
+    import os
+    
+    path = "backend/templates/index.html"
+    if os.path.exists(path):
+        return FileResponse(path)
+    return {"message": "Dashboard templates not found. Check backend/templates directory."}
+
+@app.get("/stats-panel", include_in_schema=False)
+async def serve_stats_panel():
+    """Serve the Stats Panel UI"""
+    from fastapi.responses import FileResponse
+    import os
+    
+    path = "backend/templates/stats_panel.html"
+    if os.path.exists(path):
+        return FileResponse(path)
+    return {"message": "Stats panel template not found."}
+
 
 @app.get(
     "/health/detailed",
     tags=["System"],
     summary="Detailed health check",
     description="Returns detailed health status including database and scheduler",
-    dependencies=[Depends(verify_api_key_security)]
+    # dependencies=[Depends(verify_api_key_security)]  # Covered by global auth
 )
 async def detailed_health_check():
     """
@@ -494,6 +530,10 @@ try:
     logger.info("Registering API routes...")
     from backend.routes import include_all_routes as load_routes
     load_routes(app)
+    
+    # Register Dashboard Compatibility Router
+    app.include_router(dashboard_compat.router, prefix="/api", tags=["Dashboard"])
+    
     logger.info("API routes registered successfully")
 except ImportError as e:
     logger.warning(f"Routes not available: {e}", exc_info=True)
@@ -551,3 +591,4 @@ if __name__ == "__main__":
             }
         }
     )
+

@@ -41,7 +41,8 @@ if (Test-Path $configSrc) {
 
     Copy-Item -Path $configSrc -Destination $configDest -Force
     Write-Host "  ✓ Config copied successfully" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "  ✗ Config file not found: $configSrc" -ForegroundColor Red
     exit 1
 }
@@ -54,18 +55,21 @@ $wgService = Get-Service -Name "wg-quick" -ErrorAction SilentlyContinue
 if ($wgService) {
     if ($wgService.Status -eq "Running") {
         Write-Host "  ✓ WireGuard service already running" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Host "  Starting WireGuard service..."
         Start-Service -Name "wg-quick" -ErrorAction SilentlyContinue
         Start-Sleep -Seconds 2
         $wgService = Get-Service -Name "wg-quick"
         if ($wgService.Status -eq "Running") {
             Write-Host "  ✓ WireGuard service started" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "  ⚠ WireGuard service may not have started (might need manual activation)" -ForegroundColor Yellow
         }
     }
-} else {
+}
+else {
     Write-Host "  ⚠ WireGuard service 'wg-quick' not found" -ForegroundColor Yellow
     Write-Host "  You may need to manually activate the tunnel in WireGuard GUI" -ForegroundColor Yellow
 }
@@ -92,8 +96,8 @@ New-NetFirewallRule -DisplayName $ruleName `
     -Direction Outbound `
     -Program $pythonExe `
     -Action Allow `
-    -RemotePorts 80,443,8080,8443,13378,51820 `
-    -Protocol TCP,UDP `
+    -RemotePorts 80, 443, 8080, 8443, 13378, 51820 `
+    -Protocol TCP, UDP `
     -Enabled True | Out-Null
 
 Write-Host "  ✓ Outbound firewall rule created" -ForegroundColor Green
@@ -118,8 +122,8 @@ New-NetFirewallRule -DisplayName $ruleName2 `
     -Direction Inbound `
     -Program $pythonExe `
     -Action Allow `
-    -LocalPorts 80,443,8080,8443,13378,51820 `
-    -Protocol TCP,UDP `
+    -LocalPorts 80, 443, 8080, 8443, 13378, 51820 `
+    -Protocol TCP, UDP `
     -Enabled True | Out-Null
 
 Write-Host "  ✓ Inbound firewall rule created" -ForegroundColor Green
@@ -134,7 +138,8 @@ $wgInterface = Get-NetAdapter -Name "Cloudflare" -ErrorAction SilentlyContinue
 if ($wgInterface) {
     Write-Host "  Found WireGuard interface: $($wgInterface.Name)"
     Write-Host "  (No additional routing needed - WireGuard handles this)" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "  WireGuard interface not yet active (will be created when tunnel connects)" -ForegroundColor Yellow
     Write-Host "  This is normal - routing will work once tunnel is active" -ForegroundColor Yellow
 }
@@ -144,16 +149,15 @@ Write-Host "Step 6: Set Network Interface Metrics (if needed)" -ForegroundColor 
 Write-Host "-" * 100
 
 Write-Host "  Checking network interface metrics..."
-$interfaces = Get-NetIPInterface -AddressFamily IPv4 -ErrorAction SilentlyContinue |
-    Where-Object {$_.InterfaceAlias -like "*Ethernet*" -or $_.InterfaceAlias -like "*WiFi*"} |
-    Sort-Object -Property RouteMetric
+$interfaces = Get-NetIPInterface -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.InterfaceAlias -like "*Ethernet*" -or $_.InterfaceAlias -like "*WiFi*" } | Sort-Object -Property RouteMetric
 
 if ($interfaces) {
     foreach ($int in $interfaces) {
         Write-Host "  - $($int.InterfaceAlias): Metric $($int.RouteMetric)"
     }
     Write-Host "  ✓ Current metrics shown above" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "  ⚠ Could not retrieve interface metrics (this is okay)" -ForegroundColor Yellow
 }
 

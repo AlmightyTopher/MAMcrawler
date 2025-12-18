@@ -94,8 +94,8 @@ class Download(Base):
     emergency_reason = Column(String(500), nullable=True)  # Why download was blocked (e.g., "ratio below 0.75")
 
     # Relationships
-    book = relationship("Book", back_populates="downloads")
-    missing_book = relationship("MissingBook", back_populates="download", foreign_keys=[missing_book_id])
+    book = relationship("Book", foreign_keys=[book_id], back_populates="downloads")
+    # missing_book = relationship("MissingBook", foreign_keys=[missing_book_id])
 
     def __repr__(self) -> str:
         return f"<Download(id={self.id}, title={self.title}, source={self.source}, status={self.status})>"

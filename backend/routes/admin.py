@@ -228,6 +228,7 @@ def log_admin_action(
     summary="Admin login",
     description="Authenticate admin user and return JWT token"
 )
+@limiter.limit(get_rate_limit("public"))
 async def login(
     request: Request,
     response: Response,
@@ -379,6 +380,7 @@ async def get_current_user_info(user: User = Depends(get_current_user)):
     summary="List users",
     description="Get list of all users (admin only)"
 )
+@limiter.limit(get_rate_limit("admin"))
 async def list_users(
     request: Request,
     user: User = Depends(require_admin),
@@ -422,6 +424,7 @@ async def list_users(
     summary="Create user",
     description="Create a new user account (admin only)"
 )
+@limiter.limit(get_rate_limit("admin"))
 async def create_user(
     request: Request,
     user_data: UserCreateRequest,
@@ -700,6 +703,7 @@ async def delete_user(
     summary="Change password",
     description="Change user password"
 )
+@limiter.limit(get_rate_limit("admin"))
 async def change_password(
     user_id: int,
     request: Request,

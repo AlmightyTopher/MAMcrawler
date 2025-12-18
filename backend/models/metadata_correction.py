@@ -57,7 +57,7 @@ class MetadataCorrection(Base):
     corrected_by = Column(String(100), default="system")  # Username or 'system'
 
     # Relationships
-    book = relationship("Book", back_populates="metadata_corrections")
+    # book = relationship("Book", back_populates="metadata_corrections")
 
     def __repr__(self) -> str:
         return f"<MetadataCorrection(id={self.id}, book_id={self.book_id}, field={self.field_name}, source={self.source})>"

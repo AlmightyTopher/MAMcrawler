@@ -1,0 +1,122 @@
+[
+  {
+    "title": "The Name of the Wind",
+    "author": "Patrick Rothfuss",
+    "genre": "fantasy",
+    "search_query": "The Name of the Wind Patrick Rothfuss audiobook"
+  },
+  {
+    "title": "The Way of Kings",
+    "author": "Brandon Sanderson",
+    "genre": "fantasy",
+    "search_query": "The Way of Kings Brandon Sanderson audiobook"
+  },
+  {
+    "title": "Mistborn: The Final Empire",
+    "author": "Brandon Sanderson",
+    "genre": "fantasy",
+    "search_query": "Mistborn: The Final Empire Brandon Sanderson audiobook"
+  },
+  {
+    "title": "The Lies of Locke Lamora",
+    "author": "Scott Lynch",
+    "genre": "fantasy",
+    "search_query": "The Lies of Locke Lamora Scott Lynch audiobook"
+  },
+  {
+    "title": "Assassin's Apprentice",
+    "author": "Robin Hobb",
+    "genre": "fantasy",
+    "search_query": "Assassin's Apprentice Robin Hobb audiobook"
+  },
+  {
+    "title": "The Black Prism",
+    "author": "Brent Weeks",
+    "genre": "fantasy",
+    "search_query": "The Black Prism Brent Weeks audiobook"
+  },
+  {
+    "title": "The Blade Itself",
+    "author": "Joe Abercrombie",
+    "genre": "fantasy",
+    "search_query": "The Blade Itself Joe Abercrombie audiobook"
+  },
+  {
+    "title": "Prince of Thorns",
+    "author": "Mark Lawrence",
+    "genre": "fantasy",
+    "search_query": "Prince of Thorns Mark Lawrence audiobook"
+  },
+  {
+    "title": "The Poppy War",
+    "author": "R.F. Kuang",
+    "genre": "fantasy",
+    "search_query": "The Poppy War R.F. Kuang audiobook"
+  },
+  {
+    "title": "The Priory of the Orange Tree",
+    "author": "Samantha Shannon",
+    "genre": "fantasy",
+    "search_query": "The Priory of the Orange Tree Samantha Shannon audiobook"
+  },
+  {
+    "title": "Dune",
+    "author": "Frank Herbert",
+    "genre": "sci-fi",
+    "search_query": "Dune Frank Herbert audiobook"
+  },
+  {
+    "title": "Neuromancer",
+    "author": "William Gibson",
+    "genre": "sci-fi",
+    "search_query": "Neuromancer William Gibson audiobook"
+  },
+  {
+    "title": "The Left Hand of Darkness",
+    "author": "Ursula K. Le Guin",
+    "genre": "sci-fi",
+    "search_query": "The Left Hand of Darkness Ursula K. Le Guin audiobook"
+  },
+  {
+    "title": "Hyperion",
+    "author": "Dan Simmons",
+    "genre": "sci-fi",
+    "search_query": "Hyperion Dan Simmons audiobook"
+  },
+  {
+    "title": "Snow Crash",
+    "author": "Neal Stephenson",
+    "genre": "sci-fi",
+    "search_query": "Snow Crash Neal Stephenson audiobook"
+  },
+  {
+    "title": "The Three-Body Problem",
+    "author": "Cixin Liu",
+    "genre": "sci-fi",
+    "search_query": "The Three-Body Problem Cixin Liu audiobook"
+  },
+  {
+    "title": "Old Man's War",
+    "author": "John Scalzi",
+    "genre": "sci-fi",
+    "search_query": "Old Man's War John Scalzi audiobook"
+  },
+  {
+    "title": "The Martian",
+    "author": "Andy Weir",
+    "genre": "sci-fi",
+    "search_query": "The Martian Andy Weir audiobook"
+  },
+  {
+    "title": "Binti",
+    "author": "Nnedi Okorafor",
+    "genre": "sci-fi",
+    "search_query": "Binti Nnedi Okorafor audiobook"
+  },
+  {
+    "title": "The Calculating Stars",
+    "author": "Mary Robinette Kowal",
+    "genre": "sci-fi",
+    "search_query": "The Calculating Stars Mary Robinette Kowal audiobook"
+  }
+]

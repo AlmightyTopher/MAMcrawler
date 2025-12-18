@@ -45,7 +45,7 @@ class ServiceManager:
             return
 
         if self.is_port_open(service['port']):
-            logger.info(f"✓ {service['name']} is running.")
+            logger.debug(f"✓ {service['name']} is running.")
             return
 
         logger.info(f"⚠ {service['name']} not detected (Port {service['port']} closed). Launching...")
@@ -83,6 +83,6 @@ class ServiceManager:
 
     def ensure_all_services(self):
         """Check and start all services."""
-        logger.info("Checking required services...")
+        logger.debug("Checking required services...")
         for key in ['audiobookshelf', 'qbittorrent', 'prowlarr']:
             self.start_service(key)

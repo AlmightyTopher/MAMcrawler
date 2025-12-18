@@ -27,7 +27,10 @@ from backend.schedulers.tasks import (
     weekly_metadata_sync_task,
     monthly_drift_correction_task,
     daily_metadata_update_task,
-    repair_batch_task
+    daily_metadata_update_task,
+    repair_batch_task,
+    process_download_queue_task,
+    execute_full_workflow_task
 )
 from backend.services.vip_management_service import daily_vip_management_task
 
@@ -187,6 +190,19 @@ def register_all_tasks(scheduler: BackgroundScheduler) -> None:
         replace_existing=True
     )
     logger.info("✓ Registered: Task Cleanup (Daily 1:00 AM)")
+
+    # ========================================================================
+    # Task 7.5: Download Queue Processing (Every 30 Minutes)
+    # ========================================================================
+    scheduler.add_job(
+        process_download_queue_task,
+        trigger='interval',
+        minutes=30,
+        id='process_download_queue',
+        name='Download Queue Processing',
+        replace_existing=True
+    )
+    logger.info("✓ Registered: Download Queue Processing (Every 30 Minutes)")
 
     # ========================================================================
     # Phase 1 Tasks
@@ -439,7 +455,9 @@ def unregister_all_tasks(scheduler: BackgroundScheduler) -> None:
         'weekly_metadata_sync',
         'monthly_drift_correction',
         'daily_metadata_update',
-        'repair_batch'
+        'daily_metadata_update',
+        'repair_batch',
+        'process_download_queue'
     ]
 
     unregistered_count = 0
@@ -633,6 +651,20 @@ def register_task(
             'minute': 0,
             'name': 'Weekly Automated Batch Repair',
             'enabled': True  # Phase 5 - Always enabled
+        },
+        'process_download_queue': {
+            'func': process_download_queue_task,
+            'trigger': 'interval',
+            'minutes': 30,
+            'name': 'Download Queue Processing',
+            'enabled': True
+        },
+        'full_workflow_legacy': {
+            'func': execute_full_workflow_task,
+            'trigger': 'date', # On-demand only by default
+            'run_date': None,
+            'name': 'Full Workflow (Legacy)',
+            'enabled': True
         }
     }
 

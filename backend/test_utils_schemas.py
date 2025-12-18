@@ -95,7 +95,7 @@ try:
     import os
     os.environ["DISABLE_AUTO_LOGGING"] = "1"
 
-    from backend.utils.logging import (
+    from backend.utils.log_config import (
         setup_logging,
         get_logger,
         setup_scheduler_logging,

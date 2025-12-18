@@ -26,7 +26,7 @@ from urllib.parse import quote
 
 from backend.config import get_settings
 from backend.integrations.abs_client import AudiobookshelfClient
-from backend.utils.logging import setup_logging
+from backend.utils.log_config import setup_logging
 
 logger = logging.getLogger(__name__)
 

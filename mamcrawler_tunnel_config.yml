@@ -1,0 +1,9 @@
+tunnel: ce852a83-cc3c-46d7-b5f2-a53e517e4206
+credentials-file: C:\Users\dogma\.cloudflared\ce852a83-cc3c-46d7-b5f2-a53e517e4206.json
+
+ingress:
+  - hostname: mamcrawler.tophertek.com
+    service: http://localhost:8000
+  - hostname: audiobookshelf.tophertek.com
+    service: http://localhost:13378
+  - service: http_status:404

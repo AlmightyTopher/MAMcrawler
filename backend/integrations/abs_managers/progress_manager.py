@@ -51,7 +51,7 @@ class ProgressManager(BatchOperationsMixin):
         """
         logger.debug(f"Getting progress for item: {library_item_id}")
 
-        endpoint = f"/me/progress/{library_item_id}"
+        endpoint = f"/api/me/progress/{library_item_id}"
         if episode_id:
             endpoint += f"/{episode_id}"
 
@@ -96,7 +96,7 @@ class ProgressManager(BatchOperationsMixin):
         if current_time is not None:
             payload["currentTime"] = current_time
 
-        endpoint = f"/me/progress/{library_item_id}"
+        endpoint = f"/api/me/progress/{library_item_id}"
         if episode_id:
             endpoint += f"/{episode_id}"
 
@@ -133,7 +133,7 @@ class ProgressManager(BatchOperationsMixin):
             library_item_id = update.get("libraryItemId")
             episode_id = update.get("episodeId")
 
-            endpoint = f"/me/progress/{library_item_id}"
+            endpoint = f"/api/me/progress/{library_item_id}"
             if episode_id:
                 endpoint += f"/{episode_id}"
 

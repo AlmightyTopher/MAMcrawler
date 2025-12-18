@@ -10,6 +10,11 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
+import re
+
+# Import config to get known secrets if possible, or just use regex
+# We prefer regex for generality
+
 
 
 # ============================================================================
@@ -43,6 +48,29 @@ JSON_FORMAT = (
 # Date format
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+# ============================================================================
+# REDACTION FORMATTER
+# ============================================================================
+
+class SecretsRedactingFormatter(logging.Formatter):
+    """
+    Formatter that redacts sensitive information like API keys, passwords, and tokens.
+    """
+    
+    PATTERNS = [
+        (r'(Authorization: (Basic|Bearer)\s+)[^\s]+', r'\1[REDACTED]'),
+        (r'(Cookie:.*SID=)[^\s;]+', r'\1[REDACTED]'),
+        (r'((?:password|pwd|secret|key|token|auth)=)[^\s&]+', r'\1[REDACTED]'),
+        # Add regex for specific known keys if needed, e.g. Prowlarr key format
+        # r'([a-f0-9]{32})' -> but this might catch git hashes. Be careful.
+    ]
+
+    def format(self, record):
+        original_msg = super().format(record)
+        redacted_msg = original_msg
+        for pattern, replacement in self.PATTERNS:
+            redacted_msg = re.sub(pattern, replacement, redacted_msg, flags=re.IGNORECASE)
+        return redacted_msg
 
 # ============================================================================
 # LOGGING SETUP
@@ -84,12 +112,16 @@ def setup_logging(
     file_level = getattr(logging, log_level_file.upper(), logging.DEBUG)
 
     # Select format
+    formatter_cls = SecretsRedactingFormatter
+    
     if log_format == "json":
+        # For JSON, we might need a custom JSON formatter that supports redaction
+        # defaulting to standard Formatter for now or using standard json formatter
         formatter = logging.Formatter(JSON_FORMAT, datefmt=DATE_FORMAT)
     elif log_format == "simple":
-        formatter = logging.Formatter(SIMPLE_FORMAT, datefmt=DATE_FORMAT)
+        formatter = formatter_cls(SIMPLE_FORMAT, datefmt=DATE_FORMAT)
     else:  # detailed
-        formatter = logging.Formatter(DETAILED_FORMAT, datefmt=DATE_FORMAT)
+        formatter = formatter_cls(DETAILED_FORMAT, datefmt=DATE_FORMAT)
 
     # Get root logger
     root_logger = logging.getLogger()
@@ -439,6 +471,30 @@ class LogContext:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exit context - restore old log level"""
         self.logger.setLevel(self.old_level)
+
+
+# ============================================================================
+# SIMPLIFIED CONFIGURATION WRAPPER
+# ============================================================================
+
+def configure_logging(
+    app_name: str = "audiobook_system",
+    log_level: int = logging.INFO,
+    log_file_prefix: Optional[str] = None
+) -> None:
+    """
+    Simplified configuration wrapper for application logging.
+
+    Args:
+        app_name: Application name for logger identification
+        log_level: Logging level (logging.INFO, logging.DEBUG, etc.)
+        log_file_prefix: Prefix for log files (unused, kept for compatibility)
+
+    Example:
+        >>> configure_logging(app_name="master_manager", log_level=logging.INFO)
+    """
+    level_name = logging.getLevelName(log_level)
+    setup_logging(log_level_console=level_name, log_level_file=level_name)
 
 
 # ============================================================================

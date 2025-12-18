@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from typing import Dict, Any
 
 
-class MAMCrawlerConfig(BaseModel):
+class MamCrawlerConfig(BaseModel):
     """MAM crawler configuration schema."""
 
     # Site configuration

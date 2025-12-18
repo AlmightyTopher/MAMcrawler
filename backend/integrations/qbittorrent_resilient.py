@@ -13,6 +13,7 @@ import aiohttp
 import logging
 import re
 import json
+import os
 from typing import Optional, List, Dict, Tuple
 from pathlib import Path
 from datetime import datetime
@@ -348,7 +349,7 @@ async def demo_resilient_client():
         primary_url="http://192.168.0.48:52095",
         secondary_url="http://localhost:52095",
         username="TopherGutbrod",
-        password="Tesl@ismy#1"
+        password=os.getenv("QB_PASSWORD", "adminadmin")
     ) as client:
         # Perform health check
         health = await client.perform_health_check()

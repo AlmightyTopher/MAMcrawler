@@ -35,13 +35,40 @@ class SecurityConfig:
     
     @property
     def jwt_secret(self) -> str:
-        """Get JWT secret from environment or generate a secure one."""
+        """Get JWT secret from environment, file, or generate a secure one."""
         if self._jwt_secret is None:
+            # 1. Try Environment Variable
             self._jwt_secret = os.getenv("JWT_SECRET")
+            
+            # 2. Try Secret File
             if not self._jwt_secret:
-                logger.warning("JWT_SECRET not found in environment variables. Generating temporary secret.")
+                secret_path = Path(".secrets/jwt.key")
+                if secret_path.exists():
+                     try:
+                        with open(secret_path, "r") as f:
+                            self._jwt_secret = f.read().strip()
+                        if self._jwt_secret:
+                            logger.info("Loaded JWT secret from file.")
+                     except Exception as e:
+                        logger.error(f"Failed to read JWT secret file: {e}")
+
+            # 3. Generate and Persist New Secret
+            if not self._jwt_secret:
+                logger.warning("JWT_SECRET not found in environment or file. Generating and persisting new secret.")
                 self._jwt_secret = self._generate_secure_random_key(32)
+                
+                try:
+                    secret_path = Path(".secrets/jwt.key")
+                    secret_path.parent.mkdir(exist_ok=True)
+                    with open(secret_path, "w") as f:
+                        f.write(self._jwt_secret)
+                    os.chmod(secret_path, 0o600)
+                    logger.info(f"Persisted new JWT secret to {secret_path}")
+                except Exception as e:
+                    logger.error(f"Failed to persist JWT secret: {e}")
+
                 os.environ["JWT_SECRET"] = self._jwt_secret
+                
         return self._jwt_secret
     
     @property

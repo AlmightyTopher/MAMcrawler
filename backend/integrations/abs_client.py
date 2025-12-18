@@ -147,9 +147,15 @@ class AudiobookshelfClient:
                 if response.status == 204:
                     return {}
 
-                data = await response.json()
-                logger.debug(f"Response: {response.status}")
-                return data
+                try:
+                    data = await response.json()
+                    logger.debug(f"Response: {response.status}")
+                    return data
+                except Exception:
+                    # Fallback for non-JSON responses (e.g. text/plain success)
+                    text = await response.text()
+                    logger.debug(f"Response (text): {response.status} - {text[:100]}")
+                    return {"text": text, "status": response.status}
 
         except aiohttp.ClientResponseError as e:
             logger.error(f"API error: {e.status} - {e.message}")
@@ -425,7 +431,12 @@ class AudiobookshelfClient:
 
         try:
             response = await self._request("GET", endpoint, params=params)
-            results = response.get("book", [])  # API returns {"book": [...]}
+            
+            if isinstance(response, list):
+                results = response
+            else:
+                results = response.get("book", [])  # API returns {"book": [...]}
+                
             logger.info(f"Found {len(results)} results")
             return results
         except AudiobookshelfError as e:

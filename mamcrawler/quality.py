@@ -42,7 +42,7 @@ class QualityFilter:
             return True
         return False
 
-    def _score_release(self, torrent: Dict) -> int:
+    def score_release(self, torrent: Dict) -> int:
         """
         Score a release based on quality rules.
         Higher score is better.
@@ -51,12 +51,19 @@ class QualityFilter:
         title = torrent.get('title', '')
         description = torrent.get('description', '') # Might not be available in list view
         seeders = int(torrent.get('seeders', 0))
+        
+        text_lower = (title + " " + description).lower()
 
         # 1. Unabridged > Abridged (Huge penalty for abridged)
         if self._is_abridged(title):
             score -= 1000
         else:
             score += 100
+            
+        # 1.5 Format Preference (M4B is king)
+        is_m4b = 'm4b' in text_lower
+        if is_m4b:
+            score += 50
 
         # 2. Bitrate
         bitrate = self._parse_bitrate(title, description)
@@ -68,6 +75,10 @@ class QualityFilter:
             score += 20 # Acceptable
         elif bitrate > 0:
             score -= 10 # Too low
+        elif bitrate == 0 and not is_m4b:
+             # Only penalize unknown/zero bitrate if NOT M4B. 
+             # M4B files often don't list bitrate in title but are usually decent.
+             score -= 10
         
         # 3. Single File vs Split
         if self._is_single_file(title, description):
@@ -93,7 +104,7 @@ class QualityFilter:
 
         scored_torrents = []
         for t in torrents:
-            score = self._score_release(t)
+            score = self.score_release(t)
             scored_torrents.append((score, t))
             logger.debug(f"Scored '{t['title']}': {score}")
 
@@ -102,14 +113,58 @@ class QualityFilter:
 
         best_score, best_torrent = scored_torrents[0]
 
-        # Minimum acceptable score check?
-        # If best is abridged (score < 0), maybe reject?
-        if best_score < 0:
-            logger.warning(f"Best release '{best_torrent['title']}' has negative score ({best_score}). Rejecting.")
+        # Minimum acceptable score check
+        # We only strictly reject Abridged versions (score < -1000)
+        # Low bitrate or unknown metadata should still be accepted if it's the best option
+        REJECTION_THRESHOLD = -900 
+        
+        if best_score < REJECTION_THRESHOLD:
+            logger.warning(f"Best release '{best_torrent['title']}' is likely Abridged (Score: {best_score}). Rejecting.")
             return None
 
         logger.info(f"Selected best release: '{best_torrent['title']}' (Score: {best_score})")
         return best_torrent
+
+        return best_torrent
+
+    def filter_and_sort_prowlarr_results(self, results: List[Dict], query: str) -> List[Dict]:
+        """
+        Filter and sort Prowlarr search results based on quality score.
+        """
+        if not results:
+            return []
+
+        scored_results = []
+        for result in results:
+            # Prowlarr result mapping to score_release expectation
+            # We treat 'infoUrl' or 'guid' as description fallback if needed, 
+            # but usually title is enough for basic checks.
+            
+            # Additional Prowlarr specific checks could go here
+            indexer = result.get('indexer', '').lower()
+            
+            # Calculate score
+            score = self.score_release(result)
+            
+            # Boost for verified indexers if we had a list, for now treat all equal
+            
+            # Penalize if it doesn't match query words (loose check)
+            # This helps avoid "Book 2" when we searched "Book 1" if API fuzzy match is too loose
+            query_words = set(re.findall(r'\w+', query.lower()))
+            title_words = set(re.findall(r'\w+', result.get('title', '').lower()))
+            
+            # Simple containment intersection
+            # If query has "Unabridged", we want to ensure result has it (already handled by score_release)
+            
+            scored_results.append((score, result))
+
+        # Sort by score descending
+        scored_results.sort(key=lambda x: x[0], reverse=True)
+        
+        # Filter strictly bad results
+        valid_results = [res[1] for res in scored_results if res[0] > -900]
+        
+        return valid_results
 
     def check_integrity(self, torrent_path: str, torrent_info: Dict) -> bool:
         """

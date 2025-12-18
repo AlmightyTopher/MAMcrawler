@@ -1,0 +1,58 @@
+2025-12-16 18:55:35,368 - __main__ - INFO - Starting Hardcover client tests...
+2025-12-16 18:55:35,368 - __main__ - INFO - Using token: eyJhbGciOi...
+2025-12-16 18:55:35,884 - __main__ - INFO - [PASS] ISBN Resolution - Resolved to: Project Hail Mary
+2025-12-16 18:55:36,109 - __main__ - INFO - [PASS] ISBN Not Found - Correctly returned failure: None
+2025-12-16 18:55:36,221 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:36,221 - backend.integrations.hardcover_client - ERROR - Title+Author resolution failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:36,221 - __main__ - INFO - [FAIL] Title+Author Resolution - Unable to test (API unavailable)
+2025-12-16 18:55:36,403 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:36,403 - backend.integrations.hardcover_client - ERROR - Title+Author resolution failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:36,403 - __main__ - INFO - [PASS] Title+Author Not Found - Correctly returned failure
+2025-12-16 18:55:36,620 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:36,620 - backend.integrations.hardcover_client - ERROR - Fuzzy search failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:36,620 - __main__ - INFO - [FAIL] Fuzzy Search - Unable to test
+2025-12-16 18:55:36,620 - backend.integrations.hardcover_client - INFO - Resolving: The Name of the Wind by Patrick Rothfuss (ISBN: None)
+2025-12-16 18:55:36,798 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:36,798 - backend.integrations.hardcover_client - ERROR - Title+Author resolution failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:36,976 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:36,976 - backend.integrations.hardcover_client - ERROR - Fuzzy search failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:36,976 - backend.integrations.hardcover_client - INFO - Falling back to Google Books for: The Name of the Wind by Patrick Rothfuss
+2025-12-16 18:55:36,976 - backend.integrations.google_books_client - INFO - Initialized GoogleBooksClient (api_key=set, max_requests=900)
+2025-12-16 18:55:36,976 - backend.integrations.google_books_client - INFO - Search and extract: The Name of the Wind by Patrick Rothfuss
+2025-12-16 18:55:36,976 - backend.integrations.google_books_client - INFO - Searching for: The Name of the Wind by Patrick Rothfuss
+2025-12-16 18:55:38,398 - backend.integrations.google_books_client - INFO - Found 1 results
+2025-12-16 18:55:38,398 - backend.integrations.hardcover_client - INFO - Google Books found ISBN: 9781101147160. Retrying Hardcover...
+2025-12-16 18:55:38,629 - __main__ - INFO - [PASS] Waterfall Resolution - Method: google_books_isbn, Confidence: 1.0
+2025-12-16 18:55:38,629 - backend.integrations.hardcover_client - INFO - Resolving: The Way of Kings by Brandon Sanderson (ISBN: None)
+2025-12-16 18:55:38,748 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:38,748 - backend.integrations.hardcover_client - ERROR - Title+Author resolution failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:39,003 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:39,004 - backend.integrations.hardcover_client - ERROR - Fuzzy search failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:39,004 - backend.integrations.hardcover_client - INFO - Falling back to Google Books for: The Way of Kings by Brandon Sanderson
+2025-12-16 18:55:39,004 - backend.integrations.google_books_client - INFO - Initialized GoogleBooksClient (api_key=set, max_requests=900)
+2025-12-16 18:55:39,004 - backend.integrations.google_books_client - INFO - Search and extract: The Way of Kings by Brandon Sanderson
+2025-12-16 18:55:39,004 - backend.integrations.google_books_client - INFO - Searching for: The Way of Kings by Brandon Sanderson
+2025-12-16 18:55:40,476 - backend.integrations.google_books_client - INFO - Found 1 results
+2025-12-16 18:55:40,476 - backend.integrations.hardcover_client - INFO - Google Books found ISBN: 9780575097384. Retrying Hardcover...
+2025-12-16 18:55:40,704 - __main__ - INFO - [PASS] Series Retrieval - Series: The Stormlight Archive (position 1)
+2025-12-16 18:55:40,925 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:40,925 - backend.integrations.hardcover_client - ERROR - Title+Author resolution failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:41,153 - backend.integrations.hardcover_client - ERROR - GraphQL error: HTTP 403 - {"error":"ilike and related operations are not permitted on this server."}
+2025-12-16 18:55:41,154 - backend.integrations.hardcover_client - ERROR - Title+Author resolution failed: Hardcover API error: HTTP 403
+2025-12-16 18:55:41,154 - __main__ - INFO - [FAIL] Caching - Cache not significantly faster: 221ms vs 228ms
+2025-12-16 18:55:41,154 - __main__ - INFO - 
+================================================================================
+2025-12-16 18:55:41,154 - __main__ - INFO - TEST SUMMARY
+2025-12-16 18:55:41,154 - __main__ - INFO - ================================================================================
+2025-12-16 18:55:41,154 - __main__ - INFO - [PASS] ISBN Resolution - Resolved to: Project Hail Mary
+2025-12-16 18:55:41,154 - __main__ - INFO - [PASS] ISBN Not Found - Correctly returned failure: None
+2025-12-16 18:55:41,154 - __main__ - INFO - [FAIL] Title+Author Resolution - Unable to test (API unavailable)
+2025-12-16 18:55:41,154 - __main__ - INFO - [PASS] Title+Author Not Found - Correctly returned failure
+2025-12-16 18:55:41,154 - __main__ - INFO - [FAIL] Fuzzy Search - Unable to test
+2025-12-16 18:55:41,154 - __main__ - INFO - [PASS] Waterfall Resolution - Method: google_books_isbn, Confidence: 1.0
+2025-12-16 18:55:41,154 - __main__ - INFO - [PASS] Series Retrieval - Series: The Stormlight Archive (position 1)
+2025-12-16 18:55:41,154 - __main__ - INFO - [FAIL] Caching - Cache not significantly faster: 221ms vs 228ms
+2025-12-16 18:55:41,154 - __main__ - INFO - ================================================================================
+2025-12-16 18:55:41,154 - __main__ - INFO - Results: 5/8 passed
+2025-12-16 18:55:41,154 - __main__ - INFO - ================================================================================
+2025-12-16 18:55:41,154 - __main__ - WARNING - 3 tests failed

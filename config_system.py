@@ -237,6 +237,12 @@ class ConfigLoader:
                 if config_file.exists():
                     return config_file
 
+        # Fallback to simple filename without environment suffix
+        for ext in self.SUPPORTED_FORMATS:
+            config_file = self.config_dir / f"{config_name}{ext}"
+            if config_file.exists():
+                return config_file
+
         raise ConfigNotFoundError(f"Configuration '{config_name}' not found for environment '{environment}'")
 
     def _load_yaml(self, file_path: Path) -> Dict[str, Any]:

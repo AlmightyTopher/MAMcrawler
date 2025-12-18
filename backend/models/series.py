@@ -56,7 +56,7 @@ class Series(Base):
     date_updated = Column(TIMESTAMP, default=func.now(), onupdate=func.now())
 
     # Relationships
-    missing_books = relationship("MissingBook", back_populates="series")
+    # missing_books = relationship("MissingBook", back_populates="series")
 
     def __repr__(self) -> str:
         return f"<Series(id={self.id}, name={self.name}, completion={self.completion_percentage}%)>"

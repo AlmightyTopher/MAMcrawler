@@ -19,20 +19,18 @@ import logging
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 from pathlib import Path
-
 import sys
-# if sys.platform == 'win32':
-#     import io
-#     try:
-#         if hasattr(sys.stdout, 'buffer'):
-#             sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-#         if hasattr(sys.stderr, 'buffer'):
-#             sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-#     except Exception:
-#         pass
 
 from dotenv import load_dotenv
 load_dotenv()
+
+try:
+    from config_system import get_config_value, get_secret
+except ImportError:
+    # Fallback if config_system not found
+    import sys
+    sys.path.append(str(Path(__file__).parent))
+    from config_system import get_config_value, get_secret
 
 logger = logging.getLogger(__name__)
 
@@ -42,39 +40,27 @@ class SeleniumIntegrationConfig:
 
     @staticmethod
     def validate() -> bool:
-        """Validate all required environment variables"""
-        required = [
-            'MAM_USERNAME',
-            'MAM_PASSWORD',
-            'QB_HOST',
-            'QB_USERNAME',
-            'QB_PASSWORD'
-        ]
-
-        missing = [var for var in required if not os.getenv(var)]
-
-        if missing:
-            logger.error(f"SeleniumIntegration: Missing config: {', '.join(missing)}")
+        """Validate all required configuration"""
+        # Functional check for credentials
+        if not get_config_value('api_endpoints.mam_username') or not get_config_value('api_endpoints.mam_password'):
+            logger.error("SeleniumIntegration: Missing MAM credentials in config")
             return False
-
-        logger.info("SeleniumIntegration: Configuration validated successfully")
         return True
 
     @staticmethod
     def get_crawler_params() -> Dict[str, str]:
         """Get parameters for SeleniumMAMCrawler initialization"""
-        # Build qB URL from host and port
-        qb_host = os.getenv('QB_HOST', 'http://localhost')
-        qb_port = os.getenv('QB_PORT', '8080')
+        qb_host = get_config_value('crawler.qb_host') or os.getenv('QB_HOST', 'http://localhost')
+        qb_port = get_config_value('crawler.qb_port') or os.getenv('QB_PORT', '8080')
         qb_url = f"{qb_host}:{qb_port}" if not qb_host.endswith(qb_port) else qb_host
 
         return {
-            'email': os.getenv('MAM_USERNAME'),
-            'password': os.getenv('MAM_PASSWORD'),
+            'email': get_config_value('api_endpoints.mam_username'),
+            'password': get_config_value('api_endpoints.mam_password'),
             'qb_url': qb_url,
-            'qb_user': os.getenv('QB_USERNAME', 'admin'),
-            'qb_pass': os.getenv('QB_PASSWORD', ''),
-            'headless': os.getenv('MAM_SELENIUM_HEADLESS', 'true').lower() == 'true'
+            'qb_user': get_config_value('crawler.qb_username') or os.getenv('QB_USERNAME', 'admin'),
+            'qb_pass': get_config_value('crawler.qb_password') or os.getenv('QB_PASSWORD', ''),
+            'headless': get_config_value('crawler.headless', True)
         }
 
 
@@ -83,14 +69,7 @@ class SeleniumSearchTermGenerator:
 
     @staticmethod
     def from_series_analysis(series_missing: List[Dict]) -> List[Dict[str, Any]]:
-        """Generate search terms from series missing book analysis
-
-        Args:
-            series_missing: List of missing series from analyze_series_missing_books()
-
-        Returns:
-            List of search term dicts with priority
-        """
+        """Generate search terms from series missing book analysis"""
         search_terms = []
 
         for series in series_missing:
@@ -124,14 +103,7 @@ class SeleniumSearchTermGenerator:
 
     @staticmethod
     def from_author_analysis(author_missing: List[Dict]) -> List[Dict[str, Any]]:
-        """Generate search terms from author missing book analysis
-
-        Args:
-            author_missing: List of authors with missing books
-
-        Returns:
-            List of search term dicts with priority
-        """
+        """Generate search terms from author missing book analysis"""
         search_terms = []
 
         for author_data in author_missing:
@@ -149,14 +121,7 @@ class SeleniumSearchTermGenerator:
 
     @staticmethod
     def from_missing_books_list(books: List[Dict[str, str]]) -> List[Dict[str, Any]]:
-        """Generate search terms from simple missing books list
-
-        Args:
-            books: List of dicts with 'title', 'author' keys
-
-        Returns:
-            List of search term dicts
-        """
+        """Generate search terms from simple missing books list"""
         search_terms = []
 
         for book in books:
@@ -179,11 +144,6 @@ class SeleniumSearchResultProcessor:
     """Process and store Selenium search results"""
 
     def __init__(self, db_session=None):
-        """Initialize processor with optional database session
-
-        Args:
-            db_session: SQLAlchemy session for database operations
-        """
         self.db_session = db_session
         self.processed = {
             'total_searched': 0,
@@ -194,21 +154,10 @@ class SeleniumSearchResultProcessor:
         }
 
     def check_duplicate(self, title: str, author: str, magnet_link: str) -> bool:
-        """Check if download already exists
-
-        Args:
-            title: Book title
-            author: Author name
-            magnet_link: Magnet link
-
-        Returns:
-            True if duplicate exists, False otherwise
-        """
         if not self.db_session:
             return False
 
         try:
-            # Import here to avoid circular dependency
             from backend.models.download import Download
 
             existing = self.db_session.query(Download).filter(
@@ -227,17 +176,6 @@ class SeleniumSearchResultProcessor:
 
     def store_download_record(self, title: str, author: str, magnet_link: str,
                             source: str = "MAM") -> Optional[int]:
-        """Store download record in database
-
-        Args:
-            title: Book title
-            author: Author name
-            magnet_link: Magnet link
-            source: Download source
-
-        Returns:
-            Download record ID or None if failed
-        """
         if not self.db_session:
             logger.warning("No database session available for storing download")
             return None
@@ -268,15 +206,6 @@ class SeleniumSearchResultProcessor:
 
     def process_search_result(self, search_result: Dict[str, Any],
                              search_term: Dict[str, Any]) -> bool:
-        """Process single search result
-
-        Args:
-            search_result: Result from Selenium crawler
-            search_term: Original search term used
-
-        Returns:
-            True if successfully processed, False otherwise
-        """
         self.processed['total_searched'] += 1
 
         if not search_result:
@@ -291,12 +220,10 @@ class SeleniumSearchResultProcessor:
                 logger.warning(f"No magnet link found for {title}")
                 return False
 
-            # Check for duplicate
             if self.check_duplicate(title, author, magnet_link):
                 self.processed['duplicates'] += 1
                 return False
 
-            # Store in database
             download_id = self.store_download_record(title, author, magnet_link)
 
             if download_id:
@@ -315,7 +242,6 @@ class SeleniumSearchResultProcessor:
         return False
 
     def get_summary(self) -> Dict[str, Any]:
-        """Get processing summary"""
         return {
             **self.processed,
             'success': len(self.processed['errors']) == 0,
@@ -325,54 +251,59 @@ class SeleniumSearchResultProcessor:
         }
 
 
+_GLOBAL_CRAWLER_INSTANCE = None
+
 class SeleniumAsyncWrapper:
     """Async wrapper for SeleniumMAMCrawler to integrate with async backend"""
 
     def __init__(self):
-        """Initialize wrapper"""
-        self.crawler = None
         self.loop = None
 
     async def initialize(self) -> bool:
-        """Initialize Selenium crawler asynchronously
-
-        Returns:
-            True if successful, False otherwise
-        """
+        global _GLOBAL_CRAWLER_INSTANCE
+        
         try:
-            # Validate configuration
             if not SeleniumIntegrationConfig.validate():
                 logger.error("Configuration validation failed")
                 return False
 
-            # Import here to avoid issues if selenium not installed
-            from mam_selenium_crawler import SeleniumMAMCrawler
-
             self.loop = asyncio.get_event_loop()
 
-            # Create crawler in thread pool
+            if _GLOBAL_CRAWLER_INSTANCE:
+                try:
+                    await self.loop.run_in_executor(
+                        None,
+                        lambda: _GLOBAL_CRAWLER_INSTANCE.driver.title
+                    )
+                    logger.info("Reusing existing Selenium session")
+                    return True
+                except Exception:
+                    logger.warning("Existing Selenium usage failed, restarting...")
+                    _GLOBAL_CRAWLER_INSTANCE = None
+
+            from mam_selenium_crawler import SeleniumMAMCrawler
+
             params = SeleniumIntegrationConfig.get_crawler_params()
-            self.crawler = await self.loop.run_in_executor(
+            
+            new_crawler = await self.loop.run_in_executor(
                 None,
                 lambda: SeleniumMAMCrawler(**params)
             )
-
-            logger.info("Selenium crawler initialized successfully")
+            
+            _GLOBAL_CRAWLER_INSTANCE = new_crawler
+            logger.info("Selenium crawler initialized successfully (Persistent Session)")
             return True
 
         except Exception as e:
             logger.error(f"Failed to initialize Selenium crawler: {e}")
             return False
+            
+    @property
+    def crawler(self):
+        global _GLOBAL_CRAWLER_INSTANCE
+        return _GLOBAL_CRAWLER_INSTANCE
 
     async def search_books(self, books: List[Dict[str, str]]) -> Dict[str, Any]:
-        """Search for books asynchronously
-
-        Args:
-            books: List of book dicts with 'title' and 'author' keys
-
-        Returns:
-            Result dict with success status and details
-        """
         if not self.crawler:
             await self.initialize()
 
@@ -385,7 +316,6 @@ class SeleniumAsyncWrapper:
             }
 
         try:
-            # Run blocking crawler in executor
             result = await self.loop.run_in_executor(
                 None,
                 self.crawler.run,
@@ -395,7 +325,7 @@ class SeleniumAsyncWrapper:
             return {
                 'success': result,
                 'searched': len(books),
-                'found': len([b for b in books if b])  # Heuristic
+                'found': len([b for b in books if b])
             }
 
         except Exception as e:
@@ -408,7 +338,6 @@ class SeleniumAsyncWrapper:
             }
 
     async def get_user_stats(self) -> Optional[Dict[str, Any]]:
-        """Get user stats asynchronously"""
         if not self.crawler:
             await self.initialize()
         
@@ -420,11 +349,21 @@ class SeleniumAsyncWrapper:
             self.crawler.get_user_stats
         )
 
+    async def discover_top_books(self, limit: int = 10) -> List[Dict[str, str]]:
+        if not self.crawler:
+            await self.initialize()
+
+        if not self.crawler:
+            return []
+
+        return await self.loop.run_in_executor(
+            None,
+            lambda: self.crawler.discover_top_books(limit)
+        )
+
     async def cleanup(self):
-        """Clean up resources"""
         if self.crawler:
             try:
-                # Close WebDriver in executor if it has cleanup method
                 if hasattr(self.crawler, 'driver'):
                     await self.loop.run_in_executor(
                         None,
@@ -437,25 +376,13 @@ class SeleniumAsyncWrapper:
 async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
                                  books: Optional[List[Dict]] = None,
                                  db_session=None) -> Dict[str, Any]:
-    """Run top search using Selenium crawler integrated with master manager
-    
-    This is the main integration point for MasterAudiobookManager.
-    
-    Args:
-        missing_analysis: Optional output from detect_missing_books()
-        books: Optional list of books to search
-        db_session: Optional SQLAlchemy session for database operations
-        
-    Returns:
-        Result dict with search statistics and status
-    """
+    """Run top search using Selenium crawler integrated with master manager"""
     logger.info("Starting Selenium top search...")
     
     # Generate search terms from analysis
     search_terms = []
     
     if missing_analysis:
-        # Extract search terms from missing books analysis
         series_missing = missing_analysis.get('series_analysis', {}).get('missing_books', [])
         author_missing = missing_analysis.get('author_analysis', {}).get('missing_books', [])
         
@@ -463,9 +390,56 @@ async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
         search_terms.extend(SeleniumSearchTermGenerator.from_author_analysis(author_missing))
         
     elif books:
-        # Use provided books list
         search_terms = SeleniumSearchTermGenerator.from_missing_books_list(books)
     
+    else:
+        # User requested "Top Search" without specific targets -> Auto-Discovery Mode
+        logger.info("No targets provided. Initiating Top 10 Discovery Mode for Audiobooks...")
+        
+        wrapper = SeleniumAsyncWrapper()
+        if not await wrapper.initialize():
+            return {'success': False, 'error': 'Crawler initialization failed'}
+        
+        logger.info("Browsing MAM for Top 10 Audiobooks...")
+        top_books = await wrapper.discover_top_books()
+        
+        abs_url = get_config_value('api_endpoints.abs_url')
+        abs_token = get_config_value('api_endpoints.abs_token') or get_secret('abs_token')
+        existing_titles = set()
+        
+        if abs_url and abs_token:
+            try:
+                logger.info("Fetching existing library from Audiobookshelf for deduplication...")
+                from backend.integrations.abs_client import AudiobookshelfClient
+                async with AudiobookshelfClient(abs_url, abs_token) as abs_client:
+                    library_items = await abs_client.get_library_items()
+                    for item in library_items:
+                        meta = item.get('media', {}).get('metadata', {})
+                        title = meta.get('title')
+                        if title:
+                            existing_titles.add(title.lower().strip())
+                logger.info(f"Loaded {len(existing_titles)} existing books from ABS for comparison.")
+            except Exception as e:
+                logger.error(f"Failed to fetch ABS library: {e}")
+        
+        books = []
+        if top_books:
+            logger.info(f"Processing {len(top_books)} discovered trending audiobooks...")
+            skipped_count = 0
+            for b in top_books:
+                title_norm = b['title'].lower().strip()
+                if title_norm in existing_titles:
+                    logger.info(f"   [SKIP] '{b['title']}' - Already exists in Audiobookshelf library.")
+                    skipped_count += 1
+                    continue
+                books.append({'title': b['title'], 'author': b['author']})
+            
+            logger.info(f"Queueing {len(books)} new books for Prowlarr search (Skipped {skipped_count} existing).")
+            search_terms = SeleniumSearchTermGenerator.from_missing_books_list(books)
+        else:
+            logger.warning("Failed to discover top books.")
+            search_terms = []
+
     if not search_terms:
         logger.warning("No search terms generated")
         return {
@@ -476,7 +450,6 @@ async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
             'queued': 0
         }
     
-    # Initialize wrapper
     wrapper = SeleniumAsyncWrapper()
     if not await wrapper.initialize():
         return {
@@ -487,28 +460,97 @@ async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
             'queued': 0
         }
         
-    # Fetch user stats (Ratio, BP) - Integration of mam-exporter features
     user_stats = await wrapper.get_user_stats()
     if user_stats:
         logger.info(f"User Stats: Ratio={user_stats.get('ratio')}, BP={user_stats.get('bonus_points')}")
     
-    # Initialize result processor
-    processor = SeleniumSearchResultProcessor(db_session)
+    # Initialize Prowlarr Client with ConfigSystem
+    prowlarr_url = get_config_value('api_endpoints.prowlarr_url') or os.getenv('PROWLARR_URL', 'http://localhost:9696')
+    prowlarr_api_key = get_config_value('api_endpoints.prowlarr_api_key') or get_secret('prowlarr_api_key') or os.getenv('PROWLARR_API_KEY')
     
-    # Run searches
+    use_prowlarr = False
+    if prowlarr_url and prowlarr_api_key:
+        from backend.integrations.prowlarr_client import ProwlarrClient
+        from mamcrawler.quality import QualityFilter
+        use_prowlarr = True
+        logger.info(f"✅ PROWLARR ACTIVE (URL: {prowlarr_url})")
+    else:
+        logger.error("❌ PROWLARR DISABLED (Missing API KEY or URL). Fallback to Selenium.")
+
+    processor = SeleniumSearchResultProcessor(db_session)
+    quality_filter = QualityFilter() if use_prowlarr else None
+    
     for search_term in search_terms:
         try:
-            # Extract search parameters
             search_query = search_term.get('title', '')
-            if search_term.get('author'):
-                search_query += f" {search_term['author']}"
+            if not search_query or len(search_query) < 2:
+                logger.warning(f"Skipping empty/invalid title: '{search_query}'")
+                continue
             
-            # Run search
-            result = await wrapper.search_books([{'title': search_query, 'author': search_term.get('author', '')}])
+            logger.info(f"   -> Searching for: '{search_query}' (Context: {search_term.get('context', 'Manual')})...")
             
-            # Process result
-            processor.process_search_result(result, search_term)
+            found_magnet = None
+            found_title = None
+            found_author = None
             
+            if use_prowlarr:
+                logger.info(f"   -> [API] Searching Prowlarr for: '{search_query}'")
+                try:
+                    async with ProwlarrClient(prowlarr_url, prowlarr_api_key) as client:
+                        results = await client.get_search_results(query=search_query, limit=20, min_seeders=1)
+                        best_match = None
+                        if results:
+                            filtered_results = quality_filter.filter_and_sort_prowlarr_results(results, search_query) if quality_filter else results
+                            if filtered_results:
+                                best_match = filtered_results[0]
+                        
+                        if best_match:
+                            found_magnet = await client.add_to_download_queue(best_match)
+                            found_title = best_match.get('title')
+                            found_author = search_term.get('author')
+                            if found_magnet:
+                                logger.info(f"      [API] Found match: {found_title}")
+                            else:
+                                logger.warning(f"      [API] Match found but no magnet link extracted.")
+                        else:
+                            logger.info(f"      [API] No results found for '{search_query}'")
+                except Exception as e:
+                    logger.error(f"      [API] Prowlarr API failed: {e}")
+            
+            else:
+                result = await wrapper.search_books([{'title': search_query, 'author': search_term.get('author', '')}])
+                # Selenium result processing is handled better by just using the API if possible
+                     
+            if found_magnet:
+                logger.info(f"      -> Queueing to qBittorrent...")
+                try:
+                    wrapper.crawler.qb_client.torrents_add(
+                        urls=found_magnet,
+                        category='audiobooks',
+                        tags=['prowlarr', 'mam-crawler', 'auto'],
+                        is_paused=False
+                    )
+                    logger.info("      ✓ SUCCESS: Queued!")
+                    
+                    processor.process_search_result({
+                        'title': found_title,
+                        'author': found_author,
+                        'magnet_link': found_magnet
+                    }, search_term)
+                    processor.processed['found'] += 1
+                    processor.processed['queued'] += 1
+                    
+                except Exception as e:
+                    logger.error(f"Failed to queue to qB: {e}")
+                    processor.processed['errors'].append({'search_term': search_term, 'error': str(e)})
+
+            elif not use_prowlarr and 'result' in locals() and result.get('success'):
+                logger.info(f"      [SELENIUM] Found {result.get('found', 0)} results.")
+                processor.process_search_result(result, search_term)
+            
+            elif not use_prowlarr:
+                 logger.info(f"      [SELENIUM] No results found.")
+
         except Exception as e:
             logger.error(f"Error searching for {search_term.get('title', 'Unknown')}: {e}")
             processor.processed['errors'].append({
@@ -516,14 +558,10 @@ async def run_selenium_top_search(missing_analysis: Optional[Dict] = None,
                 'error': str(e)
             })
             
-    # Cleanup
-    await wrapper.cleanup()
-    
-    # Return summary
+    logger.info("Selenium session kept open for future requests.")
     summary = processor.get_summary()
     summary['success'] = True
     summary['user_stats'] = user_stats
-    
     logger.info(f"Selenium search completed: {summary}")
     return summary
 
@@ -536,32 +574,18 @@ async def get_mam_user_stats() -> Optional[Dict[str, Any]]:
             return await wrapper.get_user_stats()
     except Exception as e:
         logger.error(f"Error fetching stats: {e}")
-    finally:
-        await wrapper.cleanup()
     return None
 
 
-# For direct testing
 if __name__ == "__main__":
     import asyncio
-
     async def test():
-        """Test the integration"""
-        logger.basicConfig(level=logging.INFO)
-
-        # Test stats fetching
+        logging.basicConfig(level=logging.INFO)
         print("Fetching stats...")
         stats = await get_mam_user_stats()
         print(f"Stats: {stats}")
-
-        # Test with sample books
-        books = [
-            {'title': 'Mistborn', 'author': 'Brandon Sanderson'},
-            {'title': 'The Poppy War', 'author': 'R.F. Kuang'},
-        ]
-
+        books = [{'title': 'Mistborn', 'author': 'Brandon Sanderson'}]
         result = await run_selenium_top_search(books=books)
         print("Integration test result:")
         print(result)
-
     asyncio.run(test())

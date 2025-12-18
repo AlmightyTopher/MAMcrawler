@@ -72,10 +72,10 @@ class MissingBook(Base):
     priority = Column(Integer, default=1)  # 1 = high, 2 = medium, 3 = low
 
     # Relationships
-    book = relationship("Book", back_populates="missing_book_entries")
-    series = relationship("Series", back_populates="missing_books")
-    author = relationship("Author", back_populates="missing_books")
-    download = relationship("Download", back_populates="missing_book", foreign_keys=[download_id])
+    # book = relationship("Book", back_populates="missing_book_entries")
+    # series = relationship("Series", back_populates="missing_books")
+    # author = relationship("Author", back_populates="missing_books")
+    # download = relationship("Download", foreign_keys=[download_id])
 
     def __repr__(self) -> str:
         return f"<MissingBook(id={self.id}, title={self.title}, reason={self.reason_missing}, status={self.download_status})>"

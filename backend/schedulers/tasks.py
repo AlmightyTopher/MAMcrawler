@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from backend.database import get_db_context
 from backend.models.task import Task
 from backend.config import get_settings
+from backend.services.workflow_executor import RealExecutionWorkflow
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -196,6 +197,91 @@ async def mam_scraping_task() -> None:
 
             logger.error(error_msg)
             raise
+
+
+
+async def process_download_queue_task() -> None:
+    """
+    Process the download queue:
+    1. Scan library for new books (DiscoveryService)
+    2. Queue new items to DB ('queued' status)
+    3. Process 'queued' items via MAMSeleniumService
+    
+    Schedule: Every 30 minutes
+    Purpose: Active download and queue management
+    """
+    logger.info("Starting download queue processing task")
+
+    with get_db_context() as db:
+        task = create_task_record(db, 'DOWNLOAD_QUEUE')
+        log_lines = []
+        
+        try:
+            from backend.services.discovery_service import DiscoveryService
+            from backend.services.mam_selenium_service import MAMSeleniumService
+            
+            discovery = DiscoveryService()
+            mam_service = MAMSeleniumService()
+            
+            # Step 1: Discovery (Optional - typically this finds gaps)
+            log_lines.append(f"[{datetime.utcnow()}] Checking for new books...")
+            new_books = await discovery.find_new_books()
+            
+            # Step 2: Queue to DB
+            queued_count = 0
+            if new_books:
+                queued_count = discovery.queue_downloads(new_books)
+                log_lines.append(f"[INFO] Queued {queued_count} new books to database")
+            
+            # Step 3: Load Queue from DB
+            queue = discovery.load_download_list()
+            log_lines.append(f"[INFO] Found {len(queue)} items in download queue")
+            
+            # Step 4: Process Queue
+            processed_count = 0
+            success_count = 0
+            failed_count = 0
+            
+            if queue:
+                results = await mam_service.run_search_and_download(queue)
+                processed_count = len(queue)
+                success_count = len(results)
+                failed_count = processed_count - success_count
+                
+                log_lines.append(f"[INFO] Processed {processed_count} items ({success_count} succeeded)")
+                for res in results:
+                    book_title = res.get('book', {}).get('title', 'Unknown')
+                    magnet = res.get('mam_result', {}).get('magnet', 'No magnet')
+                    log_lines.append(f"  + Downloaded: {book_title}")
+            
+            update_task_success(
+                db,
+                task,
+                items_processed=processed_count + queued_count,
+                items_succeeded=success_count + queued_count,
+                items_failed=failed_count,
+                log_output="\n".join(log_lines),
+                metadata={
+                    'new_books_found': len(new_books),
+                    'queued_db': queued_count,
+                    'processed_queue': processed_count
+                }
+            )
+            
+            logger.info(f"Download queue task completed: {success_count} downloads started")
+
+        except Exception as e:
+            error_msg = f"Download queue task failed: {str(e)}\n{traceback.format_exc()}"
+            log_lines.append(f"[ERROR] {error_msg}")
+
+            update_task_failure(
+                db,
+                task,
+                error_message=error_msg,
+                log_output="\n".join(log_lines)
+            )
+
+            logger.error(error_msg)
 
 
 async def top10_discovery_task() -> None:
@@ -547,6 +633,68 @@ async def author_completion_task() -> None:
 # ============================================================================
 # Task Cleanup (Retention Policy)
 # ============================================================================
+
+import os
+
+async def execute_full_workflow_task() -> None:
+    """
+    Execute the full 'Real' workflow (Legacy unification)
+    
+    Schedule: Manual / On Demand (or daily if desired)
+    Purpose: Run the comprehensive audiobook acquisition pipeline:
+             Discovery -> Download -> Sync -> Metadata -> ID3 -> Reporting
+    Output: Full execution report
+    """
+    logger.info("Starting full workflow task")
+    
+    with get_db_context() as db:
+        task = create_task_record(db, 'FULL_WORKFLOW_LEGACY')
+        
+        try:
+            # We can capture logs if we modify RealExecutionWorkflow, 
+            # but for now we'll just run it and point to the log file.
+            log_file_path = "logs/real_workflow_execution.log"
+            
+            logger.info(f"Initializing workflow (logs at {log_file_path})")
+            workflow = RealExecutionWorkflow()
+            
+            # Execute
+            await workflow.execute()
+            
+            # Read last N lines from log file to store in DB task
+            log_tail = ""
+            if os.path.exists(log_file_path):
+                try:
+                    # quick and dirty tail
+                    with open(log_file_path, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                        log_tail = "".join(lines[-100:]) # Last 100 lines
+                except Exception:
+                    log_tail = "Could not read log file tail."
+            
+            update_task_success(
+                db,
+                task,
+                items_processed=1, # One workflow
+                items_succeeded=1,
+                items_failed=0,
+                log_output=log_tail,
+                metadata={
+                    'full_log_path': log_file_path,
+                    'execution_mode': 'legacy_script_wrapper'
+                }
+            )
+            
+        except Exception as e:
+            error_msg = f"Full workflow failed: {str(e)}\n{traceback.format_exc()}"
+            update_task_failure(
+                db,
+                task,
+                error_message=error_msg
+            )
+            logger.error(error_msg)
+            raise
+
 
 async def cleanup_old_tasks() -> None:
     """

@@ -85,8 +85,8 @@ class Book(Base):
 
     # Relationships
     downloads = relationship("Download", back_populates="book")
-    missing_book_entries = relationship("MissingBook", back_populates="book")
-    metadata_corrections = relationship("MetadataCorrection", back_populates="book")
+    # missing_book_entries = relationship("MissingBook", back_populates="book")
+    # metadata_corrections = relationship("MetadataCorrection", back_populates="book")
 
     def __repr__(self) -> str:
         return f"<Book(id={self.id}, title={self.title}, author={self.author})>"

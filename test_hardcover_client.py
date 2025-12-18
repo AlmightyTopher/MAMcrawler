@@ -8,6 +8,9 @@ Run with: python test_hardcover_client.py
 import asyncio
 import os
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 from backend.integrations.hardcover_client import (
     HardcoverClient,
     ResolutionResult,
