@@ -20,6 +20,8 @@ from backend.models.vip_pending_item import VIPPendingItem
 from backend.models.ratio_metrics import RatioMetrics
 from backend.models.evidence import EvidenceSource, EvidenceEvent, Assertion
 from backend.models.hardcover_sync_log import HardcoverSyncLog
+from backend.models.downloaded_book import DownloadedBook
+from backend.models.hardcover_user_mapping import HardcoverUserMapping
 
 __all__ = [
     "Book",
@@ -42,4 +44,6 @@ __all__ = [
     "EvidenceEvent",
     "Assertion",
     "HardcoverSyncLog",
+    "DownloadedBook",
+    "HardcoverUserMapping",
 ]

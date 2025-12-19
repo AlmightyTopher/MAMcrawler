@@ -8,7 +8,6 @@ Manages synchronization of individual user progress from AudiobookShelf to Hardc
 
 import asyncio
 import logging
-import sqlite3
 import json
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -16,6 +15,8 @@ from datetime import datetime
 
 from backend.integrations.hardcover_client import HardcoverClient
 from backend.integrations.abs_client import AudiobookshelfClient
+from backend.database import get_db_context
+from backend.models.hardcover_user_mapping import HardcoverUserMapping
 
 logger = logging.getLogger(__name__)
 
@@ -23,27 +24,14 @@ class HardcoverUserService:
     def __init__(
         self,
         abs_base_url: str,
-        abs_api_key: str,
-        db_path: str = "hardcover_user_sync.db"
+        abs_api_key: str
     ):
-        self.abs_client = AudiobookshelfClient(abs_base_url, abs_api_key)
-        self.db_path = Path(db_path)
-        self._init_db()
+        """
+        Initialize Hardcover User Service.
 
-    def _init_db(self):
-        """Initialize user mapping database"""
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS user_mappings (
-                    abs_user_id TEXT PRIMARY KEY,
-                    abs_username TEXT,
-                    hardcover_token TEXT,
-                    last_synced_at TIMESTAMP,
-                    is_active INTEGER DEFAULT 1
-                )
-            """)
-            conn.commit()
+        Now uses Postgres instead of SQLite for state management.
+        """
+        self.abs_client = AudiobookshelfClient(abs_base_url, abs_api_key)
 
     def register_user(self, abs_username: str, hardcover_token: str) -> bool:
         """
@@ -80,29 +68,57 @@ class HardcoverUserService:
                 
                 hc_username = me.get("username")
 
-            # 3. Save to DB
+            # 3. Save to Postgres
             try:
-                with sqlite3.connect(self.db_path) as conn:
-                    conn.execute("""
-                        INSERT OR REPLACE INTO user_mappings 
-                        (abs_user_id, abs_username, hardcover_token, last_synced_at, is_active)
-                        VALUES (?, ?, ?, ?, 1)
-                    """, (target_user["id"], target_user["username"], hardcover_token, datetime.now()))
-                    conn.commit()
-                
+                with get_db_context() as db:
+                    # Check if mapping already exists
+                    existing = db.query(HardcoverUserMapping).filter(
+                        HardcoverUserMapping.abs_user_id == target_user["id"]
+                    ).first()
+
+                    if existing:
+                        # Update existing mapping
+                        existing.abs_username = target_user["username"]
+                        existing.hardcover_token = hardcover_token
+                        existing.last_synced_at = datetime.now()
+                        existing.is_active = True
+                    else:
+                        # Create new mapping
+                        mapping = HardcoverUserMapping(
+                            abs_user_id=target_user["id"],
+                            abs_username=target_user["username"],
+                            hardcover_token=hardcover_token,
+                            last_synced_at=datetime.now(),
+                            is_active=True
+                        )
+                        db.add(mapping)
+
+                    db.commit()
+
                 logger.info(f"Registered {abs_username} -> Hardcover ({hc_username})")
                 return {"success": True, "hardcover_user": hc_username, "abs_user": target_user["username"]}
-                
+
             except Exception as e:
                 logger.error(f"DB Error: {e}")
                 return {"success": False, "error": str(e)}
 
     async def get_registered_users(self) -> List[Dict]:
-        """Get list of all registered users"""
-        with sqlite3.connect(self.db_path) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.execute("SELECT * FROM user_mappings WHERE is_active = 1")
-            return [dict(row) for row in cursor.fetchall()]
+        """Get list of all registered users from Postgres"""
+        with get_db_context() as db:
+            mappings = db.query(HardcoverUserMapping).filter(
+                HardcoverUserMapping.is_active == True
+            ).all()
+
+            return [
+                {
+                    "abs_user_id": m.abs_user_id,
+                    "abs_username": m.abs_username,
+                    "hardcover_token": m.hardcover_token,
+                    "last_synced_at": m.last_synced_at.isoformat() if m.last_synced_at else None,
+                    "is_active": m.is_active
+                }
+                for m in mappings
+            ]
 
     async def sync_all_users(self) -> List[Dict]:
         """
